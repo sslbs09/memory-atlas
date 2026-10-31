@@ -451,3 +451,36 @@ export const HOLDOUT_V2_META = {
   strategyMatrix: ['A0', 'A1', 'A2-H7', 'A2-H30', 'A3', 'G2-H7', 'G3', 'G1', 'G1G2'],
   scenarioCount: 23
 };
+
+// —— 排名指标的相关性声明（第二次预注册，先于任何策略运行；commit 2d0bfba 之后）——
+// relevant：该情境下用户会想被想起的记录（Recall@5 / MRR / nDCG@5 / Top1 准确率 /
+// Top3 入侵数的判定基础；其余候选一律视为非相关）。X 组结构场景不参与排名指标聚合。
+// 这里的声明与各场景 derivation 的语义一致，不针对任何策略输出调整。
+export const RELEVANCE_V2 = Object.freeze({
+  'E1-explicit-followup-just-delivered': ['rec-allergy-peanut'],
+  'E2-old-commitment-explicit': ['rec-commitment-erhai'],
+  'E3-corrected-record-explicit': ['rec-address-new'],
+  'E4-explicit-high-freq-vs-current-plan': ['rec-recipe-hotpot'],
+  'E5-retracted-unreachable-explicit': [],
+  'E6-ascii-term-explicit': ['rec-mk2-sensor'],
+  'Q1-ambient-freq-intrusion-bigram-quality': ['rec-recipe-hotpot'],
+  'Q2-single-char-noise-user-revisit': ['rec-movie-wandering'],
+  'Q3-old-commitment-ambient-sink': ['rec-commitment-erhai', 'rec-travel-yunnan'],
+  'Q4-single-candidate-trivial': ['rec-umbrella'],
+  'Q5-recent-trivial-intruder-single-revisit': ['rec-gym-runs'],
+  'Q6-retracted-ambient-unreachable': [],
+  'Q7-recent-mention-strong-recall': ['rec-movie-wandering'],
+  'Q8-cross-space-isolation': ['rec-shared-001'],
+  'Q9-uncommitted-umbrella-beats-commitment': ['rec-umbrella', 'rec-commitment-erhai'],
+  'Q10-same-tier-legitimate-uplift': ['rec-commitment-erhai'],
+  'Q11-single-revisit-weak-boost': ['rec-allergy-peanut'],
+  'S1-suppression-window': ['rec-allergy-peanut', 'rec-no-cilantro'],
+  'S2-suppression-decay-zone': ['rec-allergy-peanut', 'rec-no-cilantro'],
+  'X1-same-source-duplicate': ['rec-scifi-books'],
+  'X2-restart-replay-identity': ['rec-recipe-hotpot'],
+  'X3-clock-anomalies': ['rec-scifi-books'],
+  'X4-internal-queries-no-reinforce': ['rec-scifi-books']
+});
+
+// 不参与排名指标聚合的场景（结构断言为主）。
+export const EXCLUDE_FROM_RANKING = Object.freeze(['X2-restart-replay-identity']);

@@ -1,0 +1,37 @@
+{
+  "meta": {
+    "generatedAt": "2026-10-31T15:37:05.908Z"
+  },
+  "legacy": {
+    "childProcessIdsRunA": [
+      "ev-personal-rec-scifi-books-1"
+    ],
+    "childProcessIdsRunB": [
+      "ev-personal-rec-scifi-books-1"
+    ],
+    "overlap": [
+      "ev-personal-rec-scifi-books-1"
+    ],
+    "verdict": "确认真实冲突：重启后同 (spaceId, recordId) 生成完全相同的 eventId（重叠 1/1）",
+    "silentLoss": {
+      "mergedEventIds": [
+        "ev-personal-rec-scifi-books-1",
+        "ev-personal-rec-scifi-books-1"
+      ],
+      "reinforceCountAfterReplay": 1
+    },
+    "conflict": {
+      "rejected": true,
+      "error": "eventId-conflict:同 eventId 携带不同主体"
+    },
+    "crossSpacePollution": "无：id 内嵌 spaceId，同进程跨空间不碰撞"
+  },
+  "fixed": {
+    "overlapAfterFix": 0,
+    "overlapAfterResume": 0,
+    "resumedFirstId": "ev-personal-rec-scifi-books-restartsim-bbbb-2",
+    "interleavedUnique": true,
+    "idempotentPreserved": true,
+    "verdict": "修复有效：nonce 隔离重启碰撞、resumeFrom 续接序号、跨空间唯一、幂等语义不变"
+  }
+}
