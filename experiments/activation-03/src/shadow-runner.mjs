@@ -58,8 +58,8 @@ export async function runShadow({ scenarios = holdoutV3Scenarios(), log = consol
   for (const scenario of scenarios) {
     const entry = await runScenario(scenario);
     records.push(entry);
-    log(`${entry.scenarioId} path=${entry.pathLabel} cand=${entry.candidateCount} ` +
-      `changed[G3=${entry.strategies.G3?.changed} G1G2=${entry.strategies.G1G2?.changed ?? 'refused'}]`);
+    log(`${entry.queryId} path=${entry.pathLabel} cand=${entry.candidateCount} ` +
+      `changed[G3=${entry.recentDeliveryPenalty.applied} G1G2=${entry.fallbackReason === null ? entry.rankChanges.filter((c) => c.strategy === 'G1G2').length > 0 || (entry.gateMoves?.length ?? 0) > 0 : 'refused'}]`);
   }
   return records;
 }
@@ -102,6 +102,7 @@ export async function runScenario(scenario) {
     const queryOptions = { limit: 50 };
     if (scenario.query !== undefined) queryOptions.query = scenario.query;
     if (scenario.since !== undefined) queryOptions.since = scenario.since;
+    if (scenario.timeField !== undefined) queryOptions.timeField = scenario.timeField;
     const response = await harness.query(queryOptions);
     candidateSet = response;
     if (scenario.family === 'structural') {
@@ -217,6 +218,9 @@ export async function runScenario(scenario) {
     },
     gateMoves: g1g2.gateMoves ?? [],
     strategyNotes: { A0: a0.notes, G3: g3.notes, G1G2: g1g2.notes ?? [] },
+    // key → 真实 recordId（control 记录的 recordId 由 Atlas 回执派生，fixtures
+    // 里以 'key:' 前缀引用；评价侧据此解析 relevance/forbidden）。
+    idMap: harness && harness.createdIds ? Object.fromEntries(harness.createdIds) : {},
     structuralProbe: scenario.family === 'structural' ? {
       revisionBefore, revisionAfter,
       revisionUnchanged: revisionBefore === null ? null : revisionBefore === revisionAfter

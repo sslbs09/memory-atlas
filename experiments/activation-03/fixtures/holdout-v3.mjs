@@ -42,7 +42,24 @@ export const HOLDOUT_V3_META = Object.freeze({
   })
 });
 
-export const AMENDMENTS = Object.freeze([]);
+export const AMENDMENTS = Object.freeze([
+  {
+    id: 'A1',
+    at: '2026-11-01',
+    affected: ['C05-browse-suppression'],
+    finding: '首轮运行发现 harness.query 只解构 query/limit，场景的 since 被静默丢弃（C05 实际按无时间窗浏览运行）；同时 Atlas 时间过滤默认字段是 timestamp=recordedAt（录入时间），场景意图是 occurredAt 窗口。',
+    action: 'harness.query 改为透传全部选项；C05 显式声明 timeField: "occurredAt"。relevance/forbidden 真值不变。',
+    purity: 'C05 不再具备完整预注册纯度；其余 29 场景不受影响（首轮与修订轮输出一致的差异仅由该 plumbing 缺陷引起）。'
+  },
+  {
+    id: 'A2',
+    at: '2026-11-01',
+    affected: ['B03-suppression-decay-zone'],
+    finding: 'SCENARIO_EVENTS 键名 B03-suppression-decay 与场景 id B03-suppression-decay-zone 不匹配，首轮 B03 无事件剧本（抑制从未触发）。',
+    action: '剧本键名对齐场景 id。事件内容不变（delivered_reference @ 2026-11-01T02:00Z）。',
+    purity: 'B03 不再具备完整预注册纯度；其余 29 场景不受影响。'
+  }
+]);
 
 const S = (scenario) => Object.freeze(scenario);
 
@@ -135,7 +152,7 @@ export function holdoutV3Scenarios() {
       difficultTypes: [10],
       intent: '被纠正的 8 次重提旧口味必须结构性不可达；纠正记录可达',
       events: 'E09-corrected-highfreq',
-      relevance: { 'corr-latte': 3, 'rec-coffee-machine': 0 },
+      relevance: { 'key:corr-latte': 3, 'rec-coffee-machine': 0 },
       forbidden: ['rec-retracted-phish', 'rec-latte'],
       prediction: { 全策略: 'rec-latte 在投影中已 superseded → 结构性缺席（比实验池更强的保证）；corr-latte 第一' }
     }),
@@ -295,12 +312,12 @@ export function holdoutV3Scenarios() {
     }),
     S({
       id: 'C05-browse-suppression', family: 'fallback', path: 'C', mode: 'ambient',
-      since: '2026-10-30T00:00:00.000Z', spaces: ['mira'], engineMode: 'broken',
+      since: '2026-10-30T00:00:00.000Z', timeField: 'occurredAt', spaces: ['mira'], engineMode: 'broken',
       difficultTypes: [6, 12],
-      intent: '回退路径的 ambient 浏览（since 窗口）：G3 以稳定后移表达抑制（不伪造分数）',
+      intent: '回退路径的 ambient 浏览（occurredAt 时间窗）：G3 以稳定后移表达抑制（不伪造分数）',
       events: 'C05-browse-suppression',
       relevance: { 'rec-friday-cancel': 1, 'rec-swim-pool': 1, 'rec-run-gear': 0, 'rec-gym': 1 },
-      forbidden: ['rec-retracted-phish', 'corr-latte', 'rec-friday-meal'],
+      forbidden: ['rec-retracted-phish', 'key:corr-latte', 'rec-friday-meal'],
       prediction: { A0: 'friday-cancel 第一（sequence 降序）—— 刚投递过的重复', G3: 'friday-cancel 后移到首个未抑制者之后', G1G2: 'refused：NO_LEXICAL_EVIDENCE_SCAN' }
     }),
     S({

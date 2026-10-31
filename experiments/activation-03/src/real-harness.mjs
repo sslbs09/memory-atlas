@@ -132,10 +132,10 @@ export async function createPathAHarness({
     engineMode,
     svc,
     createdIds,
-    async query({ query, limit = 50 } = {}) {
+    async query(options = {}) {
       if (closed) throw new Error('harness closed');
-      const result = await svc.search({ spaceId, query, limit });
-      return normalizeCoordinatorResult(result, { spaceId, query, path: PATH_A, engineMode });
+      const result = await svc.search({ spaceId, ...options });
+      return normalizeCoordinatorResult(result, { spaceId, query: options.query ?? null, path: PATH_A, engineMode });
     },
     close() {
       closed = true;

@@ -1,0 +1,1772 @@
+{
+  "meta": {
+    "id": "holdout-v3",
+    "createdAt": "2026-11-01",
+    "clock": "2026-11-01T12:00:00.000Z",
+    "clockMs": 1793534400000,
+    "scenarioCount": 30,
+    "families": {
+      "explicit": 14,
+      "ambient": 6,
+      "fallback": 6,
+      "structural": 4
+    },
+    "difficultTypeCoverage": {
+      "1-多候选同词元覆盖": [
+        "E03"
+      ],
+      "2-多候选不同词元质量": [
+        "E02",
+        "E13"
+      ],
+      "3-高频无关记忆": [
+        "E05",
+        "E02"
+      ],
+      "4-中文单字噪声": [
+        "E04"
+      ],
+      "5-同一人物不同事件": [
+        "E01"
+      ],
+      "6-最近已经提及": [
+        "B02",
+        "B03",
+        "C05"
+      ],
+      "7-用户明确再次追问": [
+        "E06"
+      ],
+      "8-很旧但尚未履行的约定": [
+        "E07",
+        "C03"
+      ],
+      "9-同一事实多次不同来源": [
+        "E08",
+        "B01"
+      ],
+      "10-已纠正的高频旧事实": [
+        "E09"
+      ],
+      "11-结构关联但无词法证据": [
+        "B01"
+      ],
+      "12-索引故障后的权威扫描": [
+        "C01",
+        "C02"
+      ]
+    },
+    "denominators": {
+      "note": "排序指标分母 = 候选数>0 且存在 grade>=2 相关记录的场景；行为断言（structural 组）单独报告，不计入排序分母。",
+      "rule": "negative-availability 场景（预期零候选/仅断言不可达）显式排除并逐个列名。"
+    },
+    "generatedAt": "2026-10-31T17:16:44.236Z",
+    "amendmentCount": 2,
+    "denominatorsCheck": {
+      "note": "每个 family 显式列出 scenarios / rankingDenominator / excluded——与 Activation-02 ambient 组“10 场景 vs 9 分母”不同，这里不允许隐性排除。"
+    }
+  },
+  "byFamily": {
+    "explicit": {
+      "scenarios": 14,
+      "rankingDenominator": 14,
+      "excluded": [],
+      "byStrategy": {
+        "A0": {
+          "top1Accuracy": 0.4286,
+          "mrr": 0.7738,
+          "ndcg5": 0.832,
+          "recall5Avg": 1,
+          "top3IntrusionTotal": 4,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableAll": true,
+          "primaryReachableCount": 14,
+          "timingMs": {
+            "p50": 0.0102,
+            "p95": 0.0325
+          }
+        },
+        "G3": {
+          "top1Accuracy": 0.4286,
+          "mrr": 0.7738,
+          "ndcg5": 0.832,
+          "recall5Avg": 1,
+          "top3IntrusionTotal": 4,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableAll": true,
+          "primaryReachableCount": 14,
+          "timingMs": {
+            "p50": 0.008,
+            "p95": 0.0177
+          }
+        },
+        "G1G2": {
+          "top1Accuracy": 0.7143,
+          "mrr": 0.881,
+          "ndcg5": 0.9047,
+          "recall5Avg": 1,
+          "top3IntrusionTotal": 4,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableAll": true,
+          "primaryReachableCount": 14,
+          "timingMs": {
+            "p50": 0.1101,
+            "p95": 0.7123
+          }
+        }
+      },
+      "shadowVsA0": {
+        "comparableScenarios": 9,
+        "G3": 0,
+        "G1G2": 4
+      },
+      "g1g2Downgrades": 0,
+      "downgradeReasons": [],
+      "gateMovesTotal": 2
+    },
+    "ambient": {
+      "scenarios": 6,
+      "rankingDenominator": 5,
+      "excluded": [
+        {
+          "id": "B06-sentence-situation-empty",
+          "reason": "zero-candidates"
+        }
+      ],
+      "byStrategy": {
+        "A0": {
+          "top1Accuracy": 0,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "recall5Avg": 1,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableAll": true,
+          "primaryReachableCount": 5,
+          "timingMs": {
+            "p50": 0.0055,
+            "p95": 0.0081
+          }
+        },
+        "G3": {
+          "top1Accuracy": 0.4,
+          "mrr": 1,
+          "ndcg5": 0.913,
+          "recall5Avg": 1,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableAll": true,
+          "primaryReachableCount": 5,
+          "timingMs": {
+            "p50": 0.1289,
+            "p95": 0.3189
+          }
+        },
+        "G1G2": {
+          "top1Accuracy": 0,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "recall5Avg": 1,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableAll": true,
+          "primaryReachableCount": 5,
+          "timingMs": {
+            "p50": 0.0163,
+            "p95": 0.4596
+          }
+        }
+      },
+      "shadowVsA0": {
+        "comparableScenarios": 5,
+        "G3": 2,
+        "G1G2": 0
+      },
+      "g1g2Downgrades": 5,
+      "downgradeReasons": [
+        "G1_DISABLED: 结构共现候选（association）无词元证据，G1 不适用；G2 单独已被 activation-02 否决 → G1G2 整体拒用，回退 A0 顺序"
+      ],
+      "gateMovesTotal": 0
+    },
+    "fallback": {
+      "scenarios": 6,
+      "rankingDenominator": 5,
+      "excluded": [
+        {
+          "id": "C05-browse-suppression",
+          "reason": "no-grade2-relevant"
+        }
+      ],
+      "byStrategy": {
+        "A0": {
+          "top1Accuracy": 0.4,
+          "mrr": 0.7,
+          "ndcg5": 0.805,
+          "recall5Avg": 1,
+          "top3IntrusionTotal": 2,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableAll": true,
+          "primaryReachableCount": 5,
+          "timingMs": {
+            "p50": 0.0044,
+            "p95": 0.0098
+          }
+        },
+        "G3": {
+          "top1Accuracy": 0.4,
+          "mrr": 0.7,
+          "ndcg5": 0.805,
+          "recall5Avg": 1,
+          "top3IntrusionTotal": 2,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableAll": true,
+          "primaryReachableCount": 5,
+          "timingMs": {
+            "p50": 0.0142,
+            "p95": 0.1847
+          }
+        },
+        "G1G2": {
+          "top1Accuracy": 0.4,
+          "mrr": 0.7,
+          "ndcg5": 0.805,
+          "recall5Avg": 1,
+          "top3IntrusionTotal": 2,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableAll": true,
+          "primaryReachableCount": 5,
+          "timingMs": {
+            "p50": 0.0192,
+            "p95": 0.056
+          }
+        }
+      },
+      "shadowVsA0": {
+        "comparableScenarios": 4,
+        "G3": 1,
+        "G1G2": 0
+      },
+      "g1g2Downgrades": 6,
+      "downgradeReasons": [
+        "G1_DISABLED: 权威扫描回退不产生 matchReason/coverage，G1 不适用；G2 单独已被 activation-02 否决 → G1G2 整体拒用，回退 A0 顺序"
+      ],
+      "gateMovesTotal": 0
+    }
+  },
+  "recentDeliveryRepeatTop1": {
+    "A0": [
+      {
+        "id": "B02-recent-delivery",
+        "top1": "rec-b-linran-movie"
+      },
+      {
+        "id": "C05-browse-suppression",
+        "top1": "rec-friday-cancel"
+      }
+    ],
+    "G3": [
+      {
+        "id": "B02-recent-delivery",
+        "top1": "rec-b-linran-hike"
+      },
+      {
+        "id": "C05-browse-suppression",
+        "top1": "rec-swim-pool"
+      }
+    ],
+    "G1G2": [
+      {
+        "id": "B02-recent-delivery",
+        "top1": null
+      },
+      {
+        "id": "C05-browse-suppression",
+        "top1": null
+      }
+    ]
+  },
+  "structural": {
+    "X01-restart-determinism": {
+      "passed": true,
+      "detail": "双进程重放（时间戳归零后）逐位一致"
+    },
+    "X02-shadow-zero-side-effect": {
+      "passed": true,
+      "detail": "revisionBefore=34 revisionAfter=34"
+    },
+    "X03-internal-readonly-events": {
+      "passed": true,
+      "detail": "covered by tests/event-bridge.test.mjs"
+    },
+    "X04-log-failure-honesty": {
+      "passed": true,
+      "detail": "covered by tests/event-bridge.test.mjs"
+    }
+  },
+  "perCase": [
+    {
+      "id": "E01-xiaolin-person-events",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 3,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "mrr": 0.5,
+          "ndcg5": 0.7277,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-cafe",
+            "rec-xiaolin-book",
+            "rec-xiaolin-birthday"
+          ]
+        },
+        "G3": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "mrr": 0.5,
+          "ndcg5": 0.7277,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-cafe",
+            "rec-xiaolin-book",
+            "rec-xiaolin-birthday"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book",
+            "rec-xiaolin-cafe",
+            "rec-xiaolin-birthday"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E02-token-quality-gate",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "G3": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-gym-run",
+            "rec-gym-treadmill"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E03-same-coverage-uplift",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 1,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 0.9173,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-swim-class"
+          ]
+        },
+        "G3": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 0.9173,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-swim-class"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 0.9173,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-swim-class"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E04-single-char-noise",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 3,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "mrr": 0.5,
+          "ndcg5": 0.6443,
+          "recall5": 1,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-pharmacy-run",
+            "rec-medicine-drawer",
+            "rec-herb-tea"
+          ]
+        },
+        "G3": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "mrr": 0.5,
+          "ndcg5": 0.6443,
+          "recall5": 1,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-pharmacy-run",
+            "rec-medicine-drawer",
+            "rec-herb-tea"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "mrr": 0.5,
+          "ndcg5": 0.6443,
+          "recall5": 1,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-pharmacy-run",
+            "rec-medicine-drawer",
+            "rec-herb-tea"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E05-freq-irrelevant-explicit",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 4,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "mrr": 0.3333,
+          "ndcg5": 0.561,
+          "recall5": 1,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-gym-treadmill",
+            "rec-run-weekend",
+            "rec-gym-run"
+          ]
+        },
+        "G3": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "mrr": 0.3333,
+          "ndcg5": 0.561,
+          "recall5": 1,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-gym-treadmill",
+            "rec-run-weekend",
+            "rec-gym-run"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "mrr": 0.3333,
+          "ndcg5": 0.561,
+          "recall5": 1,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-gym-treadmill",
+            "rec-run-weekend",
+            "rec-gym-run"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E06-explicit-reask",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-friday-cancel",
+            "rec-friday-meal"
+          ]
+        },
+        "G3": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-friday-cancel",
+            "rec-friday-meal"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-friday-meal",
+            "rec-friday-cancel"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E07-old-commitment-explicit",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-buy-umbrella",
+            "rec-umbrella-commitment"
+          ]
+        },
+        "G3": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-buy-umbrella",
+            "rec-umbrella-commitment"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-buy-umbrella",
+            "rec-umbrella-commitment"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E08-duplicate-sources",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "mrr": 1,
+          "ndcg5": 0.834,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-wifi-note",
+            "rec-wifi-password"
+          ]
+        },
+        "G3": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "mrr": 1,
+          "ndcg5": 0.834,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-wifi-note",
+            "rec-wifi-password"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "mrr": 1,
+          "ndcg5": 0.834,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-wifi-note",
+            "rec-wifi-password"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E09-corrected-highfreq",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 3,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 2,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "op-d42dbfa4865240e1f5cc07862180d6f9",
+            "rec-coffee-machine",
+            "rec-xiaolin-cafe"
+          ]
+        },
+        "G3": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 2,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "op-d42dbfa4865240e1f5cc07862180d6f9",
+            "rec-coffee-machine",
+            "rec-xiaolin-cafe"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 2,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "op-d42dbfa4865240e1f5cc07862180d6f9",
+            "rec-coffee-machine",
+            "rec-xiaolin-cafe"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E10-cross-space-explicit",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 1,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book"
+          ]
+        },
+        "G3": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E11-retracted-unreachable-explicit",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 1,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-lottery-warning"
+          ]
+        },
+        "G3": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-lottery-warning"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-lottery-warning"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E12-multi-term-and",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 1,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-trip-tokyo"
+          ]
+        },
+        "G3": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-trip-tokyo"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-trip-tokyo"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E13-idhit-gate",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "mrr": 1,
+          "ndcg5": 0.834,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-camera-backup",
+            "rec-x-t30-camera"
+          ]
+        },
+        "G3": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "mrr": 1,
+          "ndcg5": 0.834,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-camera-backup",
+            "rec-x-t30-camera"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-x-t30-camera",
+            "rec-camera-backup"
+          ]
+        }
+      }
+    },
+    {
+      "id": "E14-single-candidate-trivial",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 1,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-camera-bag"
+          ]
+        },
+        "G3": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-camera-bag"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-camera-bag"
+          ]
+        }
+      }
+    },
+    {
+      "id": "B01-association-no-lexical",
+      "family": "ambient",
+      "mode": "ambient",
+      "path": "ambient-association",
+      "candidateCount": 4,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "G3": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        }
+      }
+    },
+    {
+      "id": "B02-recent-delivery",
+      "family": "ambient",
+      "mode": "ambient",
+      "path": "ambient-association",
+      "candidateCount": 4,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "G3": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 0.9872,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate",
+            "rec-b-linran-movie"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        }
+      }
+    },
+    {
+      "id": "B03-suppression-decay-zone",
+      "family": "ambient",
+      "mode": "ambient",
+      "path": "ambient-association",
+      "candidateCount": 4,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "G3": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 0.9872,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate",
+            "rec-b-linran-movie"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        }
+      }
+    },
+    {
+      "id": "B04-cross-space-association",
+      "family": "ambient",
+      "mode": "ambient",
+      "path": "ambient-association",
+      "candidateCount": 4,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "G3": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        }
+      }
+    },
+    {
+      "id": "B05-retracted-ambient-unreachable",
+      "family": "ambient",
+      "mode": "ambient",
+      "path": "ambient-association",
+      "candidateCount": 4,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "G3": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        }
+      }
+    },
+    {
+      "id": "B06-sentence-situation-empty",
+      "family": "ambient",
+      "mode": "ambient",
+      "path": "ambient-association",
+      "candidateCount": 0,
+      "hasRanking": false,
+      "excludedReason": "zero-candidates",
+      "perStrategy": {
+        "A0": {
+          "skipped": true
+        },
+        "G3": {
+          "skipped": true
+        },
+        "G1G2": {
+          "skipped": true
+        }
+      }
+    },
+    {
+      "id": "C01-scan-after-index-failure",
+      "family": "fallback",
+      "mode": "explicit",
+      "path": "authoritative-scan-fallback",
+      "candidateCount": 4,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "mrr": 0.5,
+          "ndcg5": 0.6576,
+          "recall5": 1,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-run-weekend",
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "G3": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "mrr": 0.5,
+          "ndcg5": 0.6576,
+          "recall5": 1,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-run-weekend",
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "mrr": 0.5,
+          "ndcg5": 0.6576,
+          "recall5": 1,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-run-weekend",
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        }
+      }
+    },
+    {
+      "id": "C02-scan-not-wired",
+      "family": "fallback",
+      "mode": "explicit",
+      "path": "authoritative-scan-fallback",
+      "candidateCount": 4,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "mrr": 0.5,
+          "ndcg5": 0.6576,
+          "recall5": 1,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-run-weekend",
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "G3": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "mrr": 0.5,
+          "ndcg5": 0.6576,
+          "recall5": 1,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-run-weekend",
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "mrr": 0.5,
+          "ndcg5": 0.6576,
+          "recall5": 1,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-run-weekend",
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        }
+      }
+    },
+    {
+      "id": "C03-scan-old-commitment",
+      "family": "fallback",
+      "mode": "explicit",
+      "path": "authoritative-scan-fallback",
+      "candidateCount": 2,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-buy-umbrella",
+            "rec-umbrella-commitment"
+          ]
+        },
+        "G3": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-buy-umbrella",
+            "rec-umbrella-commitment"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-buy-umbrella",
+            "rec-umbrella-commitment"
+          ]
+        }
+      }
+    },
+    {
+      "id": "C04-scan-retracted",
+      "family": "fallback",
+      "mode": "explicit",
+      "path": "authoritative-scan-fallback",
+      "candidateCount": 1,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-lottery-warning"
+          ]
+        },
+        "G3": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-lottery-warning"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-lottery-warning"
+          ]
+        }
+      }
+    },
+    {
+      "id": "C05-browse-suppression",
+      "family": "fallback",
+      "mode": "ambient",
+      "path": "authoritative-scan-fallback",
+      "candidateCount": 4,
+      "hasRanking": false,
+      "excludedReason": "no-grade2-relevant",
+      "perStrategy": {
+        "A0": {
+          "skipped": true
+        },
+        "G3": {
+          "skipped": true
+        },
+        "G1G2": {
+          "skipped": true
+        }
+      }
+    },
+    {
+      "id": "C06-scan-cross-space",
+      "family": "fallback",
+      "mode": "explicit",
+      "path": "authoritative-scan-fallback",
+      "candidateCount": 1,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book"
+          ]
+        },
+        "G3": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "mrr": 1,
+          "ndcg5": 1,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book"
+          ]
+        }
+      }
+    },
+    {
+      "id": "X01-restart-determinism",
+      "family": "structural",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "G3": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "G1G2": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "recall5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        }
+      }
+    },
+    {
+      "id": "X02-shadow-zero-side-effect",
+      "family": "structural",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 4,
+      "hasRanking": false,
+      "excludedReason": "no-grade2-relevant",
+      "perStrategy": {
+        "A0": {
+          "skipped": true
+        },
+        "G3": {
+          "skipped": true
+        },
+        "G1G2": {
+          "skipped": true
+        }
+      }
+    },
+    {
+      "id": "X03-internal-readonly-events",
+      "family": "structural",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 4,
+      "hasRanking": false,
+      "excludedReason": "no-grade2-relevant",
+      "perStrategy": {
+        "A0": {
+          "skipped": true
+        },
+        "G3": {
+          "skipped": true
+        },
+        "G1G2": {
+          "skipped": true
+        }
+      }
+    },
+    {
+      "id": "X04-log-failure-honesty",
+      "family": "structural",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 4,
+      "hasRanking": false,
+      "excludedReason": "no-grade2-relevant",
+      "perStrategy": {
+        "A0": {
+          "skipped": true
+        },
+        "G3": {
+          "skipped": true
+        },
+        "G1G2": {
+          "skipped": true
+        }
+      }
+    }
+  ],
+  "activation02CrossCheck": {
+    "finding": "Activation-02 README §5.2 标注 ambient 组 10 场景，但 top1Accuracy=0.5556=5/9 的分母是 9：Q6-retracted-ambient-unreachable 的 metrics=null（撤回目标不在候选池，负可用性场景）被隐性排除，README 未显式说明。本报告的 byFamily[*].excluded 显式列名同类排除。"
+  }
+}

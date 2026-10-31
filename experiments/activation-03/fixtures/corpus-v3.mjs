@@ -126,7 +126,7 @@ export const SCENARIO_EVENTS = {
   'B02-recent-delivery': [
     { recordId: 'rec-b-linran-movie', eventType: 'delivered_reference', at: '2026-11-01T10:00:00.000Z' }
   ],
-  'B03-suppression-decay': [
+  'B03-suppression-decay-zone': [
     { recordId: 'rec-b-linran-movie', eventType: 'delivered_reference', at: '2026-11-01T02:00:00.000Z' }
   ],
   'C05-browse-suppression': [

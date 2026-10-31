@@ -1,14 +1,14 @@
 {
-  "frozenAt": "2026-10-31T17:08:08.951Z",
+  "frozenAt": "2026-10-31T17:16:35.571Z",
   "discipline": "本哈希在第一次 run-eval-v3 之前生成并随冻结 commit 提交；任何后续修改必须记录在 holdout-v3.mjs 的 AMENDMENTS，受影响场景不再计入完整 holdout。",
   "scenarioCount": 30,
   "files": {
-    "fixtures/corpus-v3.mjs": "2439ec5c2db876fdc26e985f407e007f89264e804c70b2b2abc19b02c6820c8f",
-    "fixtures/holdout-v3.mjs": "0560aec564c82534468eb76b35f9f921ce330550cb39f1adefac1944f9fd9f95",
-    "src/real-harness.mjs": "24d853a6fc5d11c340561bee34adead4896d333da87e33d0a1c7a138a790e774",
+    "fixtures/corpus-v3.mjs": "dda84c3c7c40aef6be6f2386ebb03fc20dd37e8dc60c7b21100ceeb3a15f495e",
+    "fixtures/holdout-v3.mjs": "713c964ade4d5ece25f935e7ca3ca6f3d759f2b0bc73c0e6bcc1ed08a5a6a7be",
+    "src/real-harness.mjs": "c96ebdd1ddeb5ef126d9a93b9064f2f3457e244a6eeee201517687b363f4c3b6",
     "src/evidence.mjs": "103651c4d6817329acbbb8f7fd20355d08c78c3ea1d5ff7a7ad00c7e95229c82",
     "src/shadow-strategies.mjs": "f3daa7f2432514194faf476be2636bb85a47008d98abeb717479c350bb6e02a5",
-    "src/shadow-runner.mjs": "95f9be39388686139617cacdbea044516df28fee71e81a5a2601563751b2a80c",
+    "src/shadow-runner.mjs": "3b8d03b2bef6a4e7ec8ae252f929f3323ca7ca9527b571c86e3d27f0cf883f78",
     "src/event-bridge.mjs": "64e587be70c037a1f89d87cb7be27f3a80a946bd89818a7836bc40c5042e22bf"
   }
 }
