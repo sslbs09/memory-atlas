@@ -12,8 +12,9 @@ present:
 |---|---|---|---|
 | record shape + validation | `model.js` | Core `memory-control.js` readable/validate logic | character-specific payload labels (`主题`/`状态` rendering) dropped; content is one text field with an explicit source object |
 | validity derivation | `model.js: deriveValidity` | Core `memoryHistory()` | same append-only semantics, renamed kinds (`correction`/`retraction` instead of a `memory-control` payload action) |
-| durable persistence | `store.js` | Core `instance-store.js` | one document per **memory space** instead of per character instance; same atomic replace, same compare-and-swap, same bounded transient-rename retry |
+| durable persistence | `store.js` | Core `instance-store.js` | one document per **memory space** instead of per character instance; atomic replace, bounded transient-rename retry, and **one writer per data directory** (`writer.lock`) - the CAS is a collision detector, not a cross-process guarantee |
 | read view | `query.js` | Core `memory-query.js` | adds `visibility` and a named time clock; drops character vocabulary |
+| retrieval seam | `retrieval.js` | Host `search-adapter.js` | the same SEARCH-DTO-v1 contract, spoken to a space instead of a character instance; the shape divergences GPT found between Host and the index are fixed on both sides |
 | operation receipts | `model.js: operationRecordId`, `service.js` | Host `memory-api.js` + Core control path | generalised: any append may carry an `operationId`, not only corrections |
 | HTTP surface | `http.js` | Host `server.js` | two bearer capabilities renamed `read`/`write`; same loopback-only, same never-log-tokens-or-bodies rule |
 | client | `client.js` | Host `clients/whitemoon-memory-client.mjs` | same transport rules; no authority-specific fields |

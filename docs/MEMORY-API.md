@@ -37,7 +37,8 @@ renamed parameter turns into an unnarrowed result that looks filtered.
   "records": [ ... ],
   "counts": { "total": 4, "active": 2, "effective": 1, "superseded": 1, "retracted": 0 },
   "searchPath": "atlas-authoritative-scan",
-  "index": { "state": "NOT_WIRED", "coverage": "NOT_APPLICABLE" } }
+  "index": { "state": "NOT_WIRED", "reason": null } }
+```
 ```
 
 ## Outcomes
@@ -97,6 +98,49 @@ can ask what happened instead of guessing.
 entered history), `occurredAt` (when it happened), `recordedAt` (when it was
 learned). The response echoes `timeField`. A record with no value for the chosen
 clock is excluded rather than guessed in.
+
+## Retrieval adapter (SEARCH-DTO-v1)
+
+Atlas can attach a derived index. The adapter is any module exporting
+`createRetrievalAdapter({ dataDir, derivedCacheDir })`, wired at start-up:
+
+```
+node bin/atlas-server.mjs --data-dir <dir> --retrieval-module ./my-index.mjs
+{"event":"listening","port":…,"index":{"state":"REBUILT","engine":"…","spaces":[{"spaceId":"mira","synced":true,"upserted":12,"removed":1}]}}
+```
+
+The engine is spoken to with **SEARCH-DTO-v1**, the same contract as the WhiteMoon
+Runtime Host, so one index implementation serves either service. What Atlas sends:
+`instanceId` (the space - always), `q` (canonical keyword field, only when
+non-blank), `recordId`, `since`/`until`, `limit` (overfetch by 4, clamped to the
+DTO ceiling of 200) and `offset`. What it never sends: `query` (Core's synonym,
+which the DTO refuses when it disagrees with `q`), `cursor` (mutually exclusive
+with `offset`), `status`, `kinds`, `types` or `visibility` - the DTO's `types` is a
+source-kind whitelist, not a record kind, and filtering the wrong axis loses right
+answers while looking like a narrowing.
+
+What comes back is reduced to identifiers and ranking. A candidate contributes
+`recordId`, `score`, `matchReason` (an array, as frozen), `coverage`,
+`indexRevision` and `indexState`; any `text`, adapter internals, or a
+response-level `coverage` claim is discarded, because content is the store's to
+hand out. A candidate whose `indexState` is not `INDEXED` is refused by name.
+
+| `index.state` | meaning |
+|---|---|
+| `NOT_WIRED` | no adapter attached; the exhaustive scan answered |
+| `NOT_APPLICABLE` | an adapter is attached but cannot represent this question (`index.reason` says which: `NON_ACTIVE_VIEW_NOT_INDEXED`, `NO_INDEXABLE_TERM`, `ORDER_REQUESTED`, `KEYWORD_AND_EXACT_ID`) |
+| `WIRED` | candidates ranked the answer; membership was still decided by the store |
+| `INDEX_REBUILDING` | the index is rebuilding and answered nothing, so the store did |
+| `ADAPTER_FAILED` / `ADAPTER_REFUSED` | the index threw / rejected the request shape; the store answered anyway, and `index.fault.code` names it |
+
+Served records on the wired path carry `score`, `matchReason`, `coverage`,
+`indexRevision` and `indexStale`. `index.residue` lists every candidate that was
+offered and refused, with the reason (`NOT_IN_FORMAL_HISTORY`, `NOT_EFFECTIVE`,
+`KIND_FILTERED`, `VISIBILITY_FILTERED`, `TIME_FILTERED`, `STALE_PROJECTION`), and
+`index.rejectedCandidates` lists candidates refused before the store was consulted.
+Deep pages are reached by walking successive index windows (`index.windows`,
+`index.windowCapReached`) - a bounded walk that announces its own bound through
+`hasMore` rather than claiming a complete listing.
 
 ## Relationship to the WhiteMoon Memory API
 

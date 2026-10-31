@@ -38,13 +38,33 @@ What follows honestly:
 
 ## Retrieval
 
-- Search is lexical substring matching over the whole space document. Chinese
-  short terms, names, codes and stable ids work; synonyms and paraphrases do
-  not. Recall quality beyond that is the retrieval backend's job.
+- Search without an index is lexical substring matching over the whole space
+  document. Chinese short terms, names, codes and stable ids work; synonyms and
+  paraphrases do not.
+- **A retrieval index can be attached** (`--retrieval-module`, see
+  `docs/MEMORY-API.md`). It ranks; it does not admit. Every candidate is
+  re-checked against the authoritative document, so an index that is stale,
+  drifted or dishonest cannot serve a record the store would not serve - measured
+  by `test/retrieval.test.js` (E4, E5, E14).
+- The index is a projection, not a second memory: it is rebuilt from the store at
+  start-up and reconciled after each accepted write, and its bytes are reported
+  as `capacity.derivedCacheBytes`, separately from
+  `capacity.authoritativeBytes` (E11). Deleting it loses speed only.
+- Pagination over an index-assisted answer walks successive windows and stops at
+  `RETRIEVAL_MAX_WINDOWS` (4). A page beyond that bound is reported by
+  `index.windowCapReached` and `hasMore: true`, not as an empty end of the list.
+- The candidate ceiling is the DTO's 200 per window. A space with far more
+  effective matches than that, for one query, is narrowed by the walk limit rather
+  than by relevance - stated here because the number is a real boundary.
 - Time filtering is server-side and exhaustive (verified: a fixed 7-day window
   matched 12,502 of 50,000 and 25,004 of 100,000 records - the window narrows the
-  whole history, not a page).
-- No index is claimed when none is wired: `index.state` is `NOT_WIRED`.
+  whole history, not a page). On the index-assisted path the same window is applied
+  to candidates after the authoritative re-read, never trusted from the index.
+- A derived index holds a copy of the space's text - that is what makes matching
+  fast. It is inside the operator's own cache directory, and it carries the same
+  secrets as the store; deleting the store does not delete it until the projection
+  is dropped, which is why a retraction removes the record from the index in the
+  same request (E5).
 
 ## Concurrency
 

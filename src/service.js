@@ -29,7 +29,8 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { SpaceStore } from './store.js';
 import { assertId, createRecord, deriveValidity, isIdLike, operationRecordId, sameRecordSemantics, DEFAULT_RETRACTION_TEXT } from './model.js';
-import { detailSpace, querySpace } from './query.js';
+import { detailSpace } from './query.js';
+import { createRetrievalCoordinator, spaceProjection } from './retrieval.js';
 
 export const SERVICE_VERSION = 'memory-atlas-v0.1';
 
@@ -246,11 +247,20 @@ export class NativeAuthority {
 /**
  * The service is the part a client talks to. It owns the policy that recall is
  * effective-only and that a retrieval candidate is only a suggestion.
+ *
+ * `retrieval` is an optional derived index speaking SEARCH-DTO-v1 (see
+ * retrieval.js). Attaching one changes the ranking and the cost of an answer,
+ * never its membership: the authoritative document still decides what exists.
  */
-export function createMemoryService({ authority, capacityTargetBytes = 20_000_000_000, derivedCacheDir = null } = {}) {
+export function createMemoryService({ authority, capacityTargetBytes = 20_000_000_000,
+  derivedCacheDir = null, retrieval = null } = {}) {
   if (!authority || typeof authority.inspect !== 'function') {
     throw new Error('createMemoryService requires an authority exposing inspect(spaceId).');
   }
+  if (retrieval !== null && retrieval !== undefined && typeof retrieval.searchCandidates !== 'function') {
+    throw new Error('A retrieval adapter must provide searchCandidates(params) per SEARCH-DTO-v1.');
+  }
+  const index = retrieval && typeof retrieval.searchCandidates === 'function' ? retrieval : null;
   const cacheDir = derivedCacheDir ?? path.join(authority.dataDir ?? process.cwd(), 'derived-cache');
 
   // A space whose history is empty and a space that cannot be read are
@@ -259,20 +269,66 @@ export function createMemoryService({ authority, capacityTargetBytes = 20_000_00
     return authority.inspect(spaceId);
   }
 
+  const retrievalSearch = createRetrievalCoordinator({ inspect: read, getAdapter: () => index });
+
   async function search({ spaceId, ...options } = {}) {
     assertId(spaceId, 'spaceId');
     const inspected = read(spaceId);
     if (!inspected.available) return unavailable(spaceId, inspected.reason);
     // Recall defaults to what currently stands. An audit view is explicit.
     const merged = { status: 'active', ...options };
-    const view = querySpace(inspected.spaceDoc, inspected.validity, merged);
+    const view = await retrievalSearch.search({ spaceId, options: merged });
     // Echo the filter that actually ran: a page of effective records and a
     // page of the whole history look identical unless the answer says which.
-    return withSearchPath({ ...view, appliedFilters: { status: merged.status, visibility: merged.visibility ?? 'all' } });
+    return { ...view, appliedFilters: { status: merged.status, visibility: merged.visibility ?? 'all' } };
   }
 
-  function withSearchPath(view) {
-    return { ...view, searchPath: 'atlas-authoritative-scan', index: { state: 'NOT_WIRED', coverage: 'NOT_APPLICABLE' } };
+  /**
+   * Push one space's authoritative state into the derived index. Upserting the
+   * effective records and removing the rest is the whole rule, which is why the
+   * same call rebuilds from nothing and reconciles after a crash.
+   *
+   * A write that landed is never undone by an index that refused it: the failure
+   * is announced, the memory stays, and the next sync or reindex repairs the
+   * derived copy.
+   */
+  function syncIndex(spaceId) {
+    if (!index) return { synced: false, reason: 'NO_RETRIEVAL_ADAPTER' };
+    if (typeof index.upsertRecords !== 'function' && typeof index.removeRecords !== 'function') {
+      return { synced: false, reason: 'ADAPTER_IS_READ_ONLY' };
+    }
+    const inspected = read(spaceId);
+    if (!inspected.available) return { synced: false, reason: inspected.reason };
+    const projection = spaceProjection(inspected.spaceDoc, inspected.validity);
+    if (projection.upserts.length && typeof index.upsertRecords === 'function') index.upsertRecords(projection.upserts);
+    if (projection.removals.length && typeof index.removeRecords === 'function') index.removeRecords(projection.removals);
+    return { synced: true, upserted: projection.upserts.length, removed: projection.removals.length };
+  }
+
+  function syncAfterWrite(spaceId) {
+    try {
+      const result = syncIndex(spaceId);
+      if (result.synced) return result;
+      // A read-only adapter is a legitimate choice, not a fault to shout about.
+      if (result.reason !== 'ADAPTER_IS_READ_ONLY' && result.reason !== 'NO_RETRIEVAL_ADAPTER') {
+        process.stderr.write(`[atlas] derived index not synced for "${spaceId}": ${result.reason}\n`);
+      }
+      return result;
+    } catch (error) {
+      process.stderr.write(`[atlas] derived index rejected the sync for "${spaceId}": ${error.message} ` +
+        'The memory itself is stored; run reindex() after fixing the index.\n');
+      return { synced: false, reason: 'ADAPTER_SYNC_FAILED' };
+    }
+  }
+
+  async function reindex(spaceId) {
+    const ids = spaceId === undefined ? authority.listSpaces().spaceIds : [spaceId];
+    const spaces = [];
+    for (const id of ids) {
+      if (!index) throw new Error('reindex() requires a retrieval adapter that accepts projections.');
+      spaces.push({ spaceId: id, ...syncIndex(id) });
+    }
+    return { engine: index.name ?? null, spaces };
   }
 
   async function detail({ spaceId, recordId }) {
@@ -282,14 +338,36 @@ export function createMemoryService({ authority, capacityTargetBytes = 20_000_00
     return detailSpace(inspected.spaceDoc, inspected.validity, recordId);
   }
 
+  async function record(spaceId, input, options) {
+    const receipt = await authority.append(spaceId, input, options);
+    if (receipt.accepted) syncAfterWrite(spaceId);
+    return receipt;
+  }
+
+  async function control(spaceId, input, action) {
+    const receipt = await authority.control(spaceId, { ...input, action });
+    // A correction changes what is effective and a retraction ends a record's
+    // standing; both have to reach the derived index or the next search answers
+    // from a projection of a memory that no longer stands.
+    if (receipt.accepted) syncAfterWrite(spaceId);
+    return receipt;
+  }
+
   return {
     version: SERVICE_VERSION,
     authority,
     search,
     detail,
-    record: (spaceId, record, options) => authority.append(spaceId, record, options),
-    correct: (spaceId, control) => authority.control(spaceId, { ...control, action: 'correct' }),
-    retract: (spaceId, control) => authority.control(spaceId, { ...control, action: 'retract' }),
+    record,
+    correct: (spaceId, input) => control(spaceId, input, 'correct'),
+    retract: (spaceId, input) => control(spaceId, input, 'retract'),
+    reindex,
+    retrieval,
+    indexStatus: () => ({
+      wired: Boolean(index),
+      engine: index ? (index.name ?? null) : null,
+      acceptsProjections: Boolean(index && typeof index.upsertRecords === 'function')
+    }),
     operation: (spaceId, operationId) => authority.resolveOperation(spaceId, operationId),
     spaces: () => authority.listSpaces(),
     createSpace: (input) => authority.createSpace(input),
@@ -320,7 +398,18 @@ export function createMemoryService({ authority, capacityTargetBytes = 20_000_00
           note: 'The target is an observation budget. Reaching it never discards, truncates or refuses a record.'
         },
         derivedCache: cache,
-        index: { state: 'NOT_WIRED', coverage: 'NOT_APPLICABLE', rebuildableFrom: 'authoritative records' }
+        index: index
+          ? {
+            state: 'WIRED',
+            engine: index.name ?? null,
+            // Read from the adapter, not asserted because an object was passed
+            // in: "wired" and "ready" are two different claims.
+            generation: Number.isSafeInteger(index.indexGeneration) ? index.indexGeneration : null,
+            open: typeof index.isOpen === 'boolean' ? index.isOpen : null,
+            acceptsProjections: typeof index.upsertRecords === 'function',
+            rebuildableFrom: 'authoritative records'
+          }
+          : { state: 'NOT_WIRED', reason: 'NO_ADAPTER_ATTACHED', rebuildableFrom: 'authoritative records' }
       };
     }
   };

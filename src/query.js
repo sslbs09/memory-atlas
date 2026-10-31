@@ -79,9 +79,14 @@ function assertOptions(options) {
  * @param {object} spaceDoc the authoritative space document
  * @param {object} validity result of deriveValidity(spaceDoc.records)
  */
-export function querySpace(spaceDoc, validity, options = {}) {
-  const timeField = assertOptions(options);
-  const all = spaceDoc.records.map((record) => ({
+/**
+ * The authoritative list-view shape of every record in a space. Both the
+ * exhaustive scan and a retrieval-assisted answer read records through this and
+ * through `admits`/`servedRecord` below, so wiring an index cannot change what a
+ * record looks like, which filters apply, or what counts as effective.
+ */
+export function shapedRecords(spaceDoc, validity) {
+  return spaceDoc.records.map((record) => ({
     recordId: record.recordId,
     spaceId: spaceDoc.spaceId,
     kind: record.kind,
@@ -100,6 +105,43 @@ export function querySpace(spaceDoc, validity, options = {}) {
     timestamp: record.recordedAt,
     sequence: record.sequence
   }));
+}
+
+/**
+ * Does this record pass the caller's filters? Nothing here is index-derived:
+ * kinds, status, visibility and the time window are judged on the authoritative
+ * record. A retrieval candidate that fails is refused, however well it scored.
+ */
+export function admits(record, options, timeField) {
+  if (options.kinds && !options.kinds.includes(record.kind)) return false;
+  if (options.status && options.status !== 'all' && record.status !== options.status) return false;
+  if (options.visibility && options.visibility !== 'all' && record.visibility !== options.visibility) return false;
+  if (options.since !== undefined || options.until !== undefined) {
+    const from = options.since === undefined ? -Infinity : Date.parse(options.since);
+    const to = options.until === undefined ? Infinity : Date.parse(options.until);
+    const at = Date.parse(String(record[timeField] ?? ''));
+    if (!Number.isFinite(at)) return false;
+    if (at < from || at > to) return false;
+  }
+  return true;
+}
+
+/** One surviving record as it is served: correction neighbourhood in, content on request. */
+export function servedRecord(record, { byId, validity, includeContent }) {
+  const changedBy = validity.changedBy.get(record.recordId);
+  const shaped = {
+    ...record,
+    ...(changedBy ? { changedBy } : {}),
+    ...(CONTROL_KINDS.has(record.kind) && byId.has(record.aboutRecordId)
+      ? { about: { recordId: record.aboutRecordId, status: byId.get(record.aboutRecordId).status } }
+      : {})
+  };
+  return includeContent === false ? (({ content, ...rest }) => ({ ...rest, contentLength: content.length }))(shaped) : shaped;
+}
+
+export function querySpace(spaceDoc, validity, options = {}) {
+  const timeField = assertOptions(options);
+  const all = shapedRecords(spaceDoc, validity);
   const byId = new Map(all.map((record) => [record.recordId, record]));
 
   let matched = all;
@@ -118,34 +160,15 @@ export function querySpace(spaceDoc, validity, options = {}) {
       });
     }
   }
-  if (options.kinds) matched = matched.filter((r) => options.kinds.includes(r.kind));
-  if (options.status && options.status !== 'all') matched = matched.filter((r) => r.status === options.status);
-  if (options.visibility && options.visibility !== 'all') matched = matched.filter((r) => r.visibility === options.visibility);
-  if (options.since !== undefined || options.until !== undefined) {
-    const from = options.since === undefined ? -Infinity : Date.parse(options.since);
-    const to = options.until === undefined ? Infinity : Date.parse(options.until);
-    matched = matched.filter((r) => {
-      const at = Date.parse(String(r[timeField] ?? ''));
-      return Number.isFinite(at) && at >= from && at <= to;
-    });
-  }
+  matched = matched.filter((record) => admits(record, options, timeField));
   if (outcome !== 'NO_MATCH') {
     matched.sort((a, b) => (options.order === 'oldest' ? a.sequence - b.sequence : b.sequence - a.sequence));
     outcome = matched.length > 0 ? 'MATCHED' : 'NO_MATCH';
   }
   const limit = options.limit ?? DEFAULT_LIMIT;
   const offset = options.offset ?? 0;
-  const page = matched.slice(offset, offset + limit).map((record) => {
-    const changedBy = validity.changedBy.get(record.recordId);
-    const shaped = {
-      ...record,
-      ...(changedBy ? { changedBy } : {}),
-      ...(CONTROL_KINDS.has(record.kind) && byId.has(record.aboutRecordId)
-        ? { about: { recordId: record.aboutRecordId, status: byId.get(record.aboutRecordId).status } }
-        : {})
-    };
-    return options.includeContent === false ? (({ content, ...rest }) => ({ ...rest, contentLength: content.length }))(shaped) : shaped;
-  });
+  const page = matched.slice(offset, offset + limit)
+    .map((record) => servedRecord(record, { byId, validity, includeContent: options.includeContent }));
 
   return {
     outcome,
@@ -158,13 +181,22 @@ export function querySpace(spaceDoc, validity, options = {}) {
     returned: page.length,
     hasMore: offset + page.length < matched.length,
     records: page,
-    counts: {
-      total: spaceDoc.records.length,
-      active: spaceDoc.records.filter((r) => validity.statuses.get(r.recordId) === 'active').length,
-      effective: validity.effective.length,
-      superseded: spaceDoc.records.filter((r) => validity.statuses.get(r.recordId) === 'superseded').length,
-      retracted: spaceDoc.records.filter((r) => validity.statuses.get(r.recordId) === 'retracted').length
-    }
+    counts: spaceCounts(spaceDoc, validity)
+  };
+}
+
+/**
+ * How large the space is, independent of the question asked of it. Both answers -
+ * scanned and index-assisted - carry the same counters, because the size of the
+ * archive is not something an index gets to redefine.
+ */
+export function spaceCounts(spaceDoc, validity) {
+  return {
+    total: spaceDoc.records.length,
+    active: spaceDoc.records.filter((r) => validity.statuses.get(r.recordId) === 'active').length,
+    effective: validity.effective.length,
+    superseded: spaceDoc.records.filter((r) => validity.statuses.get(r.recordId) === 'superseded').length,
+    retracted: spaceDoc.records.filter((r) => validity.statuses.get(r.recordId) === 'retracted').length
   };
 }
 

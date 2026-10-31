@@ -8,9 +8,10 @@ It runs on its own: no desktop pet, no character runtime, no model, no build
 step. Node 20+ and nothing else.
 
 ```
-npm test                      # 24 tests, all green on this machine
+npm test                      # node --test "test/*.test.js" - see Verification below
 node bin/atlas-demo.mjs       # full walkthrough against real HTTP on loopback
 node bin/atlas-server.mjs --data-dir <Memory Atlas repo>Data --port 8791
+node bin/atlas-server.mjs --retrieval-module ./my-index.mjs   # attach a derived index
 ATLAS_READ_TOKEN=... node bin/atlas-query.mjs --space mira --query 桂花
 ```
 
@@ -75,6 +76,7 @@ src/store.js      per-space JSON documents: atomic replace, compare-and-swap,
 src/query.js      the read view: keyword / id / kind / status / visibility /
                   time window / pagination, and the outcome vocabulary
 src/service.js    the Memory Service and the native authority
+src/retrieval.js  the SEARCH-DTO-v1 seam: an attached index ranks, the store admits
 src/http.js       the unified Memory API (loopback, two bearer capabilities)
 src/client.js     standalone Node client - no Electron, no harness
 src/adapters/     delegated authorities (WhiteMoon Host over HTTP)
