@@ -27,9 +27,42 @@ function run(dir, tag, count = 60) {
     child.stderr.on('data', (chunk) => { err += chunk; });
     child.on('exit', (code) => {
       let parsed = null;
+      // The report is always the last line; the lock signal is an earlier one.
       try { parsed = JSON.parse(out.trim().split('\n').pop()); } catch { parsed = null; }
       resolve({ code, result: parsed, stderr: err });
     });
+  });
+}
+
+/**
+ * Wait for one machine-readable signal line from a child, and fail loudly if the
+ * child dies without it. Tests that kill a writer need this: a sleep says nothing
+ * about whether the claim is actually held at the moment of the kill, and a child
+ * that finished early would have released the lock the test is about to inspect.
+ */
+function waitForSignal(child, event, { timeoutMs = 25000 } = {}) {
+  return new Promise((resolve, reject) => {
+    let buffer = '';
+    const deadline = setTimeout(() => {
+      cleanup();
+      reject(new Error(`no "${event}" signal within ${timeoutMs}ms; output so far: ${buffer || '(none)'}`));
+    }, timeoutMs);
+    const onData = (chunk) => {
+      buffer += chunk;
+      const line = buffer.split('\n').find((entry) => entry.includes(`"event":"${event}"`));
+      if (line) { cleanup(); resolve(JSON.parse(line)); }
+    };
+    const onExit = (code) => {
+      cleanup();
+      reject(new Error(`child exited (${code}) before signalling "${event}"; output: ${buffer || '(none)'}`));
+    };
+    function cleanup() {
+      clearTimeout(deadline);
+      child.stdout.off('data', onData);
+      child.off('exit', onExit);
+    }
+    child.stdout.on('data', onData);
+    child.once('exit', onExit);
   });
 }
 
@@ -58,13 +91,27 @@ test('L2 a stale lock from a killed writer is reclaimed and the reclaim is annou
   const holder = spawn(process.execPath, [HELPER, dir, 'HOLD', '400'], {
     cwd: ROOT, env: { ...process.env, TEMP: process.env.TEMP, TMP: process.env.TMP }
   });
-  await new Promise((resolve) => {
-    const timer = setTimeout(resolve, 1500);
-    holder.stdout.once('data', () => { clearTimeout(timer); resolve(); });
-  });
+  t.after(() => { if (holder.exitCode === null) holder.kill('SIGKILL'); });
+  holder.stderr.resume();
+
+  // The old version of this test slept 1.5s, or took the first byte of stdout, and
+  // then killed. Neither is a fact about the lock: the helper prints its report only
+  // when it is done, so a fast run would have killed a process that had already
+  // released the claim, and the "stale lock" assertions below would have been reading
+  // an empty directory. This waits for the helper to say the claim is held, by this
+  // pid, with a record on disk - and refuses to proceed if it never says so.
+  const heldPath = path.join(dir, 'writer.lock');
+  const signal = await waitForSignal(holder, 'locked');
+  assert.equal(signal.tag, 'HOLD');
+  assert.equal(signal.pid, holder.pid, 'the signal comes from the process that holds the claim');
+  assert.ok(signal.acknowledged >= 1, 'at least one record landed under that claim');
+  assert.ok(fs.existsSync(heldPath), 'the lock file exists while the holder is alive');
+  assert.equal(JSON.parse(fs.readFileSync(heldPath, 'utf8')).pid, holder.pid, 'and names that live holder');
+
   holder.kill('SIGKILL');
-  await new Promise((resolve) => holder.on('exit', resolve));
-  assert.ok(fs.existsSync(path.join(dir, 'writer.lock')), 'a killed process cannot release its lock');
+  const death = await new Promise((resolve) => holder.once('exit', (code, signalName) => resolve({ code, signalName })));
+  assert.equal(death.signalName, 'SIGKILL', 'the holder died mid-work, it did not finish and clean up');
+  assert.ok(fs.existsSync(heldPath), 'a killed process cannot release its lock');
 
   const second = spawn(process.execPath, [HELPER, dir, 'RECLAIM', '5'], {
     cwd: ROOT, env: { ...process.env, TEMP: process.env.TEMP, TMP: process.env.TMP }
@@ -74,10 +121,21 @@ test('L2 a stale lock from a killed writer is reclaimed and the reclaim is annou
   second.stdout.on('data', (chunk) => { out += chunk; });
   second.stderr.on('data', (chunk) => { err += chunk; });
   await new Promise((resolve) => second.on('exit', resolve));
-  const parsed = JSON.parse(out.trim().split('\n').pop());
+  const lines = out.trim().split('\n').filter((line) => line.startsWith('{'));
+  const claimed = JSON.parse(lines.find((line) => /"event":"locked"/.test(line)));
+  const parsed = JSON.parse(lines[lines.length - 1]);
   assert.equal(parsed.lockRefused, false, 'a crashed predecessor must not wedge the directory forever');
   assert.ok(parsed.acknowledged > 0);
+  assert.equal(claimed.pid, second.pid, 'the reclaimer really is this process, and it took the claim');
   assert.match(err, /reclaimed a stale writer lock/, 'the takeover has to be visible, not silent');
+  assert.match(err, new RegExp(`pid ${signal.pid}`), 'and it has to name the predecessor it took over from');
+  // A clean exit releases the claim, so the file is gone by now - what matters is
+  // that the reclaimed store was readable and appendable, not reset.
+  assert.equal(fs.existsSync(heldPath), false, 'the reclaimer released its own lock when it finished');
+  const space = JSON.parse(fs.readFileSync(path.join(dir, 'spaces', 'race.json'), 'utf8'));
+  const ids = space.records.map((record) => record.recordId);
+  assert.ok(ids.some((id) => id.startsWith('HOLD-')), 'the killed writer\'s landed records survive the takeover');
+  assert.ok(ids.some((id) => id.startsWith('RECLAIM-')), 'and the new writer appends to them');
 });
 
 test('L3 two stores in one process share the write queue instead of racing', async (t) => {

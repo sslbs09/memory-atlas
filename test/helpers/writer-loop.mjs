@@ -15,10 +15,21 @@ try {
   const authority = new NativeAuthority({ dataDir });
   if (!authority.store.exists('race')) await authority.createSpace({ spaceId: 'race' });
   const service = createMemoryService({ authority });
+  let announced = false;
   for (let i = 0; i < count; i += 1) {
     try {
       const receipt = await service.record('race', { recordId: `${tag}-${i}`, content: `${tag} 第 ${i} 条` });
       if (receipt.accepted) report.acknowledged += 1;
+      // Two kinds of output line: this one is the synchronisation signal, the last
+      // one is the report. A test that wants to kill a live writer has to know the
+      // claim is really held - the lock file exists, names this pid, and at least
+      // one record has landed - instead of guessing from a sleep or from the first
+      // byte of stdout.
+      if (!announced && receipt.accepted) {
+        announced = true;
+        process.stdout.write(`${JSON.stringify({ event: 'locked', tag, pid: process.pid,
+          recordId: receipt.recordId, acknowledged: report.acknowledged })}\n`);
+      }
     } catch (error) {
       report.errors.push(error.code ?? error.message);
     }
