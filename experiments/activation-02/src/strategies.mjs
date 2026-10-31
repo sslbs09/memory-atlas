@@ -185,7 +185,7 @@ export function applyTierGate(scoredSorted) {
         const blocker = order[lastBetter - 1];
         moves.push({
           recordId: c.breakdown.recordId, fromRank: i + 1, toRank: lastBetter + 1,
-          reason: `tier 闸门：${c.tier.tierName}(${c.breakdown.recordId}) 不得越过 ${blocker.tier.tierName}(${blocker.breakdown.recordId})`
+          reason: `tier 闸门：${c.tier.name}(${c.breakdown.recordId}) 不得越过 ${blocker.tier.name}(${blocker.breakdown.recordId})`
         });
         fixed = true;
         break;

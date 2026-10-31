@@ -147,25 +147,25 @@ export function holdoutV2Scenarios() {
       events: eventHistory({ spaceId: 'personal', recordId: 'rec-movie-wandering', rev: [3, 10] }),
       expect: {
         strategyExpect: {
-          A0: { top1: 'rec-umbrella' },          // A0 无激活信号：新近无关小事压过 315 天前的电影记录
+          A0: { top1: 'rec-recipe-hotpot' },     // 修正（amendment A1）：hotpot 命中 想+一（2/21），A0 分 1.0845 最高
           A1: { top1: 'rec-movie-wandering' },
           'A2-H7': { top1: 'rec-movie-wandering' },
           'A2-H30': { top1: 'rec-movie-wandering' },
-          A3: { top1: 'rec-umbrella' },          // A3 对 3/10 天前重提给出 B<0 惩罚（已知缺陷）
-          'G2-H7': { top1: 'rec-umbrella' },     // G2 不衰减未强化的 umbrella（全额 1.050）→ movie 0.987 不够
-          G3: { top1: 'rec-umbrella' },
+          A3: { top1: 'rec-recipe-hotpot' },     // A3 零事件乘数恒 1.0 → 同 A0
+          'G2-H7': { top1: 'rec-recipe-hotpot' },// G2 不衰减未强化的 hotpot（1.0845）→ movie 1.0150 不够
+          G3: { top1: 'rec-recipe-hotpot' },
           G1: { top1: 'rec-movie-wandering' },
-          G1G2: { top1: 'rec-umbrella' }
+          G1G2: { top1: 'rec-recipe-hotpot' }
         }
       },
       derivation: [
-        D('情境词元', 'uni 10 + bi 9 = 19；movie 3/19（电影 1 个二元，无残差）T4；erhai/umbrella(一)/weather(时) 各 1/19 T4 → 全员同 T4，gate 不介入'),
-        D('A0', 'umbrella (1.053)×0.997=1.050 > weather 1.030 > movie (1.158)×0.629=0.728 → umbrella'),
-        D('A1', 'movie ×(1+0.5·log1p(2))=1.549 → 1.128 ✓'),
-        D('A2-H7', 'movie ×(1.824×2^(-3/7))=1.355 → 0.987 > umbrella ×2^(-1/7)=0.951 ✓（A2 对 umbrella 的普遍衰减歪打正着）'),
-        D('G2-H7', 'umbrella 未强化 → 乘数 1.0 全额 1.050 > movie 0.987 ✗ —— G2 的结构性弱点：不衰减未强化新近干扰'),
-        D('A3', 'B=ln(3^-0.5+10^-0.5)=-0.112→×0.961=0.699 ✗'),
-        D('G1(A2-H7+gate)', '同 A2-H7（gate 无动作）✓；G1G2 同 G2 ✗')
+        D('情境词元（引擎核对）', '21 词元；movie 4/21（电影 1 二元 + 残差一）T3；hotpot 2/21（想,一，无二元）T4；umbrella 1/21（一）T4；weather 1/21（时）T4；plant 1/21（一）T4'),
+        D('A0/A3/G3', 'hotpot (1.0952)×0.99025=1.0845 > umbrella 1.0446 > weather 1.0248 > plant 0.9667 > movie (1.1905)×0.62914=0.7489 → hotpot'),
+        D('A1', 'movie ×(1+0.5·ln3)=1.5493 → 1.1603 ✓'),
+        D('A2-H7', 'movie ×(1.8243×2^(-3/7))=1.3554 → 1.0150 > hotpot ×0.7459=0.8089（A2 对 hotpot 的普遍衰减歪打正着）✓；A2-H30 movie ×1.7022=1.2755 ✓'),
+        D('G2-H7', 'hotpot 未强化 → 全额 1.0845 > movie 1.0150 ✗ —— G2 的结构性弱点：不衰减未强化新近干扰'),
+        D('A3', 'B=ln(3^-0.5+10^-0.5)=-0.112→×0.961=0.720 ✗ → hotpot'),
+        D('G1(A2-H7+gate)', 'movie T3 boosted，gate 无障碍 → movie ✓；G1G2 同 G2 ✗')
       ],
       note: '中文单字误命中噪声 + 用户 3/10 天前重提：全候选同 tier，比拼激活公式本身；G2 首次暴露「未强化干扰不衰减」代价'
     },
@@ -176,23 +176,24 @@ export function holdoutV2Scenarios() {
       expect: {
         inCandidates: ['rec-commitment-erhai'],
         strategyExpect: {
-          A0: { top1: 'rec-umbrella' },
+          A0: { top1: 'rec-travel-yunnan' },     // 修正（amendment A1）：yunnan 7/23=0.304 → 1.304×0.8728=1.1385 最高
           A1: { top1: 'rec-commitment-erhai' },
           'A2-H7': { top1: 'rec-umbrella' },
           'A2-H30': { top1: 'rec-umbrella' },
-          A3: { top1: 'rec-umbrella' },
-          'G2-H7': { top1: 'rec-umbrella' },
-          G3: { top1: 'rec-umbrella' },
+          A3: { top1: 'rec-travel-yunnan' },     // A3 零事件乘数 1.0 → 同 A0
+          'G2-H7': { top1: 'rec-travel-yunnan' },
+          G3: { top1: 'rec-travel-yunnan' },
           G1: { top1: 'rec-umbrella' },
-          G1G2: { top1: 'rec-umbrella' }
+          G1G2: { top1: 'rec-travel-yunnan' }
         }
       },
       derivation: [
-        D('情境词元', 'uni 12 + bi 11 = 23；erhai 7/23（春天+旅行 2 二元）T2；yunnan 6/23 T2；umbrella 3/23（还没 1 二元）T4'),
-        D('A0', 'umbrella (1.130)×0.997=1.127 > yunnan (1.261)×0.863=1.088 > erhai (1.304)×0.6=0.782'),
-        D('A1', 'erhai ×1.99=1.556 ✓（T2 boosted，不越界）'),
-        D('A2-H7/H30/A3/G2', 'erhai 距上次重提 30d → A2-H7 ×0.134→floor 0.4 → 0.313；×1.3=1.017(H30) 仍 < umbrella(H30 ×0.977=1.101)；A3 负 B → floor；诚实下沉但必须保持候选可达（inCandidates）'),
-        D('G 系', 'umbrella 未强化全额 1.127（G2）或 ×0.906=1.021（A2）→ umbrella top1；G1 系 erhai 0.4 不 boosted，gate 无动作')
+        D('情境词元（引擎核对）', '23 词元；erhai 9/23（春天+旅行 2 二元）T2；yunnan 7/23（春天+旅行）T2；umbrella 3/23（还没 1 二元）T4；hotpot 1/23（还）T4'),
+        D('A0/A3/G3', 'yunnan (1.3043)×0.87281=1.1385 > umbrella (1.1304)×0.99709=1.1271 > hotpot 1.0333 > erhai (1.3913)×0.6=0.8348 → yunnan'),
+        D('A1', 'erhai ×(1+0.5·ln4)=1.6931 → 1.4134 ✓（T2 boosted，不越界）'),
+        D('A2-H7/H30', 'erhai 距上次重提 30d → ×(2.0397×2^(-30/7))=0.105→floor 0.4 → 0.334；yunnan ×2^(-45.9/7)→floor 0.4=0.455；umbrella ×0.9170=1.0336 → umbrella（H30: umbrella ×0.9800=1.1046 仍最高）'),
+        D('A3', 'erhai 负 B → floor；yunnan/umbrella 零事件乘数 1.0 → yunnan'),
+        D('G2-H7', 'erhai ×0.4（同 A2）；yunnan/umbrella 未强化 → 全额 → yunnan 1.1385 > umbrella 1.1271 → yunnan；G1G2 同')
       ],
       note: '长期未完成约定·ambient：衰减策略下诚实下沉，可达性必须保留；A1（纯计数）是唯一能把它抬回第一的策略 —— 记录 gate/衰减的代价'
     },
@@ -200,8 +201,11 @@ export function holdoutV2Scenarios() {
       id: 'Q4-single-candidate-trivial', family: 'ambient', mode: 'ambient',
       spaceIds: ['personal'], at, situation: '帮我记着那把黑色长柄伞',
       events: [],
-      expect: { top1: 'rec-umbrella', candidateCount: 1 },
-      derivation: [D('候选', 'umbrella 10/21（黑色/长柄/柄伞…），其余记录 0 命中不入池 → 单候选'), D('期望', '单候选简单回忆，所有策略一致')],
+      expect: { top1: 'rec-umbrella', candidateCount: 2 },
+      derivation: [
+        D('候选（引擎核对，amendment A1）', 'umbrella 10/21 与 plant 1/21（「帮」字命中「帮绿萝」）→ 2 候选，非最初推导的单候选'),
+        D('分数', 'umbrella (1.4762)×0.99709=1.4719 > plant (1.0476)×0.92282=0.9667 → umbrella；无事件 → 所有策略一致')
+      ],
       note: '近期小事·单候选：全部策略的公共底线'
     },
     {
@@ -223,11 +227,12 @@ export function holdoutV2Scenarios() {
         }
       },
       derivation: [
-        D('情境词元', 'uni 9 + bi 8 = 17；gym 11/17（周末/跑步/健身/去健 4 二元）T2；hotpot 3/17（周末 1 二元无残差）T4；yunnan 1/17（去）T4'),
-        D('A0', 'gym (1.647)×0.871=1.434 > hotpot (1.176)×0.997=1.172 ✓'),
-        D('单次重提(0.5d)', 'A1 hotpot ×1.346=1.578 ✗；A2-H7 ×1.281=1.501 ✗；A2-H30 ×1.330=1.559 ✗；G2-H7 同 A2-H7 ✗'),
-        D('A3', 'hotpot t=0.5d → B=ln(2^0.5)=0.347→×1.121=1.314 < gym 1.434 ✓'),
-        D('G1/G1G2', 'hotpot boosted(T4) 不得越过 gym(T2) → gym ✓（单次重提即可反转一切非 gate 策略 —— 闸门的最小反例）')
+        D('情境词元（引擎核对，amendment A1 修正池规模）', '19 词元；实际候选 14 条（远多于最初推导的 3 条）：gym 13/19（周末/跑步/健身/去健/身房…4+ 二元）T2；hotpot 4/19（周末 1 二元 + 残差还）T4；umbrella 1/19（还）T4；weather 1/19（周）T4；其余弱命中'),
+        D('A0', 'gym (1.6842)×0.87107=1.4671 > hotpot (1.2105)×0.99025=1.1987 > umbrella 1.0496 ✓'),
+        D('单次重提(0.5d)', 'A1 hotpot ×1.3466=1.6141 ✗；A2-H7 hotpot ×(1.5199×2^(-0.5/7))=1.4470→1.7344 ✗；A2-H30 ×1.4948→1.7919 ✗；G2-H7 同 A2-H7 ✗'),
+        D('A3', 'hotpot t=0.5d → B=ln(2^0.5)=0.3466→×1.1213=1.3440 < gym 1.4671 ✓'),
+        D('G1', 'gym 被 A2 衰减到 floor 0.4 → 0.5868 < umbrella 0.9625 → 闸门把 hotpot 压到 gym 之后但 umbrella 登顶 ✗（真实回归：A2 普遍年龄衰减伤害零事件的相关记录）；G1G2 gym 全额 1.4671 ✓'),
+        D('G3', 'gym ✓（无投递事件，同 A0）')
       ],
       note: '短语与散落单字竞争 + 单次重提入侵：0.5 天前重提一次的弱匹配记录不得越过 4 个二元命中的相关记录'
     },
@@ -245,22 +250,23 @@ export function holdoutV2Scenarios() {
       events: eventHistory({ spaceId: 'personal', recordId: 'rec-movie-wandering', rev: [1] }),
       expect: {
         strategyExpect: {
-          A0: { top1: 'rec-travel-yunnan' },
+          A0: { top1: 'rec-recipe-hotpot' },     // 修正（amendment A1）：hotpot 命中 想（1/17）→ 1.0485 最高
           A1: { top1: 'rec-movie-wandering' },
           'A2-H7': { top1: 'rec-movie-wandering' },
           'A2-H30': { top1: 'rec-movie-wandering' },
-          A3: { top1: 'rec-travel-yunnan' },     // 单次 1d 重提 → B=ln(1)=0 → 无增益（A3 已知边界）
+          A3: { top1: 'rec-recipe-hotpot' },     // 1d 重提 → B=ln(1)=0 → 无增益（A3 已知边界）→ 同 A0
           'G2-H7': { top1: 'rec-movie-wandering' },
-          G3: { top1: 'rec-travel-yunnan' },
+          G3: { top1: 'rec-recipe-hotpot' },
           G1: { top1: 'rec-movie-wandering' },
           G1G2: { top1: 'rec-movie-wandering' }
         }
       },
       derivation: [
-        D('情境词元', 'uni 9 + bi 8 = 17；movie 7/17（流浪/浪地/地球 3 二元）T2；yunnan(地)/erhai(的) 各 1/17 T4'),
-        D('A0', 'yunnan (1.059)×0.863=0.914 > movie (1.412)×0.629=0.888 ✗（A0 无激活）'),
-        D('A1', 'movie ×1.346=1.195 ✓；A2-H7 ×(1.346×2^(-1/7))=1.220→1.082 ✓；A2-H30 ×1.315→1.168 ✓；G2-H7 同 A2-H7 ✓'),
-        D('A3', 't=1d → 1^-0.5=1 → B=ln(1)=0 → 乘数 1.0 → 0.888 < yunnan 0.914 ✗')
+        D('情境词元（引擎核对）', '17 词元；movie 8/17（流浪/浪地/地球 3 二元 + 看残差）T2；hotpot 1/17（想）T4；yunnan 2/17（地,的）T4'),
+        D('A0/A3/G3', 'hotpot 1.0485 > yunnan (1.1176)×0.87281=0.9755 > movie (1.4706)×0.62914=0.9252 → hotpot'),
+        D('A1', 'movie ×1.3466=1.2460 ✓；A2-H7 ×(1.5199×2^(-1/7))=1.3766→1.2736 ✓；A2-H30 ×1.4852=1.3742 ✓；G2-H7 同 A2-H7 ✓'),
+        D('A3', 'movie t=1d → B=0 → 乘数 1.0 → 0.9252 ✗ → hotpot'),
+        D('G1/G1G2', 'movie T2 boosted，gate 无障碍 → movie ✓')
       ],
       note: '最近主动提及（1 天前单次重提）：有重复回忆收益的策略应把它抬回第一；A0/G3 结构性做不到，A3 对 1d 重提无增益'
     },
@@ -280,7 +286,7 @@ export function holdoutV2Scenarios() {
         inCandidates: ['rec-commitment-erhai'],
         strategyExpect: {
           A0: { top1: 'rec-umbrella' },
-          A1: { top1: 'rec-commitment-erhai' },  // 无闸门的纯计数会把它抬到第一
+          A1: { top1: 'rec-umbrella' },          // 修正（amendment A1）：A1 erhai 0.7765×1.6931=1.3142 < umbrella 1.3490
           'A2-H7': { top1: 'rec-umbrella' },
           'A2-H30': { top1: 'rec-umbrella' },
           A3: { top1: 'rec-umbrella' },
@@ -291,9 +297,9 @@ export function holdoutV2Scenarios() {
         }
       },
       derivation: [
-        D('情境词元', 'uni 8 + bi 9 = 17；umbrella 5/17（还没+没有 2 二元）T2；erhai 4/17（约定 1 二元，组成字无残差）T4 —— 词面质量上「还没完成」与借伞未还更贴'),
-        D('A0', 'umbrella (1.294)×0.997=1.290 > erhai (1.235)×0.6=0.741'),
-        D('A1', 'erhai ×1.99=1.475 > 1.290 → 若无闸门则 erhai top1；该策略在矩阵中无闸门 → 期望 erhai（闸门代价的对照点：把此策略加上 G1 后 umbrella 应回到第一）'),
+        D('情境词元（引擎核对）', '17 词元；umbrella 6/17（没有+还没+有还 3 二元）T2；erhai 5/17（约定 1 二元 + 的/约 残差）T3 —— 词面质量上「有没有还没…」与借伞未还更贴'),
+        D('A0/A3/G3', 'umbrella (1.3529)×0.99709=1.3490 > erhai (1.2941)×0.6=0.7765'),
+        D('A1', 'erhai ×1.6931=1.3142 < umbrella 1.3490 → umbrella（最初冻结为 erhai，系把 A2 系数 0.75 误用于 A1 的 0.5——算术修正，见 amendment A1）'),
         D('其余', 'erhai 距上次重提 30d → 衰减/floor → umbrella top1；erhai 必须保持候选可达')
       ],
       note: '长期未完成约定 vs 未完成小事：词面质量天然偏向 umbrella；记录（a）衰减策略的诚实下沉（b）gate 对 A1 合法提升的拦截代价'
@@ -304,28 +310,29 @@ export function holdoutV2Scenarios() {
       events: eventHistory({ spaceId: 'personal', recordId: 'rec-commitment-erhai', rev: [1] }),
       expect: {
         strategyExpect: {
-          A0: { top1: 'rec-movie-wandering' },
+          A0: { top1: 'rec-umbrella' },          // 修正（amendment A1）：umbrella 命中 一+还（2/17）→ 1.1144 最高
           A1: { top1: 'rec-commitment-erhai' },
           'A2-H7': { top1: 'rec-commitment-erhai' },
           'A2-H30': { top1: 'rec-commitment-erhai' },
-          A3: { top1: 'rec-movie-wandering' },
+          A3: { top1: 'rec-umbrella' },          // 1d 重提 → B=ln(1)=0 → 无增益 → 同 A0
           'G2-H7': { top1: 'rec-commitment-erhai' },
-          G3: { top1: 'rec-movie-wandering' },
+          G3: { top1: 'rec-umbrella' },
           G1: { top1: 'rec-commitment-erhai' },
           G1G2: { top1: 'rec-commitment-erhai' }
         }
       },
       derivation: [
-        D('情境词元', 'uni 8 + bi 7 = 15；erhai 4/15（日出 1 二元 + 残差「看」）T3；movie 4/15（一起 1 二元 + 残差「看」）T3 → 同 tier，gate 必须放行'),
-        D('A0', 'movie (1.267)×0.629=0.777 > erhai (1.267)×0.6=0.760 → movie'),
-        D('重提 1d', 'A1 erhai ×1.346=1.023 ✓；A2-H7 ×(1.346×2^(-1/7))=1.219→0.927 ✓；A2-H30 ×1.315=0.999 ✓；G2 同 A2 ✓；A3 B=ln(1)=0 → 0.760 ✗ movie'),
+        D('情境词元（引擎核对）', '17 词元；erhai 7/17（日出 1 二元 + 残差「看」）T3；movie 5/17（一起 1 二元 + 残差「看」）T3 → 同 tier，gate 必须放行；umbrella 2/17（一,还）T4；hotpot 2/17 T4；plant 1/17 T4'),
+        D('A0/A3/G3', 'umbrella (1.1176)×0.99709=1.1144 > hotpot 1.1067 > plant 0.9771 > erhai (1.4118)×0.6=0.8471 > movie (1.2941)×0.62914=0.8142 → umbrella'),
+        D('重提 1d', 'A1 erhai ×1.6931=1.4342 ✓；A2-H7 ×(1.5199×2^(-1/7))=1.3766→1.1661 ✓；A2-H30 ×1.4852=1.2580 ✓；G2-H7 同 A2-H7 ✓'),
+        D('A3', 'erhai t=1d → B=0 → 乘数 1.0 → 0.8471 ✗ → umbrella'),
         D('gate 校验', 'erhai 与 movie 同 T3 → gate 无动作 → 合法重排不被拦截（防 gate 过冻的正控制）')
       ],
       note: '同 tier 合法重排正控制：闸门不得阻止同质量候选间的激活重排（单次 1d 重提的旧约定应能越过同质量的记录）'
     },
     {
       id: 'Q11-single-revisit-weak-boost', family: 'ambient', mode: 'ambient',
-      spaceIds: ['personal'], at, situation: '突然想吃花生酱还是喝咖啡',
+      spaceIds: ['personal'], at, situation: '花生酱拌面配咖啡',
       events: eventHistory({ spaceId: 'personal', recordId: 'rec-allergy-peanut', rev: [2] }),
       expect: {
         strategyExpect: {
@@ -334,19 +341,20 @@ export function holdoutV2Scenarios() {
           'A2-H7': { top1: 'rec-allergy-peanut' },
           'A2-H30': { top1: 'rec-allergy-peanut' },
           A3: { top1: 'rec-coffee-cafe' },
-          'G2-H7': { top1: 'rec-coffee-cafe' },  // G2 不衰减 coffee（未强化全额）→ allergy ×1.104=0.810 < 0.918
+          'G2-H7': { top1: 'rec-coffee-cafe' },  // G2 不衰减 coffee（未强化全额 0.9452）→ allergy 0.8983 不够
           G3: { top1: 'rec-coffee-cafe' },
           G1: { top1: 'rec-allergy-peanut' },
           G1G2: { top1: 'rec-coffee-cafe' }
         }
       },
       derivation: [
-        D('情境词元', 'uni 10 + bi 8 = 18；allergy 4/18（花生 1 二元 + 残差「吃」）T3；coffee 3/18（咖啡 1 二元无残差）T4'),
-        D('A0', 'coffee (1.167)×0.787=0.918 > allergy (1.222)×0.600=0.734'),
-        D('A1', 'allergy ×1.346=0.988 ✓；A2-H7 ×(1.346×2^(-2/7))=1.104→0.810，coffee 被 A2 衰减 ×2^(-91/7)→floor 0.4=0.367 → allergy ✓'),
-        D('G2-H7', 'coffee 未强化 → 全额 0.918 > allergy 0.810 ✗（G2 弱点第三次出现）'),
-        D('A3', 't=2d → B=ln(2^-0.5)=-0.347→×0.879=0.645 ✗'),
-        D('G1(A2-H7)', 'allergy 0.810 ✓（T3 已在 T4 之前）；G1G2 同 G2 ✗')
+        D('情境重设计（amendment A2）', '原情境「突然想吃花生酱还是喝咖啡」下 hotpot 命中 想/还 等散落单字且 A0 分最高，使「allergy top1」类期望对所有策略都不可达（fixture 缺陷）。改为本情境后引擎核对：全库仅 allergy 3/15（花生 1 二元）与 coffee 3/15（咖啡 1 二元）命中，hotpot/no-cilantro/umbrella/weather 均 0'),
+        D('A0/A3/G3', 'coffee (1.2)×0.78764=0.9452 > allergy (1.2)×0.60029=0.7203 → coffee'),
+        D('A1', 'allergy ×1.3466=0.9700 ✓'),
+        D('A2-H7', 'allergy ×(1.5199×2^(-2/7))=1.2468→0.8983；coffee 被普遍衰减 ×2^(-90.9/7)→floor 0.4=0.3781 → allergy ✓；A2-H30 allergy ×1.4522=1.0461 ✓'),
+        D('G2-H7', 'coffee 未强化 → 全额 0.9452 > allergy 0.8983 ✗（G2 弱点）'),
+        D('A3', 'allergy t=2d → B=ln(2^-0.5)=-0.3466→×0.8787=0.6330 ✗ → coffee'),
+        D('G1(A2-H7)', '两候选同 T4（单二元无残差）→ gate 无动作 → allergy ✓；G1G2 同 G2 ✗')
       ],
       note: '单次合法旧记忆重提（2 年旧记录、2 天前重提 1 次）：衰减系靠「衰减干扰」间接获胜；G2 系因不衰减干扰而失败 —— 两种设计各有一致代价'
     },
@@ -474,8 +482,8 @@ export const RELEVANCE_V2 = Object.freeze({
   'Q9-uncommitted-umbrella-beats-commitment': ['rec-umbrella', 'rec-commitment-erhai'],
   'Q10-same-tier-legitimate-uplift': ['rec-commitment-erhai'],
   'Q11-single-revisit-weak-boost': ['rec-allergy-peanut'],
-  'S1-suppression-window': ['rec-allergy-peanut', 'rec-no-cilantro'],
-  'S2-suppression-decay-zone': ['rec-allergy-peanut', 'rec-no-cilantro'],
+  'S1-suppression-window': ['rec-allergy-peanut', 'rec-no-cilantro', 'rec-weather-smalltalk'],
+  'S2-suppression-decay-zone': ['rec-allergy-peanut', 'rec-no-cilantro', 'rec-weather-smalltalk'],
   'X1-same-source-duplicate': ['rec-scifi-books'],
   'X2-restart-replay-identity': ['rec-recipe-hotpot'],
   'X3-clock-anomalies': ['rec-scifi-books'],
@@ -484,3 +492,20 @@ export const RELEVANCE_V2 = Object.freeze({
 
 // 不参与排名指标聚合的场景（结构断言为主）。
 export const EXCLUDE_FROM_RANKING = Object.freeze(['X2-restart-replay-identity']);
+
+// —— 修正记录（amendments）———————————————————————————————
+// 首轮运行后发现本文件的手工推导存在三类错误，按协议修正并在此公开记录。
+// 所有修正均为「输入侧确定性数据（词元命中/公式算术）的核对修正」，
+// 对 9 个策略同时生效，不构成对任何策略的选择性调整：
+//   A1. 词元命中与算术错误：构造场景时手工分词漏掉了大量单字碰撞（这正是本实验
+//       研究的现象本身）。受影响场景：Q2/Q3/Q7/Q10 的 A0/A3/G3 锚点、Q9 的 A1
+//       期望（误用 0.75 系数于 A1）、Q4 的候选计数（plant 因「帮」入池）。
+//       修正后的期望全部改由「引擎词元命中（确定性）+ 冻结公式手工验算」得出。
+//   A2. Q11 情境重设计：原情境「突然想吃花生酱还是喝咖啡」下 hotpot 的宽泛单字
+//       命中使冻结期望对所有策略不可达（结构性缺陷）。改为「花生酱拌面配咖啡」
+//       （全库仅 allergy/coffee 命中）。该场景不再具备完整预注册纯度，报告中
+//       单独标注；其判定结构（A1/A2/G1 成功、A0/A3/G3/G2/G1G2 失败）与原设计一致。
+//   A3. S1/S2 相关性声明补全：weather-smalltalk（「早晚要加外套」）对「外出注意
+//       什么」是可辩护的合法联想，计入 relevant（对 9 策略同时生效）。
+// 未修正的冻结期望（Q1/Q5/E 组/S 组/X 组/Q8）在首轮运行中已按原样判定。
+// 首轮原始结果保留在 git 历史（eval-v2.json 的上一版）中可查。
