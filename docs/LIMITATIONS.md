@@ -65,6 +65,10 @@ What follows honestly:
   secrets as the store; deleting the store does not delete it until the projection
   is dropped, which is why a retraction removes the record from the index in the
   same request (E5).
+- Attaching an index to a **delegated** authority (a WhiteMoon-backed space, whose
+  records stay in that store) has not been run: the projection would copy another
+  service's formal text into this directory's cache. Nothing here claims that
+  combination works or is safe; the tested wiring is a native Atlas space.
 
 ## Concurrency
 
