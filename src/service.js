@@ -30,7 +30,7 @@ import { randomUUID } from 'node:crypto';
 import { SpaceStore } from './store.js';
 import { assertId, createRecord, deriveValidity, isIdLike, operationRecordId, sameRecordSemantics, DEFAULT_RETRACTION_TEXT } from './model.js';
 import { detailSpace } from './query.js';
-import { createRetrievalCoordinator, spaceProjection } from './retrieval.js';
+import { authoritativeScan, createRetrievalCoordinator, spaceProjection } from './retrieval.js';
 
 export const SERVICE_VERSION = 'memory-atlas-v0.1';
 
@@ -271,13 +271,37 @@ export function createMemoryService({ authority, capacityTargetBytes = 20_000_00
 
   const retrievalSearch = createRetrievalCoordinator({ inspect: read, getAdapter: () => index });
 
+  /**
+   * Per-space index trust. A projection that failed is a fact about this space,
+   * not a transient error to retry around: the index is now missing at least the
+   * record that could not be projected, and a query through it would answer
+   * NO_MATCH about a memory that is on disk. Trust is lost at the first failed
+   * sync or rebuild and comes back only through a complete reindex of that space -
+   * a later successful write does not restore it, because whatever missed the
+   * earlier projection is still absent.
+   */
+  const indexTrust = new Map();
+
+  function invalidate(spaceId, reason) {
+    indexTrust.set(spaceId, { state: 'INVALID', reason, at: new Date().toISOString() });
+  }
+
+  function trustReport(spaceId) {
+    const state = indexTrust.get(spaceId);
+    if (!state) return null;
+    return { state: 'INDEX_INVALID', reason: state.reason, since: state.at, recovery: 'reindex' };
+  }
+
   async function search({ spaceId, ...options } = {}) {
     assertId(spaceId, 'spaceId');
     const inspected = read(spaceId);
     if (!inspected.available) return unavailable(spaceId, inspected.reason);
     // Recall defaults to what currently stands. An audit view is explicit.
     const merged = { status: 'active', ...options };
-    const view = await retrievalSearch.search({ spaceId, options: merged });
+    const distrusted = index && trustReport(spaceId);
+    const view = distrusted
+      ? authoritativeScan(inspected.spaceDoc, inspected.validity, merged, distrusted)
+      : await retrievalSearch.search({ spaceId, options: merged });
     // Echo the filter that actually ran: a page of effective records and a
     // page of the whole history look identical unless the answer says which.
     return { ...view, appliedFilters: { status: merged.status, visibility: merged.visibility ?? 'all' } };
@@ -288,11 +312,17 @@ export function createMemoryService({ authority, capacityTargetBytes = 20_000_00
    * effective records and removing the rest is the whole rule, which is why the
    * same call rebuilds from nothing and reconciles after a crash.
    *
+   * The adapter calls are awaited, not fired: a promise that rejects out here
+   * would be an unhandled rejection - the process that just stored the memory
+   * would die, taking the trust bookkeeping with it. An engine whose sync is
+   * asynchronous is therefore waited for, and its failure lands in the same
+   * catch as a synchronous one.
+   *
    * A write that landed is never undone by an index that refused it: the failure
    * is announced, the memory stays, and the next sync or reindex repairs the
    * derived copy.
    */
-  function syncIndex(spaceId) {
+  async function syncIndex(spaceId) {
     if (!index) return { synced: false, reason: 'NO_RETRIEVAL_ADAPTER' };
     if (typeof index.upsertRecords !== 'function' && typeof index.removeRecords !== 'function') {
       return { synced: false, reason: 'ADAPTER_IS_READ_ONLY' };
@@ -300,14 +330,14 @@ export function createMemoryService({ authority, capacityTargetBytes = 20_000_00
     const inspected = read(spaceId);
     if (!inspected.available) return { synced: false, reason: inspected.reason };
     const projection = spaceProjection(inspected.spaceDoc, inspected.validity);
-    if (projection.upserts.length && typeof index.upsertRecords === 'function') index.upsertRecords(projection.upserts);
-    if (projection.removals.length && typeof index.removeRecords === 'function') index.removeRecords(projection.removals);
+    if (projection.upserts.length && typeof index.upsertRecords === 'function') await index.upsertRecords(projection.upserts);
+    if (projection.removals.length && typeof index.removeRecords === 'function') await index.removeRecords(projection.removals);
     return { synced: true, upserted: projection.upserts.length, removed: projection.removals.length };
   }
 
-  function syncAfterWrite(spaceId) {
+  async function syncAfterWrite(spaceId) {
     try {
-      const result = syncIndex(spaceId);
+      const result = await syncIndex(spaceId);
       if (result.synced) return result;
       // A read-only adapter is a legitimate choice, not a fault to shout about.
       if (result.reason !== 'ADAPTER_IS_READ_ONLY' && result.reason !== 'NO_RETRIEVAL_ADAPTER') {
@@ -315,20 +345,41 @@ export function createMemoryService({ authority, capacityTargetBytes = 20_000_00
       }
       return result;
     } catch (error) {
-      process.stderr.write(`[atlas] derived index rejected the sync for "${spaceId}": ${error.message} ` +
-        'The memory itself is stored; run reindex() after fixing the index.\n');
-      return { synced: false, reason: 'ADAPTER_SYNC_FAILED' };
+      const reason = error && error.code ? error.code : 'ADAPTER_SYNC_FAILED';
+      invalidate(spaceId, reason);
+      process.stderr.write(`[atlas] derived index rejected the sync for "${spaceId}": ${error.message}. ` +
+        'The memory stays stored; this space is answered from the authoritative store until reindex() succeeds.\n');
+      return { synced: false, reason };
     }
   }
 
+  /**
+   * Rebuild the projection for one space, or for every space. Failure is reported
+   * per space and takes that space's index out of service; it never throws past
+   * here and never touches a stored record. Only a complete pass restores index
+   * queries for that space.
+   */
   async function reindex(spaceId) {
+    if (!index) return { engine: null, spaces: [], note: 'NO_RETRIEVAL_ADAPTER' };
     const ids = spaceId === undefined ? authority.listSpaces().spaceIds : [spaceId];
     const spaces = [];
     for (const id of ids) {
-      if (!index) throw new Error('reindex() requires a retrieval adapter that accepts projections.');
-      spaces.push({ spaceId: id, ...syncIndex(id) });
+      try {
+        const result = await syncIndex(id);
+        if (result.synced) indexTrust.delete(id);
+        else if (result.reason !== 'ADAPTER_IS_READ_ONLY' && result.reason !== 'NO_RETRIEVAL_ADAPTER') {
+          invalidate(id, result.reason);
+        }
+        spaces.push({ spaceId: id, ...result });
+      } catch (error) {
+        const reason = error && error.code ? error.code : 'REBUILD_FAILED';
+        invalidate(id, reason);
+        spaces.push({ spaceId: id, synced: false, reason });
+        process.stderr.write(`[atlas] index rebuild failed for "${id}": ${error.message} - ` +
+          'answers for this space come from the authoritative store until a rebuild completes.\n');
+      }
     }
-    return { engine: index.name ?? null, spaces };
+    return { engine: index.name ?? null, spaces, complete: spaces.every((s) => s.synced) };
   }
 
   async function detail({ spaceId, recordId }) {
@@ -340,7 +391,11 @@ export function createMemoryService({ authority, capacityTargetBytes = 20_000_00
 
   async function record(spaceId, input, options) {
     const receipt = await authority.append(spaceId, input, options);
-    if (receipt.accepted) syncAfterWrite(spaceId);
+    // Awaited, not fired: the receipt must not be returned while the derived sync
+    // could still be in flight, because a search arriving between the two would
+    // read a stale index that still looks trusted. Slowing the receipt by the
+    // sync it caused is the price of never answering from a quietly stale index.
+    if (receipt.accepted) await syncAfterWrite(spaceId);
     return receipt;
   }
 
@@ -349,7 +404,7 @@ export function createMemoryService({ authority, capacityTargetBytes = 20_000_00
     // A correction changes what is effective and a retraction ends a record's
     // standing; both have to reach the derived index or the next search answers
     // from a projection of a memory that no longer stands.
-    if (receipt.accepted) syncAfterWrite(spaceId);
+    if (receipt.accepted) await syncAfterWrite(spaceId);
     return receipt;
   }
 
@@ -366,7 +421,9 @@ export function createMemoryService({ authority, capacityTargetBytes = 20_000_00
     indexStatus: () => ({
       wired: Boolean(index),
       engine: index ? (index.name ?? null) : null,
-      acceptsProjections: Boolean(index && typeof index.upsertRecords === 'function')
+      acceptsProjections: Boolean(index && typeof index.upsertRecords === 'function'),
+      invalidSpaces: [...indexTrust].filter(([, state]) => state.state === 'INVALID')
+        .map(([spaceId, state]) => ({ spaceId, reason: state.reason, since: state.at }))
     }),
     operation: (spaceId, operationId) => authority.resolveOperation(spaceId, operationId),
     spaces: () => authority.listSpaces(),
@@ -398,18 +455,28 @@ export function createMemoryService({ authority, capacityTargetBytes = 20_000_00
           note: 'The target is an observation budget. Reaching it never discards, truncates or refuses a record.'
         },
         derivedCache: cache,
-        index: index
-          ? {
-            state: 'WIRED',
+        index: (() => {
+          if (!index) return { state: 'NOT_WIRED', reason: 'NO_ADAPTER_ATTACHED', invalidSpaces: [], rebuildableFrom: 'authoritative records' };
+          const invalidSpaces = [...indexTrust]
+            .filter(([, state]) => state.state === 'INVALID')
+            .map(([spaceId, state]) => ({ spaceId, reason: state.reason, since: state.at }));
+          const listed = typeof authority.listSpaces === 'function' ? authority.listSpaces() : { available: false, spaceIds: [] };
+          const all = listed.available && listed.spaceIds.length > 0 && invalidSpaces.length >= listed.spaceIds.length;
+          return {
+            // "Wired" is not "in service": a projection that failed takes that
+            // space's answers back to the store, and the health report has to show
+            // it or the operator would believe the index is doing the work.
+            state: invalidSpaces.length === 0 ? 'WIRED' : (all ? 'INVALID' : 'PARTIALLY_INVALID'),
             engine: index.name ?? null,
             // Read from the adapter, not asserted because an object was passed
             // in: "wired" and "ready" are two different claims.
             generation: Number.isSafeInteger(index.indexGeneration) ? index.indexGeneration : null,
             open: typeof index.isOpen === 'boolean' ? index.isOpen : null,
             acceptsProjections: typeof index.upsertRecords === 'function',
+            invalidSpaces,
             rebuildableFrom: 'authoritative records'
-          }
-          : { state: 'NOT_WIRED', reason: 'NO_ADAPTER_ATTACHED', rebuildableFrom: 'authoritative records' }
+          };
+        })()
       };
     }
   };

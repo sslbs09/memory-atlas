@@ -23,7 +23,7 @@
  * A retrieval failure never degrades into "there is nothing here".
  */
 
-import { admits, querySpace, servedRecord, shapedRecords, spaceCounts } from './query.js';
+import { admits, querySpace, searchableText, servedRecord, shapedRecords, spaceCounts } from './query.js';
 import { isIdLike } from './model.js';
 
 export const SEARCH_PATH_SCAN = 'atlas-authoritative-scan';
@@ -130,13 +130,19 @@ function normalizeCandidates(payload, counters) {
  * to match against, the record's own sequence, and the fields the DTO filters on.
  * Nothing else crosses, and the record's standing is included precisely so an
  * index can be told to forget what is no longer effective.
+ *
+ * `text` is `searchableText` - the same string the authoritative scan matches -
+ * not the content alone. Handing the index a narrower text than the scan reads is
+ * how a query found a record in one path and reported NO_MATCH in the other; the
+ * two paths cannot be reconciled later, because a miss produces no candidate to
+ * re-read.
  */
 export function projectRecord(record) {
   return {
     recordId: record.recordId,
     instanceId: record.spaceId,
     revision: record.sequence,
-    text: record.content,
+    text: searchableText(record),
     status: record.status,
     sourceKind: record.source?.kind ?? null,
     sourceId: record.source?.id ?? null,
@@ -177,6 +183,21 @@ function refusalReason(record, options, timeField) {
 }
 
 /**
+ * The answer when the authoritative store is what actually answered - whether no
+ * index is attached, the index cannot represent the question, or the index has
+ * been taken out of service. Exported so the service can produce exactly this
+ * shape itself instead of assembling a second, subtly different scan response.
+ */
+export function authoritativeScan(spaceDoc, validity, options, index) {
+  return {
+    ...querySpace(spaceDoc, validity, options),
+    searchPath: SEARCH_PATH_SCAN,
+    indexing: INDEXING_NOT_REQUIRED,
+    index
+  };
+}
+
+/**
  * @param {object} input
  * @param {(spaceId: string) => object} input.inspect reads the authoritative space
  * @param {(() => object|null)} [input.getAdapter] the wired index, if any
@@ -185,12 +206,7 @@ export function createRetrievalCoordinator({ inspect, getAdapter }) {
   if (typeof inspect !== 'function') throw refusal('createRetrievalCoordinator requires inspect(spaceId).');
 
   function scan(spaceDoc, validity, options, index) {
-    return Promise.resolve({
-      ...querySpace(spaceDoc, validity, options),
-      searchPath: SEARCH_PATH_SCAN,
-      indexing: INDEXING_NOT_REQUIRED,
-      index
-    });
+    return Promise.resolve(authoritativeScan(spaceDoc, validity, options, index));
   }
 
   async function search({ spaceId, options = {} }) {

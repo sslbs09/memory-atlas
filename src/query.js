@@ -27,7 +27,19 @@ function bad(message) {
   return Object.assign(new Error(message), { code: 'ATLAS_QUERY_INVALID' });
 }
 
-function haystack(record) {
+/**
+ * THE searchable text of one record. There is exactly one of these on purpose:
+ * the authoritative scan matches against it, and it is also the only text an
+ * index is ever shown (see retrieval.js projectRecord). Two definitions would
+ * drift the way the measured defect did - the scan read the source fields while
+ * the index was handed only the content, so a query for a `source.id` was
+ * MATCHED in one path and NO_MATCH in the other.
+ *
+ * Changing what this returns changes what is findable through every path, in
+ * both directions: it widens recall for metadata and it widens what a derived
+ * index copy contains.
+ */
+export function searchableText(record) {
   const parts = [record.recordId, record.kind, record.content, `visibility:${record.visibility}`];
   if (record.source) parts.push(`source:${record.source.kind}:${record.source.id ?? ''}:${record.source.href ?? ''}`);
   if (record.aboutRecordId) parts.push(`about:${record.aboutRecordId}`);
@@ -153,7 +165,7 @@ export function querySpace(spaceDoc, validity, options = {}) {
   } else {
     const terms = normalize(options.query).split(' ').filter(Boolean);
     if (terms.length > 0) {
-      const texts = new Map(spaceDoc.records.map((record) => [record.recordId, haystack(record)]));
+      const texts = new Map(spaceDoc.records.map((record) => [record.recordId, searchableText(record)]));
       matched = matched.filter((record) => {
         const text = texts.get(record.recordId);
         return terms.every((term) => text.includes(term));

@@ -62,16 +62,35 @@ const derivedCacheDir = process.env.ATLAS_CACHE_DIR
  * dependency on any particular retrieval engine: it owes only the SEARCH-DTO-v1
  * shape. The factory receives the directories and returns
  * { searchCandidates, upsertRecords?, removeRecords?, close?, name?, indexGeneration? }.
+ *
+ * adapters/glm-retrieval.mjs is the shipped factory for Backend B's index; it
+ * reads ATLAS_GLM_MODULE (and optionally ATLAS_GLM_INDEX) from the environment.
  */
+
+/** A path the operator typed, a file: URL, or a bare package specifier. */
+function resolveModuleUrl(specifier) {
+  if (/^file:/i.test(specifier) || /^node:/i.test(specifier)) return specifier;
+  if (path.isAbsolute(specifier)) return pathToFileURL(specifier).href;
+  const local = path.resolve(process.cwd(), specifier);
+  if (specifier.startsWith('.') || specifier.includes('/') || specifier.includes('\\')) {
+    if (!fs.existsSync(local)) {
+      throw new Error(`--retrieval-module "${specifier}" is not readable at ${local}`);
+    }
+    return pathToFileURL(local).href;
+  }
+  // "adapters/glm-retrieval.mjs" typed without a leading ./ is still a path here;
+  // anything else stays a bare specifier so node_modules resolution can work.
+  return fs.existsSync(local) ? pathToFileURL(local).href : specifier;
+}
+
 async function loadRetrieval(specifier) {
   if (!specifier) return null;
-  const url = /^file:|^node:/.test(specifier) || path.isAbsolute(specifier)
-    ? pathToFileURL(specifier).href
-    : specifier;
-  const module = await import(url);
+  const module = await import(resolveModuleUrl(specifier));
   const factory = module.createRetrievalAdapter ?? module.default;
   if (typeof factory !== 'function') {
-    throw new Error(`Retrieval module "${specifier}" exports no createRetrievalAdapter (or default) factory.`);
+    throw new Error(`Retrieval module "${specifier}" exports no createRetrievalAdapter (or default) factory. ` +
+      'An engine module that exports a class needs a thin factory: for Backend B use ' +
+      './adapters/glm-retrieval.mjs with ATLAS_GLM_MODULE set to its src/adapter.mjs.');
   }
   const adapter = await factory({ dataDir, derivedCacheDir });
   if (!adapter || typeof adapter.searchCandidates !== 'function') {
@@ -104,11 +123,14 @@ server.listen(wantedPort, '127.0.0.1', async () => {
   const { port } = server.address();
   let indexReport = { state: 'NOT_WIRED' };
   if (retrieval) {
-    try {
-      indexReport = { state: 'REBUILT', ...(await service.reindex()) };
-    } catch (error) {
-      indexReport = { state: 'REBUILD_FAILED', error: error.message };
-      process.stderr.write(`[atlas] index rebuild failed: ${error.message} (search still answers from the store)\n`);
+    // A rebuild that did not finish is reported as such, and the affected spaces
+    // are answered from the store until a complete one lands: service.reindex()
+    // records the failure per space instead of throwing past the server.
+    const rebuilt = await service.reindex();
+    indexReport = { state: rebuilt.complete ? 'REBUILT' : 'REBUILD_INCOMPLETE', ...rebuilt };
+    if (!rebuilt.complete) {
+      const bad = rebuilt.spaces.filter((s) => !s.synced).map((s) => `${s.spaceId}:${s.reason}`).join(', ');
+      process.stderr.write(`[atlas] index rebuild incomplete (${bad}) - those spaces are answered from the store\n`);
     }
   }
   process.stdout.write(`${JSON.stringify({ event: 'listening', service: 'memory-atlas', dataDir, port, index: indexReport })}\n`);
