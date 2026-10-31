@@ -1,0 +1,1523 @@
+{
+  "meta": {
+    "generatedAt": "2026-10-31T15:16:29.639Z",
+    "evalClock": "2026-10-31T12:00:00.000Z",
+    "scenario": "D03-revisit8-vs-recent-trivial",
+    "situation": "周末在家做什么吃的",
+    "base": "activation-01 src @ 34d8cf9（只读）"
+  },
+  "premise": {
+    "realAdapterCodeCitations": [
+      "<WhiteMoon repo>/work/universal-memory-v0.1/glm-retrieval/src/adapter.mjs:233-239 — “collectCandidates 已按词元求交：到达这里的文档命中了全部词元”→ coverage = matchedTerms.length / terms.length；id 命中 min(1, coverage+0.5) 也恒为 1",
+      "<WhiteMoon repo>/work/universal-memory-v0.1/glm-retrieval/src/store.mjs:274-289 — collectCandidates 对每个词元做 postings 交集，空集即返回；幸存文档必然命中全部词元",
+      "<WhiteMoon repo>/work/universal-memory-v0.1/glm-retrieval/src/association.mjs — 正式 ambient/关联路径只用 subject/source_session 结构共现，不产生词面 coverage"
+    ],
+    "explicitAudit": {
+      "cases": 84,
+      "allExactlyOne": true,
+      "detail": [
+        {
+          "scenario": "S01-critical-fact-allergy",
+          "q": "花生",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S01-critical-fact-allergy",
+          "q": "花生 过敏",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S01-critical-fact-allergy",
+          "q": "过敏",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S02-preference-scifi",
+          "q": "科幻小说",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S02-preference-scifi",
+          "q": "刘慈欣 三体",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S02-preference-scifi",
+          "q": "科幻",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S03-commitment-active-work",
+          "q": "演示文稿",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S03-commitment-active-work",
+          "q": "MK-II 演示文稿",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S03-commitment-active-work",
+          "q": "初稿 审阅",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S04-correction-address",
+          "q": "收货地址",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S04-correction-address",
+          "q": "杭州 地址",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S04-correction-address",
+          "q": "文三路",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S05-retraction-unreachable",
+          "q": "钓鱼",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S05-retraction-unreachable",
+          "q": "钓鱼 周末",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S05-retraction-unreachable",
+          "q": "河边 钓鱼",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S06-id-lookup-sensor",
+          "q": "HS-7",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S06-id-lookup-sensor",
+          "q": "HS-7 传感器",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S06-id-lookup-sensor",
+          "q": "量程",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S07-recent-object",
+          "q": "长柄伞",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S07-recent-object",
+          "q": "借 伞",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S07-recent-object",
+          "q": "伞",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S08-birthday",
+          "q": "生日",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S08-birthday",
+          "q": "3月14日",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S08-birthday",
+          "q": "母亲 生日",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S09-space-isolation",
+          "q": "羽毛球",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S09-space-isolation",
+          "q": "羽毛球",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S09-space-isolation",
+          "q": "过敏",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S10-travel-disambiguation",
+          "q": "旅行",
+          "candidates": 2,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S10-travel-disambiguation",
+          "q": "旅行 计划",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S10-travel-disambiguation",
+          "q": "春天 旅行",
+          "candidates": 2,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S11-work-retro",
+          "q": "发布节奏",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S11-work-retro",
+          "q": "复盘 发布",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S11-work-retro",
+          "q": "双周",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S12-plant-commitment",
+          "q": "绿萝",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S12-plant-commitment",
+          "q": "浇水 绿萝",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "scenario": "S12-plant-commitment",
+          "q": "浇水",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "周末",
+          "spaceIds": "personal",
+          "candidates": 3,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "周末",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "周末 家",
+          "spaceIds": "personal",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "周末 家",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "旅行",
+          "spaceIds": "personal",
+          "candidates": 2,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "旅行",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "科幻",
+          "spaceIds": "personal",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "科幻",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "过敏 花生",
+          "spaceIds": "personal",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "过敏 花生",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "生日",
+          "spaceIds": "personal",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "生日",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "伞",
+          "spaceIds": "personal",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "伞",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "浇水",
+          "spaceIds": "personal",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "浇水",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "地址",
+          "spaceIds": "personal",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "地址",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "演示文稿",
+          "spaceIds": "personal",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "演示文稿",
+          "spaceIds": "work",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "传感器",
+          "spaceIds": "personal",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "传感器",
+          "spaceIds": "work",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "羽毛球",
+          "spaceIds": "personal",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "羽毛球",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "电影",
+          "spaceIds": "personal",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "电影",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "春天 旅行",
+          "spaceIds": "personal",
+          "candidates": 2,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "春天 旅行",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "咖啡",
+          "spaceIds": "personal",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "咖啡",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "攀岩",
+          "spaceIds": "personal",
+          "candidates": 2,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "攀岩",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "跑步",
+          "spaceIds": "personal",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "跑步",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "火锅",
+          "spaceIds": "personal",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "火锅",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "绿萝 浇水",
+          "spaceIds": "personal",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "绿萝 浇水",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "收货 地址",
+          "spaceIds": "personal",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "收货 地址",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "站会",
+          "spaceIds": "personal",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "站会",
+          "spaceIds": "work",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "复盘",
+          "spaceIds": "personal",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "复盘",
+          "spaceIds": "work",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "三体",
+          "spaceIds": "personal",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "三体",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        },
+        {
+          "q": "洱海",
+          "spaceIds": "personal",
+          "candidates": 1,
+          "distinctCoverages": [
+            1
+          ],
+          "allExactlyOne": true
+        },
+        {
+          "q": "洱海",
+          "spaceIds": "work",
+          "candidates": 0,
+          "distinctCoverages": [],
+          "allExactlyOne": true
+        }
+      ]
+    },
+    "ambientD03": {
+      "distinctCoverages": [
+        0.4706,
+        0.0588,
+        0.1765,
+        0.1176
+      ],
+      "coverageAlwaysOne": false
+    },
+    "verdict": "前提成立：真实（以及本实验复刻的）explicit AND 检索下 coverage 结构性恒为 1，Coverage Gate 在该路径上恒不触发（空洞）。ambient 是实验自建路径，coverage 虽可区分 D03，但 2:1 阈值由 D03 单样本反推 —— 按任务书判定：废弃 Coverage Gate。"
+  },
+  "sixQuestions": {
+    "q1_allCoverageOne": {
+      "ambient": false,
+      "explicit": true,
+      "note": "D03 是 ambient 场景，coverage 0.0588–0.4706 不恒为 1；explicit AND 恒为 1（见 premise.explicitAudit 全量枚举）。"
+    },
+    "q2_whyIrrelevantInPool": "ambient 候选规则是「与情境词元交集 > 0」；rec-gym-runs 与情境共享 周末(二元) + 周/末(一元) 3 个词元，足以入池。",
+    "q3_singleCharDominance": "gym 的全部一元命中（周、末）都是其唯一二元命中（周末）的组成字——除 周末 外没有任何独立证据；属于典型弱匹配。",
+    "q4_discriminativePhrase": "存在：hotpot 命中 周末+在家+家做 三个二元词元，横跨情境的三个不同语段（周末 / 在家 / 做…）；gym 只有 周末。二元命中数与跨段证据可区分两者。",
+    "q5_agePenaltyRole": "是放大器不是根因：A2-H7 把未强化的 hotpot 按记录年龄衰减到 0.7399，同时把 8 次重提的 gym 抬到 2.1723，双向拉大分差。但去掉衰减（G2 预演：hotpot 乘数回到 1.0）后 gym 2.22 仍 > hotpot 1.46 —— 纯取消年龄惩罚不能消除 D03。",
+    "q6_evidenceSufficiency": "在词元质量层面足够（二元 3:1、跨段 3:1）；在 coverage 比值层面 D03 恰好可分（2.67:1）但该可分性只存在于实验自建的 ambient 路径，正式 AND 路径结构性无 coverage 差异。"
+  },
+  "candidateTable": [
+    {
+      "recordId": "rec-recipe-hotpot",
+      "query": "周末在家做什么吃的",
+      "queryTokens": [
+        "周(cjk-1)",
+        "周末(cjk-2)",
+        "末(cjk-1)",
+        "末在(cjk-2)",
+        "在(cjk-1)",
+        "在家(cjk-2)",
+        "家(cjk-1)",
+        "家做(cjk-2)",
+        "做(cjk-1)",
+        "做什(cjk-2)",
+        "什(cjk-1)",
+        "什么(cjk-2)",
+        "么(cjk-1)",
+        "么吃(cjk-2)",
+        "吃(cjk-1)",
+        "吃的(cjk-2)",
+        "的(cjk-1)"
+      ],
+      "matchedTerms": [
+        "周",
+        "周末",
+        "末",
+        "在",
+        "在家",
+        "家",
+        "家做",
+        "做"
+      ],
+      "coverage": 0.4706,
+      "exactPhraseMatch": false,
+      "matchedBigrams": [
+        "周末",
+        "在家",
+        "家做"
+      ],
+      "matchedUnigrams": [
+        "周",
+        "末",
+        "在",
+        "家",
+        "做"
+      ],
+      "bigramCount": 3,
+      "recencyFactor": 0.989989,
+      "activationFactor": 0.739938,
+      "reinforcementCount": 0,
+      "recentDeliveryPenalty": 1,
+      "A0Score": 1.455865,
+      "A2H7Score": 1.07725,
+      "rankBefore": 1,
+      "rankAfter": 2,
+      "rankMoved": true,
+      "expectedRelevance": "relevant（火锅计划，与情境的 吃/在家/周末 段全部对应）",
+      "hasRevisitedEvents": false
+    },
+    {
+      "recordId": "rec-umbrella",
+      "query": "周末在家做什么吃的",
+      "queryTokens": [
+        "周(cjk-1)",
+        "周末(cjk-2)",
+        "末(cjk-1)",
+        "末在(cjk-2)",
+        "在(cjk-1)",
+        "在家(cjk-2)",
+        "家(cjk-1)",
+        "家做(cjk-2)",
+        "做(cjk-1)",
+        "做什(cjk-2)",
+        "什(cjk-1)",
+        "什么(cjk-2)",
+        "么(cjk-1)",
+        "么吃(cjk-2)",
+        "吃(cjk-1)",
+        "吃的(cjk-2)",
+        "的(cjk-1)"
+      ],
+      "matchedTerms": [
+        "在"
+      ],
+      "coverage": 0.0588,
+      "exactPhraseMatch": false,
+      "matchedBigrams": [],
+      "matchedUnigrams": [
+        "在"
+      ],
+      "bigramCount": 0,
+      "recencyFactor": 0.997094,
+      "activationFactor": 0.917004,
+      "reinforcementCount": 0,
+      "recentDeliveryPenalty": 1,
+      "A0Score": 1.055747,
+      "A2H7Score": 0.968124,
+      "rankBefore": 2,
+      "rankAfter": 3,
+      "rankMoved": true,
+      "expectedRelevance": "neutral（无预期）",
+      "hasRevisitedEvents": false
+    },
+    {
+      "recordId": "rec-weather-smalltalk",
+      "query": "周末在家做什么吃的",
+      "queryTokens": [
+        "周(cjk-1)",
+        "周末(cjk-2)",
+        "末(cjk-1)",
+        "末在(cjk-2)",
+        "在(cjk-1)",
+        "在家(cjk-2)",
+        "家(cjk-1)",
+        "家做(cjk-2)",
+        "做(cjk-1)",
+        "做什(cjk-2)",
+        "什(cjk-1)",
+        "什么(cjk-2)",
+        "么(cjk-1)",
+        "么吃(cjk-2)",
+        "吃(cjk-1)",
+        "吃的(cjk-2)",
+        "的(cjk-1)"
+      ],
+      "matchedTerms": [
+        "周"
+      ],
+      "coverage": 0.0588,
+      "exactPhraseMatch": false,
+      "matchedBigrams": [],
+      "matchedUnigrams": [
+        "周"
+      ],
+      "bigramCount": 0,
+      "recencyFactor": 0.978121,
+      "activationFactor": 0.512532,
+      "reinforcementCount": 0,
+      "recentDeliveryPenalty": 1,
+      "A0Score": 1.035658,
+      "A2H7Score": 0.530808,
+      "rankBefore": 3,
+      "rankAfter": 4,
+      "rankMoved": true,
+      "expectedRelevance": "neutral（无预期）",
+      "hasRevisitedEvents": false
+    },
+    {
+      "recordId": "rec-gym-runs",
+      "query": "周末在家做什么吃的",
+      "queryTokens": [
+        "周(cjk-1)",
+        "周末(cjk-2)",
+        "末(cjk-1)",
+        "末在(cjk-2)",
+        "在(cjk-1)",
+        "在家(cjk-2)",
+        "家(cjk-1)",
+        "家做(cjk-2)",
+        "做(cjk-1)",
+        "做什(cjk-2)",
+        "什(cjk-1)",
+        "什么(cjk-2)",
+        "么(cjk-1)",
+        "么吃(cjk-2)",
+        "吃(cjk-1)",
+        "吃的(cjk-2)",
+        "的(cjk-1)"
+      ],
+      "matchedTerms": [
+        "周",
+        "周末",
+        "末"
+      ],
+      "coverage": 0.1765,
+      "exactPhraseMatch": false,
+      "matchedBigrams": [
+        "周末"
+      ],
+      "matchedUnigrams": [
+        "周",
+        "末"
+      ],
+      "bigramCount": 1,
+      "recencyFactor": 0.869996,
+      "activationFactor": 2.17233,
+      "reinforcementCount": 8,
+      "recentDeliveryPenalty": 1,
+      "A0Score": 1.023525,
+      "A2H7Score": 2.223435,
+      "rankBefore": 4,
+      "rankAfter": 1,
+      "rankMoved": true,
+      "expectedRelevance": "irrelevant-intruder（健身房，仅共享 周末 一个词）",
+      "hasRevisitedEvents": true
+    },
+    {
+      "recordId": "rec-plant-watering",
+      "query": "周末在家做什么吃的",
+      "queryTokens": [
+        "周(cjk-1)",
+        "周末(cjk-2)",
+        "末(cjk-1)",
+        "末在(cjk-2)",
+        "在(cjk-1)",
+        "在家(cjk-2)",
+        "家(cjk-1)",
+        "家做(cjk-2)",
+        "做(cjk-1)",
+        "做什(cjk-2)",
+        "什(cjk-1)",
+        "什么(cjk-2)",
+        "么(cjk-1)",
+        "么吃(cjk-2)",
+        "吃(cjk-1)",
+        "吃的(cjk-2)",
+        "的(cjk-1)"
+      ],
+      "matchedTerms": [
+        "周"
+      ],
+      "coverage": 0.0588,
+      "exactPhraseMatch": false,
+      "matchedBigrams": [],
+      "matchedUnigrams": [
+        "周"
+      ],
+      "bigramCount": 0,
+      "recencyFactor": 0.921744,
+      "activationFactor": 0.4,
+      "reinforcementCount": 0,
+      "recentDeliveryPenalty": 1,
+      "A0Score": 0.975964,
+      "A2H7Score": 0.390386,
+      "rankBefore": 5,
+      "rankAfter": 5,
+      "rankMoved": false,
+      "expectedRelevance": "neutral（无预期）",
+      "hasRevisitedEvents": false
+    },
+    {
+      "recordId": "rec-travel-yunnan",
+      "query": "周末在家做什么吃的",
+      "queryTokens": [
+        "周(cjk-1)",
+        "周末(cjk-2)",
+        "末(cjk-1)",
+        "末在(cjk-2)",
+        "在(cjk-1)",
+        "在家(cjk-2)",
+        "家(cjk-1)",
+        "家做(cjk-2)",
+        "做(cjk-1)",
+        "做什(cjk-2)",
+        "什(cjk-1)",
+        "什么(cjk-2)",
+        "么(cjk-1)",
+        "么吃(cjk-2)",
+        "吃(cjk-1)",
+        "吃的(cjk-2)",
+        "的(cjk-1)"
+      ],
+      "matchedTerms": [
+        "的"
+      ],
+      "coverage": 0.0588,
+      "exactPhraseMatch": false,
+      "matchedBigrams": [],
+      "matchedUnigrams": [
+        "的"
+      ],
+      "bigramCount": 0,
+      "recencyFactor": 0.872824,
+      "activationFactor": 0.4,
+      "reinforcementCount": 0,
+      "recentDeliveryPenalty": 1,
+      "A0Score": 0.924166,
+      "A2H7Score": 0.369666,
+      "rankBefore": 6,
+      "rankAfter": 6,
+      "rankMoved": false,
+      "expectedRelevance": "neutral（无预期）",
+      "hasRevisitedEvents": false
+    },
+    {
+      "recordId": "rec-shared-001",
+      "query": "周末在家做什么吃的",
+      "queryTokens": [
+        "周(cjk-1)",
+        "周末(cjk-2)",
+        "末(cjk-1)",
+        "末在(cjk-2)",
+        "在(cjk-1)",
+        "在家(cjk-2)",
+        "家(cjk-1)",
+        "家做(cjk-2)",
+        "做(cjk-1)",
+        "做什(cjk-2)",
+        "什(cjk-1)",
+        "什么(cjk-2)",
+        "么(cjk-1)",
+        "么吃(cjk-2)",
+        "吃(cjk-1)",
+        "吃的(cjk-2)",
+        "的(cjk-1)"
+      ],
+      "matchedTerms": [
+        "在",
+        "的"
+      ],
+      "coverage": 0.1176,
+      "exactPhraseMatch": false,
+      "matchedBigrams": [],
+      "matchedUnigrams": [
+        "在",
+        "的"
+      ],
+      "bigramCount": 0,
+      "recencyFactor": 0.744619,
+      "activationFactor": 0.4,
+      "reinforcementCount": 0,
+      "recentDeliveryPenalty": 1,
+      "A0Score": 0.832221,
+      "A2H7Score": 0.332889,
+      "rankBefore": 7,
+      "rankAfter": 7,
+      "rankMoved": false,
+      "expectedRelevance": "neutral（无预期）",
+      "hasRevisitedEvents": false
+    },
+    {
+      "recordId": "rec-bike-riding",
+      "query": "周末在家做什么吃的",
+      "queryTokens": [
+        "周(cjk-1)",
+        "周末(cjk-2)",
+        "末(cjk-1)",
+        "末在(cjk-2)",
+        "在(cjk-1)",
+        "在家(cjk-2)",
+        "家(cjk-1)",
+        "家做(cjk-2)",
+        "做(cjk-1)",
+        "做什(cjk-2)",
+        "什(cjk-1)",
+        "什么(cjk-2)",
+        "么(cjk-1)",
+        "么吃(cjk-2)",
+        "吃(cjk-1)",
+        "吃的(cjk-2)",
+        "的(cjk-1)"
+      ],
+      "matchedTerms": [
+        "周",
+        "周末",
+        "末"
+      ],
+      "coverage": 0.1765,
+      "exactPhraseMatch": false,
+      "matchedBigrams": [
+        "周末"
+      ],
+      "matchedUnigrams": [
+        "周",
+        "末"
+      ],
+      "bigramCount": 1,
+      "recencyFactor": 0.697718,
+      "activationFactor": 0.4,
+      "reinforcementCount": 0,
+      "recentDeliveryPenalty": 1,
+      "A0Score": 0.820845,
+      "A2H7Score": 0.328338,
+      "rankBefore": 8,
+      "rankAfter": 8,
+      "rankMoved": false,
+      "expectedRelevance": "neutral（无预期）",
+      "hasRevisitedEvents": false
+    },
+    {
+      "recordId": "rec-badminton",
+      "query": "周末在家做什么吃的",
+      "queryTokens": [
+        "周(cjk-1)",
+        "周末(cjk-2)",
+        "末(cjk-1)",
+        "末在(cjk-2)",
+        "在(cjk-1)",
+        "在家(cjk-2)",
+        "家(cjk-1)",
+        "家做(cjk-2)",
+        "做(cjk-1)",
+        "做什(cjk-2)",
+        "什(cjk-1)",
+        "什么(cjk-2)",
+        "么(cjk-1)",
+        "么吃(cjk-2)",
+        "吃(cjk-1)",
+        "吃的(cjk-2)",
+        "的(cjk-1)"
+      ],
+      "matchedTerms": [
+        "周",
+        "在"
+      ],
+      "coverage": 0.1176,
+      "exactPhraseMatch": false,
+      "matchedBigrams": [],
+      "matchedUnigrams": [
+        "周",
+        "在"
+      ],
+      "bigramCount": 0,
+      "recencyFactor": 0.611785,
+      "activationFactor": 0.4,
+      "reinforcementCount": 0,
+      "recentDeliveryPenalty": 1,
+      "A0Score": 0.683759,
+      "A2H7Score": 0.273504,
+      "rankBefore": 9,
+      "rankAfter": 9,
+      "rankMoved": false,
+      "expectedRelevance": "neutral（无预期）",
+      "hasRevisitedEvents": false
+    },
+    {
+      "recordId": "rec-address-new",
+      "query": "周末在家做什么吃的",
+      "queryTokens": [
+        "周(cjk-1)",
+        "周末(cjk-2)",
+        "末(cjk-1)",
+        "末在(cjk-2)",
+        "在(cjk-1)",
+        "在家(cjk-2)",
+        "家(cjk-1)",
+        "家做(cjk-2)",
+        "做(cjk-1)",
+        "做什(cjk-2)",
+        "什(cjk-1)",
+        "什么(cjk-2)",
+        "么(cjk-1)",
+        "么吃(cjk-2)",
+        "吃(cjk-1)",
+        "吃的(cjk-2)",
+        "的(cjk-1)"
+      ],
+      "matchedTerms": [
+        "的"
+      ],
+      "coverage": 0.0588,
+      "exactPhraseMatch": false,
+      "matchedBigrams": [],
+      "matchedUnigrams": [
+        "的"
+      ],
+      "bigramCount": 0,
+      "recencyFactor": 0.644661,
+      "activationFactor": 0.4,
+      "reinforcementCount": 0,
+      "recentDeliveryPenalty": 1,
+      "A0Score": 0.682582,
+      "A2H7Score": 0.273033,
+      "rankBefore": 10,
+      "rankAfter": 10,
+      "rankMoved": false,
+      "expectedRelevance": "neutral（无预期）",
+      "hasRevisitedEvents": false
+    },
+    {
+      "recordId": "rec-no-cilantro",
+      "query": "周末在家做什么吃的",
+      "queryTokens": [
+        "周(cjk-1)",
+        "周末(cjk-2)",
+        "末(cjk-1)",
+        "末在(cjk-2)",
+        "在(cjk-1)",
+        "在家(cjk-2)",
+        "家(cjk-1)",
+        "家做(cjk-2)",
+        "做(cjk-1)",
+        "做什(cjk-2)",
+        "什(cjk-1)",
+        "什么(cjk-2)",
+        "么(cjk-1)",
+        "么吃(cjk-2)",
+        "吃(cjk-1)",
+        "吃的(cjk-2)",
+        "的(cjk-1)"
+      ],
+      "matchedTerms": [
+        "家",
+        "吃"
+      ],
+      "coverage": 0.1176,
+      "exactPhraseMatch": false,
+      "matchedBigrams": [],
+      "matchedUnigrams": [
+        "家",
+        "吃"
+      ],
+      "bigramCount": 0,
+      "recencyFactor": 0.600464,
+      "activationFactor": 0.4,
+      "reinforcementCount": 0,
+      "recentDeliveryPenalty": 1,
+      "A0Score": 0.671107,
+      "A2H7Score": 0.268443,
+      "rankBefore": 11,
+      "rankAfter": 11,
+      "rankMoved": false,
+      "expectedRelevance": "neutral（无预期）",
+      "hasRevisitedEvents": false
+    },
+    {
+      "recordId": "rec-climb-a",
+      "query": "周末在家做什么吃的",
+      "queryTokens": [
+        "周(cjk-1)",
+        "周末(cjk-2)",
+        "末(cjk-1)",
+        "末在(cjk-2)",
+        "在(cjk-1)",
+        "在家(cjk-2)",
+        "家(cjk-1)",
+        "家做(cjk-2)",
+        "做(cjk-1)",
+        "做什(cjk-2)",
+        "什(cjk-1)",
+        "什么(cjk-2)",
+        "么(cjk-1)",
+        "么吃(cjk-2)",
+        "吃(cjk-1)",
+        "吃的(cjk-2)",
+        "的(cjk-1)"
+      ],
+      "matchedTerms": [
+        "的"
+      ],
+      "coverage": 0.0588,
+      "exactPhraseMatch": false,
+      "matchedBigrams": [],
+      "matchedUnigrams": [
+        "的"
+      ],
+      "bigramCount": 0,
+      "recencyFactor": 0.614866,
+      "activationFactor": 0.4,
+      "reinforcementCount": 0,
+      "recentDeliveryPenalty": 1,
+      "A0Score": 0.651035,
+      "A2H7Score": 0.260414,
+      "rankBefore": 12,
+      "rankAfter": 12,
+      "rankMoved": false,
+      "expectedRelevance": "neutral（无预期）",
+      "hasRevisitedEvents": false
+    },
+    {
+      "recordId": "rec-climb-b",
+      "query": "周末在家做什么吃的",
+      "queryTokens": [
+        "周(cjk-1)",
+        "周末(cjk-2)",
+        "末(cjk-1)",
+        "末在(cjk-2)",
+        "在(cjk-1)",
+        "在家(cjk-2)",
+        "家(cjk-1)",
+        "家做(cjk-2)",
+        "做(cjk-1)",
+        "做什(cjk-2)",
+        "什(cjk-1)",
+        "什么(cjk-2)",
+        "么(cjk-1)",
+        "么吃(cjk-2)",
+        "吃(cjk-1)",
+        "吃的(cjk-2)",
+        "的(cjk-1)"
+      ],
+      "matchedTerms": [
+        "的"
+      ],
+      "coverage": 0.0588,
+      "exactPhraseMatch": false,
+      "matchedBigrams": [],
+      "matchedUnigrams": [
+        "的"
+      ],
+      "bigramCount": 0,
+      "recencyFactor": 0.614866,
+      "activationFactor": 0.4,
+      "reinforcementCount": 0,
+      "recentDeliveryPenalty": 1,
+      "A0Score": 0.651035,
+      "A2H7Score": 0.260414,
+      "rankBefore": 13,
+      "rankAfter": 13,
+      "rankMoved": false,
+      "expectedRelevance": "neutral（无预期）",
+      "hasRevisitedEvents": false
+    },
+    {
+      "recordId": "rec-scifi-books",
+      "query": "周末在家做什么吃的",
+      "queryTokens": [
+        "周(cjk-1)",
+        "周末(cjk-2)",
+        "末(cjk-1)",
+        "末在(cjk-2)",
+        "在(cjk-1)",
+        "在家(cjk-2)",
+        "家(cjk-1)",
+        "家做(cjk-2)",
+        "做(cjk-1)",
+        "做什(cjk-2)",
+        "什(cjk-1)",
+        "什么(cjk-2)",
+        "么(cjk-1)",
+        "么吃(cjk-2)",
+        "吃(cjk-1)",
+        "吃的(cjk-2)",
+        "的(cjk-1)"
+      ],
+      "matchedTerms": [
+        "的"
+      ],
+      "coverage": 0.0588,
+      "exactPhraseMatch": false,
+      "matchedBigrams": [],
+      "matchedUnigrams": [
+        "的"
+      ],
+      "bigramCount": 0,
+      "recencyFactor": 0.6025,
+      "activationFactor": 0.4,
+      "reinforcementCount": 0,
+      "recentDeliveryPenalty": 1,
+      "A0Score": 0.637941,
+      "A2H7Score": 0.255176,
+      "rankBefore": 14,
+      "rankAfter": 14,
+      "rankMoved": false,
+      "expectedRelevance": "neutral（无预期）",
+      "hasRevisitedEvents": false
+    },
+    {
+      "recordId": "rec-allergy-peanut",
+      "query": "周末在家做什么吃的",
+      "queryTokens": [
+        "周(cjk-1)",
+        "周末(cjk-2)",
+        "末(cjk-1)",
+        "末在(cjk-2)",
+        "在(cjk-1)",
+        "在家(cjk-2)",
+        "家(cjk-1)",
+        "家做(cjk-2)",
+        "做(cjk-1)",
+        "做什(cjk-2)",
+        "什(cjk-1)",
+        "什么(cjk-2)",
+        "么(cjk-1)",
+        "么吃(cjk-2)",
+        "吃(cjk-1)",
+        "吃的(cjk-2)",
+        "的(cjk-1)"
+      ],
+      "matchedTerms": [
+        "的"
+      ],
+      "coverage": 0.0588,
+      "exactPhraseMatch": false,
+      "matchedBigrams": [],
+      "matchedUnigrams": [
+        "的"
+      ],
+      "bigramCount": 0,
+      "recencyFactor": 0.600277,
+      "activationFactor": 0.4,
+      "reinforcementCount": 0,
+      "recentDeliveryPenalty": 1,
+      "A0Score": 0.635587,
+      "A2H7Score": 0.254235,
+      "rankBefore": 15,
+      "rankAfter": 15,
+      "rankMoved": false,
+      "expectedRelevance": "neutral（无预期）",
+      "hasRevisitedEvents": false
+    },
+    {
+      "recordId": "rec-mother-birthday",
+      "query": "周末在家做什么吃的",
+      "queryTokens": [
+        "周(cjk-1)",
+        "周末(cjk-2)",
+        "末(cjk-1)",
+        "末在(cjk-2)",
+        "在(cjk-1)",
+        "在家(cjk-2)",
+        "家(cjk-1)",
+        "家做(cjk-2)",
+        "做(cjk-1)",
+        "做什(cjk-2)",
+        "什(cjk-1)",
+        "什么(cjk-2)",
+        "么(cjk-1)",
+        "么吃(cjk-2)",
+        "吃(cjk-1)",
+        "吃的(cjk-2)",
+        "的(cjk-1)"
+      ],
+      "matchedTerms": [
+        "的"
+      ],
+      "coverage": 0.0588,
+      "exactPhraseMatch": false,
+      "matchedBigrams": [],
+      "matchedUnigrams": [
+        "的"
+      ],
+      "bigramCount": 0,
+      "recencyFactor": 0.60011,
+      "activationFactor": 0.4,
+      "reinforcementCount": 0,
+      "recentDeliveryPenalty": 1,
+      "A0Score": 0.63541,
+      "A2H7Score": 0.254164,
+      "rankBefore": 16,
+      "rankAfter": 16,
+      "rankMoved": false,
+      "expectedRelevance": "neutral（无预期）",
+      "hasRevisitedEvents": false
+    },
+    {
+      "recordId": "rec-commitment-erhai",
+      "query": "周末在家做什么吃的",
+      "queryTokens": [
+        "周(cjk-1)",
+        "周末(cjk-2)",
+        "末(cjk-1)",
+        "末在(cjk-2)",
+        "在(cjk-1)",
+        "在家(cjk-2)",
+        "家(cjk-1)",
+        "家做(cjk-2)",
+        "做(cjk-1)",
+        "做什(cjk-2)",
+        "什(cjk-1)",
+        "什么(cjk-2)",
+        "么(cjk-1)",
+        "么吃(cjk-2)",
+        "吃(cjk-1)",
+        "吃的(cjk-2)",
+        "的(cjk-1)"
+      ],
+      "matchedTerms": [
+        "的"
+      ],
+      "coverage": 0.0588,
+      "exactPhraseMatch": false,
+      "matchedBigrams": [],
+      "matchedUnigrams": [
+        "的"
+      ],
+      "bigramCount": 0,
+      "recencyFactor": 0.600008,
+      "activationFactor": 0.4,
+      "reinforcementCount": 0,
+      "recentDeliveryPenalty": 1,
+      "A0Score": 0.635303,
+      "A2H7Score": 0.254121,
+      "rankBefore": 17,
+      "rankAfter": 17,
+      "rankMoved": false,
+      "expectedRelevance": "neutral（无预期）",
+      "hasRevisitedEvents": false
+    }
+  ]
+}
