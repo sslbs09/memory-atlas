@@ -1,0 +1,6 @@
+X
+
+Failed tests:
+
+✖ test (115.0798ms)
+  'test failed'

@@ -1,0 +1,77 @@
+TAP version 13
+# [atlas] GET /health -> 200
+# [atlas] GET /atlas/health -> 401
+# [atlas] GET /atlas/health -> 401
+# [atlas] GET /atlas/health -> 200
+# [atlas] GET /atlas/spaces -> 200
+# [atlas] POST /atlas/record -> 401
+# [atlas] GET /atlas/search -> 200
+# Subtest: H1 liveness needs no token; every other surface does
+ok 1 - H1 liveness needs no token; every other surface does
+  ---
+  duration_ms: 129.0275
+  type: 'test'
+  ...
+# [atlas] POST /atlas/record -> 200
+# [atlas] GET /atlas/search -> 200
+# [atlas] POST /atlas/correct -> 200
+# [atlas] GET /atlas/search -> 200
+# [atlas] GET /atlas/search -> 200
+# [atlas] POST /atlas/correct -> 200
+# [atlas] GET /atlas/operation -> 200
+# Subtest: H2 the loopback API answers a full write / recall / correct / audit cycle
+ok 2 - H2 the loopback API answers a full write / recall / correct / audit cycle
+  ---
+  duration_ms: 31.1457
+  type: 'test'
+  ...
+# [atlas] GET /atlas/search -> 400
+# Subtest: H3 an unknown parameter is refused by name and never ignored
+ok 3 - H3 an unknown parameter is refused by name and never ignored
+  ---
+  duration_ms: 10.7308
+  type: 'test'
+  ...
+# [atlas] POST /atlas/record -> 200
+# [atlas] GET /atlas/search -> 503
+# [atlas] GET /atlas/detail -> 503
+# Subtest: H4 an unreadable space is a 503 with a reason, not a 200 with an empty list
+ok 4 - H4 an unreadable space is a 503 with a reason, not a 200 with an empty list
+  ---
+  duration_ms: 17.321
+  type: 'test'
+  ...
+# [atlas] POST /atlas/record -> 200
+# [atlas] GET /atlas/health -> 200
+# Subtest: H5 health separates authoritative bytes from derived cache and states the policy
+ok 5 - H5 health separates authoritative bytes from derived cache and states the policy
+  ---
+  duration_ms: 17.4055
+  type: 'test'
+  ...
+# Subtest: H6 the server starts and stops as its own process, driven only by the client
+ok 6 - H6 the server starts and stops as its own process, driven only by the client
+  ---
+  duration_ms: 434.9494
+  type: 'test'
+  ...
+# [atlas] POST /atlas/record -> 400
+# [atlas] POST /atlas/record -> 400
+# [atlas] POST /atlas/record -> 400
+# [atlas] POST /atlas/record -> 404
+# [atlas] POST /atlas/correct -> 409
+# Subtest: H7 a malformed request is refused with a code and writes nothing
+ok 7 - H7 a malformed request is refused with a code and writes nothing
+  ---
+  duration_ms: 49.802
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 896.1255

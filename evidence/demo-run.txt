@@ -1,0 +1,338 @@
+[atlas] POST /atlas/spaces -> 201
+[atlas] POST /atlas/spaces -> 201
+[atlas] POST /atlas/record -> 200
+
+— record a memory (receipt)
+{
+  "transport": "RESPONDED",
+  "httpStatus": 200,
+  "ok": true,
+  "accepted": true,
+  "outcome": "RECORDED",
+  "spaceId": "mira",
+  "recordId": "tea",
+  "sequence": 1,
+  "recordedAt": "2026-10-31T04:01:13.662Z",
+  "revision": 0
+}
+[atlas] GET /atlas/search -> 200
+
+— recall by a two-character Chinese term
+{
+  "transport": "RESPONDED",
+  "httpStatus": 200,
+  "ok": true,
+  "outcome": "MATCHED",
+  "spaceId": "mira",
+  "revision": 0,
+  "timeField": null,
+  "totalCount": 1,
+  "limit": 50,
+  "offset": 0,
+  "returned": 1,
+  "hasMore": false,
+  "records": [
+    {
+      "recordId": "tea",
+      "spaceId": "mira",
+      "kind": "experience",
+      "content": "用户喜欢无糖桂花乌龙",
+      "status": "active",
+      "visibility": "space",
+      "source": {
+        "kind": "chat",
+        "id": "msg-0001"
+      },
+      "aboutRecordId": null,
+      "attributes": null,
+      "occurredAt": null,
+      "recordedAt": "2026-10-31T04:01:13.662Z",
+      "timestamp": "2026-10-31T04:01:13.662Z",
+      "sequence": 1
+    }
+  ],
+  "counts": {
+    "total": 1,
+    "active": 1,
+    "effective": 1,
+    "superseded": 0,
+    "retracted": 0
+  },
+  "searchPath": "atlas-authoritative-scan",
+  "index": {
+    "state": "NOT_WIRED",
+    "coverage": "NOT_APPLICABLE"
+  }
+}
+[atlas] POST /atlas/correct -> 200
+
+— correct it (receipt)
+{
+  "transport": "RESPONDED",
+  "httpStatus": 200,
+  "ok": true,
+  "accepted": true,
+  "outcome": "RECORDED",
+  "spaceId": "mira",
+  "recordId": "op-f9661c1ef57e30bf32eb6d2a744efcdc",
+  "sequence": 2,
+  "recordedAt": "2026-10-31T04:01:13.669Z",
+  "revision": 2,
+  "operationId": "demo-e27f7de2-7fd9-4067-8db2-3937e7f18dcc"
+}
+[atlas] GET /atlas/search -> 200
+
+— effective recall only returns the correction
+{
+  "transport": "RESPONDED",
+  "httpStatus": 200,
+  "ok": true,
+  "outcome": "MATCHED",
+  "spaceId": "mira",
+  "revision": 2,
+  "timeField": null,
+  "totalCount": 1,
+  "limit": 50,
+  "offset": 0,
+  "returned": 1,
+  "hasMore": false,
+  "records": [
+    {
+      "recordId": "op-f9661c1ef57e30bf32eb6d2a744efcdc",
+      "spaceId": "mira",
+      "kind": "correction",
+      "content": "用户后来改喝银杉茶",
+      "status": "active",
+      "visibility": "space",
+      "source": null,
+      "aboutRecordId": "tea",
+      "attributes": null,
+      "occurredAt": null,
+      "recordedAt": "2026-10-31T04:01:13.669Z",
+      "timestamp": "2026-10-31T04:01:13.669Z",
+      "sequence": 2,
+      "about": {
+        "recordId": "tea",
+        "status": "superseded"
+      }
+    }
+  ],
+  "counts": {
+    "total": 2,
+    "active": 1,
+    "effective": 0,
+    "superseded": 1,
+    "retracted": 0
+  },
+  "searchPath": "atlas-authoritative-scan",
+  "index": {
+    "state": "NOT_WIRED",
+    "coverage": "NOT_APPLICABLE"
+  }
+}
+[atlas] GET /atlas/search -> 200
+
+— the audit view still shows the superseded original
+{
+  "transport": "RESPONDED",
+  "httpStatus": 200,
+  "ok": true,
+  "outcome": "MATCHED",
+  "spaceId": "mira",
+  "revision": 2,
+  "timeField": null,
+  "totalCount": 1,
+  "limit": 50,
+  "offset": 0,
+  "returned": 1,
+  "hasMore": false,
+  "records": [
+    {
+      "recordId": "op-f9661c1ef57e30bf32eb6d2a744efcdc",
+      "spaceId": "mira",
+      "kind": "correction",
+      "content": "用户后来改喝银杉茶",
+      "status": "active",
+      "visibility": "space",
+      "source": null,
+      "aboutRecordId": "tea",
+      "attributes": null,
+      "occurredAt": null,
+      "recordedAt": "2026-10-31T04:01:13.669Z",
+      "timestamp": "2026-10-31T04:01:13.669Z",
+      "sequence": 2,
+      "about": {
+        "recordId": "tea",
+        "status": "superseded"
+      }
+    }
+  ],
+  "counts": {
+    "total": 2,
+    "active": 1,
+    "effective": 0,
+    "superseded": 1,
+    "retracted": 0
+  },
+  "searchPath": "atlas-authoritative-scan",
+  "index": {
+    "state": "NOT_WIRED",
+    "coverage": "NOT_APPLICABLE"
+  }
+}
+[atlas] GET /atlas/detail -> 200
+
+— the correction chain from the original record
+{
+  "transport": "RESPONDED",
+  "httpStatus": 200,
+  "ok": true,
+  "outcome": "MATCHED",
+  "spaceId": "mira",
+  "revision": 2,
+  "record": {
+    "recordId": "tea",
+    "kind": "experience",
+    "content": "用户喜欢无糖桂花乌龙",
+    "spaceId": "mira",
+    "visibility": "space",
+    "source": {
+      "kind": "chat",
+      "id": "msg-0001"
+    },
+    "recordedAt": "2026-10-31T04:01:13.662Z",
+    "sequence": 1,
+    "status": "superseded",
+    "changedBy": "op-f9661c1ef57e30bf32eb6d2a744efcdc"
+  },
+  "related": [
+    {
+      "recordId": "op-f9661c1ef57e30bf32eb6d2a744efcdc",
+      "kind": "correction",
+      "content": "用户后来改喝银杉茶",
+      "spaceId": "mira",
+      "visibility": "space",
+      "aboutRecordId": "tea",
+      "recordedAt": "2026-10-31T04:01:13.669Z",
+      "sequence": 2,
+      "status": "active",
+      "about": {
+        "recordId": "tea",
+        "kind": "experience",
+        "content": "用户喜欢无糖桂花乌龙",
+        "spaceId": "mira",
+        "visibility": "space",
+        "source": {
+          "kind": "chat",
+          "id": "msg-0001"
+        },
+        "recordedAt": "2026-10-31T04:01:13.662Z",
+        "sequence": 1,
+        "status": "superseded",
+        "changedBy": "op-f9661c1ef57e30bf32eb6d2a744efcdc"
+      }
+    }
+  ]
+}
+[atlas] POST /atlas/correct -> 200
+
+— a replayed control against an inactive target is refused, not duplicated
+{
+  "transport": "RESPONDED",
+  "httpStatus": 200,
+  "ok": true,
+  "accepted": true,
+  "outcome": "IDEMPOTENT_REPLAY",
+  "spaceId": "mira",
+  "recordId": "op-f9661c1ef57e30bf32eb6d2a744efcdc",
+  "duplicateOf": {
+    "recordId": "op-f9661c1ef57e30bf32eb6d2a744efcdc",
+    "sequence": 2,
+    "recordedAt": "2026-10-31T04:01:13.669Z"
+  },
+  "revision": 2,
+  "status": "active"
+}
+[atlas] GET /atlas/search -> 200
+
+— the other memory space sees nothing of this
+{
+  "transport": "RESPONDED",
+  "httpStatus": 200,
+  "ok": true,
+  "outcome": "NO_MATCH",
+  "spaceId": "atelier",
+  "revision": 0,
+  "timeField": null,
+  "totalCount": 0,
+  "limit": 50,
+  "offset": 0,
+  "returned": 0,
+  "hasMore": false,
+  "records": [],
+  "counts": {
+    "total": 0,
+    "active": 0,
+    "effective": 0,
+    "superseded": 0,
+    "retracted": 0
+  },
+  "searchPath": "atlas-authoritative-scan",
+  "index": {
+    "state": "NOT_WIRED",
+    "coverage": "NOT_APPLICABLE"
+  }
+}
+[atlas] GET /atlas/health -> 200
+
+— capacity, sources and index state
+{
+  "transport": "RESPONDED",
+  "httpStatus": 200,
+  "ok": true,
+  "version": "memory-atlas-v0.1",
+  "authority": "native",
+  "capabilities": {
+    "write": true,
+    "correct": true,
+    "retract": true,
+    "spaces": true,
+    "visibility": true
+  },
+  "spaces": [
+    {
+      "spaceId": "atelier",
+      "records": 0,
+      "bytes": 130
+    },
+    {
+      "spaceId": "mira",
+      "records": 2,
+      "bytes": 739
+    }
+  ],
+  "spacesAvailable": true,
+  "capacity": {
+    "authoritativeBytes": 869,
+    "derivedCacheBytes": 0,
+    "capacityTargetBytes": 20000000000,
+    "policy": {
+      "enforceLimit": false,
+      "autoDiscardOriginals": false
+    },
+    "note": "The target is an observation budget. Reaching it never discards, truncates or refuses a record."
+  },
+  "derivedCache": {
+    "path": "<temp>\\um01\\atlas-demo-J0KkY9\\derived-cache",
+    "exists": false,
+    "bytes": 0,
+    "files": 0
+  },
+  "index": {
+    "state": "NOT_WIRED",
+    "coverage": "NOT_APPLICABLE",
+    "rebuildableFrom": "authoritative records"
+  }
+}
+
+demo data directory removed; the service wrote nothing outside it.

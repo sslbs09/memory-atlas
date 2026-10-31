@@ -1,0 +1,57 @@
+✔ AD1 the adapter reads a WhiteMoon instance as Atlas records, without inventing anything (90.0204ms)
+✔ AD2 only the named instance is served, and a foreign space is refused (4.574ms)
+✔ AD3 control and operation go through the documented endpoints and carry the operation id (15.8371ms)
+✔ AD4 an unreachable authority is unavailable, never an empty memory (12.5009ms)
+✔ AD5 Memory Atlas does not depend on WhiteMoon in code (4.7539ms)
+[atlas] GET /health -> 200
+[atlas] GET /atlas/health -> 401
+[atlas] GET /atlas/health -> 401
+[atlas] GET /atlas/health -> 200
+[atlas] GET /atlas/spaces -> 200
+[atlas] POST /atlas/record -> 401
+[atlas] GET /atlas/search -> 200
+✔ H1 liveness needs no token; every other surface does (149.6279ms)
+[atlas] POST /atlas/record -> 200
+[atlas] GET /atlas/search -> 200
+[atlas] POST /atlas/correct -> 200
+[atlas] GET /atlas/search -> 200
+[atlas] GET /atlas/search -> 200
+[atlas] POST /atlas/correct -> 200
+[atlas] GET /atlas/operation -> 200
+✔ H2 the loopback API answers a full write / recall / correct / audit cycle (33.7089ms)
+[atlas] GET /atlas/search -> 400
+✔ H3 an unknown parameter is refused by name and never ignored (11.0224ms)
+[atlas] POST /atlas/record -> 200
+[atlas] GET /atlas/search -> 503
+[atlas] GET /atlas/detail -> 503
+✔ H4 an unreadable space is a 503 with a reason, not a 200 with an empty list (20.0642ms)
+[atlas] POST /atlas/record -> 200
+[atlas] GET /atlas/health -> 200
+✔ H5 health separates authoritative bytes from derived cache and states the policy (18.5799ms)
+✔ H6 the server starts and stops as its own process, driven only by the client (461.7611ms)
+[atlas] POST /atlas/record -> 400
+[atlas] POST /atlas/record -> 400
+[atlas] POST /atlas/record -> 400
+[atlas] POST /atlas/record -> 404
+[atlas] POST /atlas/correct -> 409
+✔ H7 a malformed request is refused with a code and writes nothing (54.2675ms)
+✔ A1 the service runs with no character runtime present (16.6139ms)
+✔ A2 memory spaces are isolated from each other (17.2183ms)
+✔ A3 a correction keeps the old text auditable but out of recall (13.9971ms)
+✔ A4 a retraction removes a fact from recall without deleting its source (13.3755ms)
+✔ A5 a replayed operation resolves onto one record and stays queryable (14.7635ms)
+✔ A6 identity, not text similarity, decides duplication (14.4319ms)
+✔ A7 an unreadable space is unavailable, never an empty memory (12.9218ms)
+✔ A8 a rebuilt history yields the same view (derived state is reproducible) (12.2786ms)
+✔ A9 capacity separates authoritative bytes from derived cache (11.1867ms)
+✔ A10 a time window is evaluated over the whole history, on a named clock (63.5665ms)
+✔ A11 pagination reports real boundaries and content can be withheld (44.3946ms)
+✔ A12 a malformed record is refused by name and writes nothing (13.2593ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 994.9477
