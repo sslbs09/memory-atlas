@@ -63,7 +63,7 @@ POST /atlas/record { "spaceId": "mira", "record": { ... }, "operationId": "op-1"
 | outcome | meaning |
 |---|---|
 | `RECORDED` | newly appended |
-| `IDEMPOTENT_DUPLICATE` | this identity was already on record; `duplicateOf` names the original (id, sequence, recordedAt) |
+| `IDEMPOTENT_DUPLICATE` | this identity was already on record; `duplicateOf` names the original (id, sequence, recordedAt). **Atlas answers 200 here; WhiteMoon's `POST /experience` answers 409 with the same `duplicateOf` body** - the two services differ on this one point because WhiteMoon's 409 is a pre-existing contract it may not quietly relax |
 | `IDEMPOTENT_REPLAY` | the same `operationId` was already used; `recordId` is the original record and `status` its current standing |
 
 A control against a record that is no longer active is refused with
