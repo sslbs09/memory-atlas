@@ -1,0 +1,10 @@
+{
+  "process1Hash": "ce28609ac3d026f367c53aa94fc45c39ee57bae5cdfd30e250e393c194146aff",
+  "process2": {
+    "events": 4,
+    "uniqueAfterIdempotence": 4,
+    "stateHash": "ce28609ac3d026f367c53aa94fc45c39ee57bae5cdfd30e250e393c194146aff",
+    "replayedAt": "2026-10-31T17:55:10.169Z"
+  },
+  "identical": true
+}

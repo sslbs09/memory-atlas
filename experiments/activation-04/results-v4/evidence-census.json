@@ -1,0 +1,278 @@
+{
+  "explicitMultiCandidateScenarios": 20,
+  "candidates": 51,
+  "coverageDistribution": {
+    "1": 51
+  },
+  "phraseHitVariation": 5,
+  "idHitCount": 3,
+  "tierVariationScenarios": 5,
+  "tierHomogeneousScenarios": 15,
+  "perScenario": [
+    {
+      "id": "E01-xiaolin-person-events",
+      "candidateCount": 3,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 3,
+      "idHitTrue": 0,
+      "tiers": [
+        1
+      ],
+      "tierVaried": false
+    },
+    {
+      "id": "E02-token-quality-gate",
+      "candidateCount": 2,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 1,
+      "idHitTrue": 0,
+      "tiers": [
+        2,
+        1
+      ],
+      "tierVaried": true
+    },
+    {
+      "id": "E04-single-char-noise",
+      "candidateCount": 3,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 0,
+      "idHitTrue": 0,
+      "tiers": [
+        4
+      ],
+      "tierVaried": false
+    },
+    {
+      "id": "E05-freq-irrelevant-explicit",
+      "candidateCount": 4,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 4,
+      "idHitTrue": 0,
+      "tiers": [
+        1
+      ],
+      "tierVaried": false
+    },
+    {
+      "id": "E06-explicit-reask",
+      "candidateCount": 2,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 0,
+      "idHitTrue": 0,
+      "tiers": [
+        2
+      ],
+      "tierVaried": false
+    },
+    {
+      "id": "E07-old-commitment-explicit",
+      "candidateCount": 2,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 2,
+      "idHitTrue": 0,
+      "tiers": [
+        1
+      ],
+      "tierVaried": false
+    },
+    {
+      "id": "E08-duplicate-sources",
+      "candidateCount": 2,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 2,
+      "idHitTrue": 2,
+      "tiers": [
+        0
+      ],
+      "tierVaried": false
+    },
+    {
+      "id": "E09-corrected-highfreq",
+      "candidateCount": 3,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 3,
+      "idHitTrue": 0,
+      "tiers": [
+        1
+      ],
+      "tierVaried": false
+    },
+    {
+      "id": "E13-idhit-gate",
+      "candidateCount": 2,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 1,
+      "idHitTrue": 1,
+      "tiers": [
+        1,
+        0
+      ],
+      "tierVaried": true
+    },
+    {
+      "id": "X01-restart-determinism",
+      "candidateCount": 2,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 1,
+      "idHitTrue": 0,
+      "tiers": [
+        2,
+        1
+      ],
+      "tierVaried": true
+    },
+    {
+      "id": "X02-shadow-zero-side-effect",
+      "candidateCount": 4,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 4,
+      "idHitTrue": 0,
+      "tiers": [
+        1
+      ],
+      "tierVaried": false
+    },
+    {
+      "id": "X03-internal-readonly-events",
+      "candidateCount": 4,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 4,
+      "idHitTrue": 0,
+      "tiers": [
+        1
+      ],
+      "tierVaried": false
+    },
+    {
+      "id": "X04-log-failure-honesty",
+      "candidateCount": 4,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 4,
+      "idHitTrue": 0,
+      "tiers": [
+        1
+      ],
+      "tierVaried": false
+    },
+    {
+      "id": "V01-phrase-vs-scatter-old",
+      "candidateCount": 2,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 1,
+      "idHitTrue": 0,
+      "tiers": [
+        2,
+        1
+      ],
+      "tierVaried": true
+    },
+    {
+      "id": "V02-explicit-reask-expense",
+      "candidateCount": 2,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 2,
+      "idHitTrue": 0,
+      "tiers": [
+        1
+      ],
+      "tierVaried": false
+    },
+    {
+      "id": "V03-freq-irrelevant-annual",
+      "candidateCount": 2,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 2,
+      "idHitTrue": 0,
+      "tiers": [
+        1
+      ],
+      "tierVaried": false
+    },
+    {
+      "id": "V04-commitment-book-return",
+      "candidateCount": 2,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 2,
+      "idHitTrue": 0,
+      "tiers": [
+        1
+      ],
+      "tierVaried": false
+    },
+    {
+      "id": "V05-multi-revisit-health",
+      "candidateCount": 2,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 2,
+      "idHitTrue": 0,
+      "tiers": [
+        1
+      ],
+      "tierVaried": false
+    },
+    {
+      "id": "V06-retracted-highfreq-password",
+      "candidateCount": 2,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 2,
+      "idHitTrue": 0,
+      "tiers": [
+        1
+      ],
+      "tierVaried": false
+    },
+    {
+      "id": "V07-recent-weak-invoice",
+      "candidateCount": 2,
+      "coverageValues": [
+        "1"
+      ],
+      "phraseHitTrue": 1,
+      "idHitTrue": 0,
+      "tiers": [
+        2,
+        1
+      ],
+      "tierVaried": true
+    }
+  ]
+}

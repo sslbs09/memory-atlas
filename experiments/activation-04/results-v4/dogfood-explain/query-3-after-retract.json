@@ -1,0 +1,19 @@
+{
+  "query": "便利店 透明伞",
+  "browseCandidates": [
+    "df-towatch",
+    "df-noise",
+    "df-movie",
+    "df-commitment"
+  ],
+  "candidateCount": 0,
+  "retractedRecordPresent": false,
+  "rankings": {
+    "A0": [],
+    "L": [],
+    "R": [],
+    "LR": [],
+    "D": []
+  },
+  "stateHash": "ce28609ac3d026f367c53aa94fc45c39ee57bae5cdfd30e250e393c194146aff"
+}

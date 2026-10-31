@@ -1,0 +1,5 @@
+{
+  "since": "2026-07-03T17:55:09.940Z",
+  "note": "D（RecentDelivery 抑制）只在此类 ambient 浏览生效；explicit 追问恒绕过",
+  "stateHash": "ce28609ac3d026f367c53aa94fc45c39ee57bae5cdfd30e250e393c194146aff"
+}

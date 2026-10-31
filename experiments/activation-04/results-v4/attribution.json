@@ -1,0 +1,4721 @@
+{
+  "meta": {
+    "generatedAt": "2026-10-31T17:47:27.098Z",
+    "clock": "2026-11-01T12:00:00.000Z",
+    "strategies": [
+      "A0",
+      "L",
+      "R",
+      "LR",
+      "D"
+    ],
+    "strategyDefinitions": {
+      "A0": "正式原始排序（coordinator 原样，恒等映射）",
+      "L": "仅词面质量：tier 升序稳定排序（id-hit < phrase < multi-bigram < bigram+residual < weak），不消费事件",
+      "R": "仅动态激活：原生 a0Score × g2Multiplier（activation-02 G2 数学），无词面闸门；路径 C 无 base 分数 → 拒用",
+      "LR": "activation-03 G1G2 原样：base × G2 乘数 + tier 闸门（gate 只约束 boosted 上移）",
+      "D": "原始排序 + RecentDelivery 抑制（= activation-03 G3 语义原样：ambient 抑制 / explicit 恒绕过 / 路径 C 稳定后移）"
+    },
+    "holdoutV4": {
+      "id": "holdout-v4",
+      "createdAt": "2026-11-01",
+      "clock": "2026-11-01T12:00:00.000Z",
+      "clockMs": 1793534400000,
+      "scenarioCount": 8,
+      "families": {
+        "explicit": 7,
+        "ambient": 1
+      },
+      "corpus": "corpus-v4.mjs（独立空间 nova / nova-b）",
+      "purpose": "归因实验的新独立案例：与 v3 的 30 场景合并评价，但新案例的期望独立冻结",
+      "difficultTypeCoverage": {
+        "语义相关但时间较旧": [
+          "V01-phrase-vs-scatter-old"
+        ],
+        "新近但只弱相关": [
+          "V07-recent-weak-invoice"
+        ],
+        "完整短语与零散字词竞争": [
+          "V01-phrase-vs-scatter-old",
+          "V07-recent-weak-invoice"
+        ],
+        "高频无关记忆": [
+          "V03-freq-irrelevant-annual"
+        ],
+        "长期有效约定": [
+          "V04-commitment-book-return"
+        ],
+        "同一条记忆多次真实重提": [
+          "V05-multi-revisit-health"
+        ],
+        "已撤回的高频旧记录": [
+          "V06-retracted-highfreq-password"
+        ],
+        "用户明确再次追问": [
+          "V02-explicit-reask-expense"
+        ],
+        "最近已经提及（ambient 抑制）": [
+          "V08-ambient-delivery-zhao"
+        ]
+      },
+      "denominators": {
+        "note": "排序指标分母 = 候选数>0 且存在 grade>=2 的场景；单候选场景单独标注（无重排空间，三策略必然同序）。"
+      }
+    },
+    "amendmentsV4": [],
+    "denominatorsCheck": "byGroup[*].scenarios / rankingDenominator / excluded 显式列名；单候选场景单独统计。"
+  },
+  "byGroup": {
+    "explicit-v3": {
+      "scenarios": 14,
+      "rankingDenominator": 14,
+      "multiCandidateDenominator": 9,
+      "singleCandidateScenarios": [
+        "E03-same-coverage-uplift",
+        "E10-cross-space-explicit",
+        "E11-retracted-unreachable-explicit",
+        "E12-multi-term-and",
+        "E14-single-candidate-trivial"
+      ],
+      "excluded": [],
+      "all": {
+        "A0": {
+          "top1Accuracy": 0.4286,
+          "mrr": 0.7738,
+          "ndcg5": 0.832,
+          "top3IntrusionTotal": 4,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 14
+        },
+        "L": {
+          "top1Accuracy": 0.5714,
+          "mrr": 0.8095,
+          "ndcg5": 0.8646,
+          "top3IntrusionTotal": 4,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 14
+        },
+        "R": {
+          "top1Accuracy": 0.5714,
+          "mrr": 0.8452,
+          "ndcg5": 0.8722,
+          "top3IntrusionTotal": 4,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 14
+        },
+        "LR": {
+          "top1Accuracy": 0.7143,
+          "mrr": 0.881,
+          "ndcg5": 0.9047,
+          "top3IntrusionTotal": 4,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 14
+        },
+        "D": {
+          "top1Accuracy": 0.4286,
+          "mrr": 0.7738,
+          "ndcg5": 0.832,
+          "top3IntrusionTotal": 4,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 14
+        }
+      },
+      "multiCandidateOnly": {
+        "A0": {
+          "top1Accuracy": 0.1111,
+          "mrr": 0.6481,
+          "ndcg5": 0.7478,
+          "top3IntrusionTotal": 4,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 9
+        },
+        "L": {
+          "top1Accuracy": 0.3333,
+          "mrr": 0.7037,
+          "ndcg5": 0.7985,
+          "top3IntrusionTotal": 4,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 9
+        },
+        "R": {
+          "top1Accuracy": 0.3333,
+          "mrr": 0.7593,
+          "ndcg5": 0.8103,
+          "top3IntrusionTotal": 4,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 9
+        },
+        "LR": {
+          "top1Accuracy": 0.5556,
+          "mrr": 0.8148,
+          "ndcg5": 0.861,
+          "top3IntrusionTotal": 4,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 9
+        },
+        "D": {
+          "top1Accuracy": 0.1111,
+          "mrr": 0.6481,
+          "ndcg5": 0.7478,
+          "top3IntrusionTotal": 4,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 9
+        }
+      }
+    },
+    "explicit-v4": {
+      "scenarios": 7,
+      "rankingDenominator": 7,
+      "multiCandidateDenominator": 7,
+      "singleCandidateScenarios": [],
+      "excluded": [],
+      "all": {
+        "A0": {
+          "top1Accuracy": 0.1429,
+          "mrr": 0.5714,
+          "ndcg5": 0.74,
+          "top3IntrusionTotal": 1,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 7
+        },
+        "L": {
+          "top1Accuracy": 0.4286,
+          "mrr": 0.7143,
+          "ndcg5": 0.8229,
+          "top3IntrusionTotal": 1,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 7
+        },
+        "R": {
+          "top1Accuracy": 0.7143,
+          "mrr": 0.8571,
+          "ndcg5": 0.9058,
+          "top3IntrusionTotal": 1,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 7
+        },
+        "LR": {
+          "top1Accuracy": 0.7143,
+          "mrr": 0.8571,
+          "ndcg5": 0.9058,
+          "top3IntrusionTotal": 1,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 7
+        },
+        "D": {
+          "top1Accuracy": 0.1429,
+          "mrr": 0.5714,
+          "ndcg5": 0.74,
+          "top3IntrusionTotal": 1,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 7
+        }
+      },
+      "multiCandidateOnly": {
+        "A0": {
+          "top1Accuracy": 0.1429,
+          "mrr": 0.5714,
+          "ndcg5": 0.74,
+          "top3IntrusionTotal": 1,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 7
+        },
+        "L": {
+          "top1Accuracy": 0.4286,
+          "mrr": 0.7143,
+          "ndcg5": 0.8229,
+          "top3IntrusionTotal": 1,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 7
+        },
+        "R": {
+          "top1Accuracy": 0.7143,
+          "mrr": 0.8571,
+          "ndcg5": 0.9058,
+          "top3IntrusionTotal": 1,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 7
+        },
+        "LR": {
+          "top1Accuracy": 0.7143,
+          "mrr": 0.8571,
+          "ndcg5": 0.9058,
+          "top3IntrusionTotal": 1,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 7
+        },
+        "D": {
+          "top1Accuracy": 0.1429,
+          "mrr": 0.5714,
+          "ndcg5": 0.74,
+          "top3IntrusionTotal": 1,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 7
+        }
+      }
+    },
+    "explicit-combined": {
+      "scenarios": 21,
+      "rankingDenominator": 21,
+      "multiCandidateDenominator": 16,
+      "singleCandidateScenarios": [
+        "E03-same-coverage-uplift",
+        "E10-cross-space-explicit",
+        "E11-retracted-unreachable-explicit",
+        "E12-multi-term-and",
+        "E14-single-candidate-trivial"
+      ],
+      "excluded": [],
+      "all": {
+        "A0": {
+          "top1Accuracy": 0.3333,
+          "mrr": 0.7063,
+          "ndcg5": 0.8013,
+          "top3IntrusionTotal": 5,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 21
+        },
+        "L": {
+          "top1Accuracy": 0.5238,
+          "mrr": 0.7778,
+          "ndcg5": 0.8507,
+          "top3IntrusionTotal": 5,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 21
+        },
+        "R": {
+          "top1Accuracy": 0.619,
+          "mrr": 0.8492,
+          "ndcg5": 0.8834,
+          "top3IntrusionTotal": 5,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 21
+        },
+        "LR": {
+          "top1Accuracy": 0.7143,
+          "mrr": 0.873,
+          "ndcg5": 0.9051,
+          "top3IntrusionTotal": 5,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 21
+        },
+        "D": {
+          "top1Accuracy": 0.3333,
+          "mrr": 0.7063,
+          "ndcg5": 0.8013,
+          "top3IntrusionTotal": 5,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 21
+        }
+      },
+      "multiCandidateOnly": {
+        "A0": {
+          "top1Accuracy": 0.125,
+          "mrr": 0.6146,
+          "ndcg5": 0.7444,
+          "top3IntrusionTotal": 5,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 16
+        },
+        "L": {
+          "top1Accuracy": 0.375,
+          "mrr": 0.7083,
+          "ndcg5": 0.8092,
+          "top3IntrusionTotal": 5,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 16
+        },
+        "R": {
+          "top1Accuracy": 0.5,
+          "mrr": 0.8021,
+          "ndcg5": 0.8521,
+          "top3IntrusionTotal": 5,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 16
+        },
+        "LR": {
+          "top1Accuracy": 0.625,
+          "mrr": 0.8333,
+          "ndcg5": 0.8806,
+          "top3IntrusionTotal": 5,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 16
+        },
+        "D": {
+          "top1Accuracy": 0.125,
+          "mrr": 0.6146,
+          "ndcg5": 0.7444,
+          "top3IntrusionTotal": 5,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 16
+        }
+      }
+    },
+    "ambient-v3": {
+      "scenarios": 6,
+      "rankingDenominator": 5,
+      "multiCandidateDenominator": 5,
+      "singleCandidateScenarios": [],
+      "excluded": [
+        {
+          "id": "B06-sentence-situation-empty",
+          "reason": "zero-candidates"
+        }
+      ],
+      "all": {
+        "A0": {
+          "top1Accuracy": 0,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 5
+        },
+        "L": {
+          "top1Accuracy": 0,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 5
+        },
+        "R": {
+          "top1Accuracy": 0,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 5
+        },
+        "LR": {
+          "top1Accuracy": 0,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 5
+        },
+        "D": {
+          "top1Accuracy": 0.4,
+          "mrr": 1,
+          "ndcg5": 0.913,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 5
+        }
+      },
+      "multiCandidateOnly": {
+        "A0": {
+          "top1Accuracy": 0,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 5
+        },
+        "L": {
+          "top1Accuracy": 0,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 5
+        },
+        "R": {
+          "top1Accuracy": 0,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 5
+        },
+        "LR": {
+          "top1Accuracy": 0,
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 5
+        },
+        "D": {
+          "top1Accuracy": 0.4,
+          "mrr": 1,
+          "ndcg5": 0.913,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 5
+        }
+      }
+    },
+    "ambient-v4": {
+      "scenarios": 1,
+      "rankingDenominator": 1,
+      "multiCandidateDenominator": 1,
+      "singleCandidateScenarios": [],
+      "excluded": [],
+      "all": {
+        "A0": {
+          "top1Accuracy": 0,
+          "mrr": 1,
+          "ndcg5": 0.858,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 1
+        },
+        "L": {
+          "top1Accuracy": 0,
+          "mrr": 1,
+          "ndcg5": 0.858,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 1
+        },
+        "R": {
+          "top1Accuracy": 0,
+          "mrr": 1,
+          "ndcg5": 0.858,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 1
+        },
+        "LR": {
+          "top1Accuracy": 0,
+          "mrr": 1,
+          "ndcg5": 0.858,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 1
+        },
+        "D": {
+          "top1Accuracy": 1,
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 1
+        }
+      },
+      "multiCandidateOnly": {
+        "A0": {
+          "top1Accuracy": 0,
+          "mrr": 1,
+          "ndcg5": 0.858,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 1
+        },
+        "L": {
+          "top1Accuracy": 0,
+          "mrr": 1,
+          "ndcg5": 0.858,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 1
+        },
+        "R": {
+          "top1Accuracy": 0,
+          "mrr": 1,
+          "ndcg5": 0.858,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 1
+        },
+        "LR": {
+          "top1Accuracy": 0,
+          "mrr": 1,
+          "ndcg5": 0.858,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 1
+        },
+        "D": {
+          "top1Accuracy": 1,
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3IntrusionTotal": 0,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 1
+        }
+      }
+    },
+    "fallback-v3": {
+      "scenarios": 6,
+      "rankingDenominator": 5,
+      "multiCandidateDenominator": 3,
+      "singleCandidateScenarios": [
+        "C04-scan-retracted",
+        "C06-scan-cross-space"
+      ],
+      "excluded": [
+        {
+          "id": "C05-browse-suppression",
+          "reason": "no-grade2-relevant"
+        }
+      ],
+      "all": {
+        "A0": {
+          "top1Accuracy": 0.4,
+          "mrr": 0.7,
+          "ndcg5": 0.805,
+          "top3IntrusionTotal": 2,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 5
+        },
+        "L": {
+          "top1Accuracy": 0.4,
+          "mrr": 0.7,
+          "ndcg5": 0.805,
+          "top3IntrusionTotal": 2,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 5
+        },
+        "R": {
+          "top1Accuracy": 0.4,
+          "mrr": 0.7,
+          "ndcg5": 0.805,
+          "top3IntrusionTotal": 2,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 5
+        },
+        "LR": {
+          "top1Accuracy": 0.4,
+          "mrr": 0.7,
+          "ndcg5": 0.805,
+          "top3IntrusionTotal": 2,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 5
+        },
+        "D": {
+          "top1Accuracy": 0.4,
+          "mrr": 0.7,
+          "ndcg5": 0.805,
+          "top3IntrusionTotal": 2,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 5
+        }
+      },
+      "multiCandidateOnly": {
+        "A0": {
+          "top1Accuracy": 0,
+          "mrr": 0.5,
+          "ndcg5": 0.675,
+          "top3IntrusionTotal": 2,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 3
+        },
+        "L": {
+          "top1Accuracy": 0,
+          "mrr": 0.5,
+          "ndcg5": 0.675,
+          "top3IntrusionTotal": 2,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 3
+        },
+        "R": {
+          "top1Accuracy": 0,
+          "mrr": 0.5,
+          "ndcg5": 0.675,
+          "top3IntrusionTotal": 2,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 3
+        },
+        "LR": {
+          "top1Accuracy": 0,
+          "mrr": 0.5,
+          "ndcg5": 0.675,
+          "top3IntrusionTotal": 2,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 3
+        },
+        "D": {
+          "top1Accuracy": 0,
+          "mrr": 0.5,
+          "ndcg5": 0.675,
+          "top3IntrusionTotal": 2,
+          "forbiddenRecallTotal": 0,
+          "primaryReachableCount": 3
+        }
+      }
+    }
+  },
+  "priorFixedAttribution": [
+    {
+      "id": "E01-xiaolin-person-events",
+      "candidateCount": 3,
+      "a0Top1": {
+        "id": "rec-xiaolin-cafe",
+        "grade": 1
+      },
+      "byStrategy": {
+        "A0": {
+          "top1": "rec-xiaolin-cafe",
+          "grade": 1,
+          "fixed": false
+        },
+        "L": {
+          "top1": "rec-xiaolin-cafe",
+          "grade": 1,
+          "fixed": false
+        },
+        "R": {
+          "top1": "rec-xiaolin-book",
+          "grade": 3,
+          "fixed": true
+        },
+        "LR": {
+          "top1": "rec-xiaolin-book",
+          "grade": 3,
+          "fixed": true
+        },
+        "D": {
+          "top1": "rec-xiaolin-cafe",
+          "grade": 1,
+          "fixed": false
+        }
+      },
+      "fixedBy": [
+        "R",
+        "LR"
+      ],
+      "tierHomogeneous": {
+        "homogeneous": true,
+        "tiers": [
+          1
+        ]
+      },
+      "lrRefused": null
+    },
+    {
+      "id": "E02-token-quality-gate",
+      "candidateCount": 2,
+      "a0Top1": {
+        "id": "rec-gym-treadmill",
+        "grade": 1
+      },
+      "byStrategy": {
+        "A0": {
+          "top1": "rec-gym-treadmill",
+          "grade": 1,
+          "fixed": false
+        },
+        "L": {
+          "top1": "rec-gym-run",
+          "grade": 3,
+          "fixed": true
+        },
+        "R": {
+          "top1": "rec-gym-treadmill",
+          "grade": 1,
+          "fixed": false
+        },
+        "LR": {
+          "top1": "rec-gym-run",
+          "grade": 3,
+          "fixed": true
+        },
+        "D": {
+          "top1": "rec-gym-treadmill",
+          "grade": 1,
+          "fixed": false
+        }
+      },
+      "fixedBy": [
+        "L",
+        "LR"
+      ],
+      "tierHomogeneous": {
+        "homogeneous": false,
+        "tiers": [
+          2,
+          1
+        ]
+      },
+      "lrRefused": null
+    },
+    {
+      "id": "E06-explicit-reask",
+      "candidateCount": 2,
+      "a0Top1": {
+        "id": "rec-friday-cancel",
+        "grade": 1
+      },
+      "byStrategy": {
+        "A0": {
+          "top1": "rec-friday-cancel",
+          "grade": 1,
+          "fixed": false
+        },
+        "L": {
+          "top1": "rec-friday-cancel",
+          "grade": 1,
+          "fixed": false
+        },
+        "R": {
+          "top1": "rec-friday-meal",
+          "grade": 3,
+          "fixed": true
+        },
+        "LR": {
+          "top1": "rec-friday-meal",
+          "grade": 3,
+          "fixed": true
+        },
+        "D": {
+          "top1": "rec-friday-cancel",
+          "grade": 1,
+          "fixed": false
+        }
+      },
+      "fixedBy": [
+        "R",
+        "LR"
+      ],
+      "tierHomogeneous": {
+        "homogeneous": true,
+        "tiers": [
+          2
+        ]
+      },
+      "lrRefused": null
+    },
+    {
+      "id": "E13-idhit-gate",
+      "candidateCount": 2,
+      "a0Top1": {
+        "id": "rec-camera-backup",
+        "grade": 2
+      },
+      "byStrategy": {
+        "A0": {
+          "top1": "rec-camera-backup",
+          "grade": 2,
+          "fixed": false
+        },
+        "L": {
+          "top1": "rec-x-t30-camera",
+          "grade": 3,
+          "fixed": true
+        },
+        "R": {
+          "top1": "rec-camera-backup",
+          "grade": 2,
+          "fixed": false
+        },
+        "LR": {
+          "top1": "rec-x-t30-camera",
+          "grade": 3,
+          "fixed": true
+        },
+        "D": {
+          "top1": "rec-camera-backup",
+          "grade": 2,
+          "fixed": false
+        }
+      },
+      "fixedBy": [
+        "L",
+        "LR"
+      ],
+      "tierHomogeneous": {
+        "homogeneous": false,
+        "tiers": [
+          1,
+          0
+        ]
+      },
+      "lrRefused": null
+    }
+  ],
+  "attributionMatrix": {
+    "fixedBy": {
+      "A0": [
+        "E03-same-coverage-uplift",
+        "E09-corrected-highfreq",
+        "E10-cross-space-explicit",
+        "E11-retracted-unreachable-explicit",
+        "E12-multi-term-and",
+        "E14-single-candidate-trivial",
+        "C04-scan-retracted",
+        "C06-scan-cross-space",
+        "V06-retracted-highfreq-password"
+      ],
+      "L": [
+        "E02-token-quality-gate",
+        "E03-same-coverage-uplift",
+        "E09-corrected-highfreq",
+        "E10-cross-space-explicit",
+        "E11-retracted-unreachable-explicit",
+        "E12-multi-term-and",
+        "E13-idhit-gate",
+        "E14-single-candidate-trivial",
+        "C04-scan-retracted",
+        "C06-scan-cross-space",
+        "V01-phrase-vs-scatter-old",
+        "V06-retracted-highfreq-password",
+        "V07-recent-weak-invoice"
+      ],
+      "R": [
+        "E01-xiaolin-person-events",
+        "E03-same-coverage-uplift",
+        "E06-explicit-reask",
+        "E09-corrected-highfreq",
+        "E10-cross-space-explicit",
+        "E11-retracted-unreachable-explicit",
+        "E12-multi-term-and",
+        "E14-single-candidate-trivial",
+        "C04-scan-retracted",
+        "C06-scan-cross-space",
+        "V02-explicit-reask-expense",
+        "V04-commitment-book-return",
+        "V05-multi-revisit-health",
+        "V06-retracted-highfreq-password",
+        "V07-recent-weak-invoice"
+      ],
+      "LR": [
+        "E01-xiaolin-person-events",
+        "E02-token-quality-gate",
+        "E03-same-coverage-uplift",
+        "E06-explicit-reask",
+        "E09-corrected-highfreq",
+        "E10-cross-space-explicit",
+        "E11-retracted-unreachable-explicit",
+        "E12-multi-term-and",
+        "E13-idhit-gate",
+        "E14-single-candidate-trivial",
+        "C04-scan-retracted",
+        "C06-scan-cross-space",
+        "V02-explicit-reask-expense",
+        "V04-commitment-book-return",
+        "V05-multi-revisit-health",
+        "V06-retracted-highfreq-password",
+        "V07-recent-weak-invoice"
+      ],
+      "D": [
+        "E03-same-coverage-uplift",
+        "E09-corrected-highfreq",
+        "E10-cross-space-explicit",
+        "E11-retracted-unreachable-explicit",
+        "E12-multi-term-and",
+        "E14-single-candidate-trivial",
+        "B02-recent-delivery",
+        "B03-suppression-decay-zone",
+        "C04-scan-retracted",
+        "C06-scan-cross-space",
+        "V06-retracted-highfreq-password",
+        "V08-ambient-delivery-zhao"
+      ]
+    },
+    "uniqueFixedBy": {
+      "L": [
+        "V01-phrase-vs-scatter-old"
+      ],
+      "R": [],
+      "LR": [],
+      "D": [
+        "B02-recent-delivery",
+        "B03-suppression-decay-zone",
+        "V08-ambient-delivery-zhao"
+      ]
+    },
+    "regressionsVsA0": {
+      "L": [],
+      "R": [],
+      "LR": [],
+      "D": []
+    },
+    "lrVsL": {
+      "lrFixesThatLMisses": [
+        "E01-xiaolin-person-events",
+        "E06-explicit-reask",
+        "V02-explicit-reask-expense",
+        "V04-commitment-book-return",
+        "V05-multi-revisit-health"
+      ],
+      "lFixesThatLRMisses": [
+        "V01-phrase-vs-scatter-old"
+      ],
+      "lrErrorsLLacks": [
+        {
+          "id": "V01-phrase-vs-scatter-old",
+          "lGrade": 3,
+          "lrGrade": 1
+        }
+      ],
+      "rErrorsLLacks": [
+        {
+          "id": "E02-token-quality-gate",
+          "lGrade": 3,
+          "rGrade": 1
+        },
+        {
+          "id": "E13-idhit-gate",
+          "lGrade": 3,
+          "rGrade": 2
+        },
+        {
+          "id": "V01-phrase-vs-scatter-old",
+          "lGrade": 3,
+          "rGrade": 1
+        }
+      ]
+    }
+  },
+  "evidenceCensus": {
+    "explicitMultiCandidateScenarios": 20,
+    "candidates": 51,
+    "coverageDistribution": {
+      "1": 51
+    },
+    "phraseHitVariation": 5,
+    "idHitCount": 3,
+    "tierVariationScenarios": 5,
+    "tierHomogeneousScenarios": 15,
+    "perScenario": [
+      {
+        "id": "E01-xiaolin-person-events",
+        "candidateCount": 3,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 3,
+        "idHitTrue": 0,
+        "tiers": [
+          1
+        ],
+        "tierVaried": false
+      },
+      {
+        "id": "E02-token-quality-gate",
+        "candidateCount": 2,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 1,
+        "idHitTrue": 0,
+        "tiers": [
+          2,
+          1
+        ],
+        "tierVaried": true
+      },
+      {
+        "id": "E04-single-char-noise",
+        "candidateCount": 3,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 0,
+        "idHitTrue": 0,
+        "tiers": [
+          4
+        ],
+        "tierVaried": false
+      },
+      {
+        "id": "E05-freq-irrelevant-explicit",
+        "candidateCount": 4,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 4,
+        "idHitTrue": 0,
+        "tiers": [
+          1
+        ],
+        "tierVaried": false
+      },
+      {
+        "id": "E06-explicit-reask",
+        "candidateCount": 2,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 0,
+        "idHitTrue": 0,
+        "tiers": [
+          2
+        ],
+        "tierVaried": false
+      },
+      {
+        "id": "E07-old-commitment-explicit",
+        "candidateCount": 2,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 2,
+        "idHitTrue": 0,
+        "tiers": [
+          1
+        ],
+        "tierVaried": false
+      },
+      {
+        "id": "E08-duplicate-sources",
+        "candidateCount": 2,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 2,
+        "idHitTrue": 2,
+        "tiers": [
+          0
+        ],
+        "tierVaried": false
+      },
+      {
+        "id": "E09-corrected-highfreq",
+        "candidateCount": 3,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 3,
+        "idHitTrue": 0,
+        "tiers": [
+          1
+        ],
+        "tierVaried": false
+      },
+      {
+        "id": "E13-idhit-gate",
+        "candidateCount": 2,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 1,
+        "idHitTrue": 1,
+        "tiers": [
+          1,
+          0
+        ],
+        "tierVaried": true
+      },
+      {
+        "id": "X01-restart-determinism",
+        "candidateCount": 2,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 1,
+        "idHitTrue": 0,
+        "tiers": [
+          2,
+          1
+        ],
+        "tierVaried": true
+      },
+      {
+        "id": "X02-shadow-zero-side-effect",
+        "candidateCount": 4,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 4,
+        "idHitTrue": 0,
+        "tiers": [
+          1
+        ],
+        "tierVaried": false
+      },
+      {
+        "id": "X03-internal-readonly-events",
+        "candidateCount": 4,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 4,
+        "idHitTrue": 0,
+        "tiers": [
+          1
+        ],
+        "tierVaried": false
+      },
+      {
+        "id": "X04-log-failure-honesty",
+        "candidateCount": 4,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 4,
+        "idHitTrue": 0,
+        "tiers": [
+          1
+        ],
+        "tierVaried": false
+      },
+      {
+        "id": "V01-phrase-vs-scatter-old",
+        "candidateCount": 2,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 1,
+        "idHitTrue": 0,
+        "tiers": [
+          2,
+          1
+        ],
+        "tierVaried": true
+      },
+      {
+        "id": "V02-explicit-reask-expense",
+        "candidateCount": 2,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 2,
+        "idHitTrue": 0,
+        "tiers": [
+          1
+        ],
+        "tierVaried": false
+      },
+      {
+        "id": "V03-freq-irrelevant-annual",
+        "candidateCount": 2,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 2,
+        "idHitTrue": 0,
+        "tiers": [
+          1
+        ],
+        "tierVaried": false
+      },
+      {
+        "id": "V04-commitment-book-return",
+        "candidateCount": 2,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 2,
+        "idHitTrue": 0,
+        "tiers": [
+          1
+        ],
+        "tierVaried": false
+      },
+      {
+        "id": "V05-multi-revisit-health",
+        "candidateCount": 2,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 2,
+        "idHitTrue": 0,
+        "tiers": [
+          1
+        ],
+        "tierVaried": false
+      },
+      {
+        "id": "V06-retracted-highfreq-password",
+        "candidateCount": 2,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 2,
+        "idHitTrue": 0,
+        "tiers": [
+          1
+        ],
+        "tierVaried": false
+      },
+      {
+        "id": "V07-recent-weak-invoice",
+        "candidateCount": 2,
+        "coverageValues": [
+          "1"
+        ],
+        "phraseHitTrue": 1,
+        "idHitTrue": 0,
+        "tiers": [
+          2,
+          1
+        ],
+        "tierVaried": true
+      }
+    ]
+  },
+  "recentDelivery": [
+    {
+      "id": "B02-recent-delivery",
+      "mode": "ambient",
+      "path": "ambient-association",
+      "top1ByStrategy": {
+        "A0": "rec-b-linran-movie",
+        "L": "rec-b-linran-movie",
+        "R": "rec-b-linran-movie",
+        "LR": "rec-b-linran-movie",
+        "D": "rec-b-linran-hike"
+      },
+      "suppressed": [
+        "rec-b-linran-movie"
+      ]
+    },
+    {
+      "id": "B03-suppression-decay-zone",
+      "mode": "ambient",
+      "path": "ambient-association",
+      "top1ByStrategy": {
+        "A0": "rec-b-linran-movie",
+        "L": "rec-b-linran-movie",
+        "R": "rec-b-linran-movie",
+        "LR": "rec-b-linran-movie",
+        "D": "rec-b-linran-hike"
+      },
+      "suppressed": [
+        "rec-b-linran-movie"
+      ]
+    },
+    {
+      "id": "C05-browse-suppression",
+      "mode": "ambient",
+      "path": "authoritative-scan-fallback",
+      "top1ByStrategy": {
+        "A0": "rec-friday-cancel",
+        "L": "rec-friday-cancel",
+        "R": "rec-friday-cancel",
+        "LR": "rec-friday-cancel",
+        "D": "rec-swim-pool"
+      },
+      "suppressed": [
+        "rec-friday-cancel"
+      ]
+    },
+    {
+      "id": "V08-ambient-delivery-zhao",
+      "mode": "ambient",
+      "path": "ambient-association",
+      "top1ByStrategy": {
+        "A0": "rec-v4b-zhao-dinner",
+        "L": "rec-v4b-zhao-dinner",
+        "R": "rec-v4b-zhao-dinner",
+        "LR": "rec-v4b-zhao-dinner",
+        "D": "rec-v4b-zhao-hike"
+      },
+      "suppressed": [
+        "rec-v4b-zhao-dinner"
+      ]
+    }
+  ],
+  "perCase": [
+    {
+      "id": "E01-xiaolin-person-events",
+      "corpus": "v3",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 3,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-xiaolin-cafe",
+          "mrr": 0.5,
+          "ndcg5": 0.7277,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-cafe",
+            "rec-xiaolin-book",
+            "rec-xiaolin-birthday"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-xiaolin-cafe",
+          "mrr": 0.5,
+          "ndcg5": 0.7277,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-cafe",
+            "rec-xiaolin-book",
+            "rec-xiaolin-birthday"
+          ]
+        },
+        "R": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-xiaolin-book",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book",
+            "rec-xiaolin-cafe",
+            "rec-xiaolin-birthday"
+          ]
+        },
+        "LR": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-xiaolin-book",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book",
+            "rec-xiaolin-cafe",
+            "rec-xiaolin-birthday"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-xiaolin-cafe",
+          "mrr": 0.5,
+          "ndcg5": 0.7277,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-cafe",
+            "rec-xiaolin-book",
+            "rec-xiaolin-birthday"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 1,
+        "L": 1,
+        "R": 3,
+        "LR": 3,
+        "D": 1
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": true,
+        "LR": true,
+        "D": false
+      }
+    },
+    {
+      "id": "E02-token-quality-gate",
+      "corpus": "v3",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-gym-treadmill",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "L": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-gym-run",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-gym-run",
+            "rec-gym-treadmill"
+          ]
+        },
+        "R": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-gym-treadmill",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "LR": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-gym-run",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-gym-run",
+            "rec-gym-treadmill"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-gym-treadmill",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 1,
+        "L": 3,
+        "R": 1,
+        "LR": 3,
+        "D": 1
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": true,
+        "R": false,
+        "LR": true,
+        "D": false
+      }
+    },
+    {
+      "id": "E03-same-coverage-uplift",
+      "corpus": "v3",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 1,
+      "singleCandidate": true,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-swim-class",
+          "mrr": 1,
+          "ndcg5": 0.9173,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-swim-class"
+          ]
+        },
+        "L": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-swim-class",
+          "mrr": 1,
+          "ndcg5": 0.9173,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-swim-class"
+          ]
+        },
+        "R": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-swim-class",
+          "mrr": 1,
+          "ndcg5": 0.9173,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-swim-class"
+          ]
+        },
+        "LR": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-swim-class",
+          "mrr": 1,
+          "ndcg5": 0.9173,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-swim-class"
+          ]
+        },
+        "D": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-swim-class",
+          "mrr": 1,
+          "ndcg5": 0.9173,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-swim-class"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 3,
+        "L": 3,
+        "R": 3,
+        "LR": 3,
+        "D": 3
+      },
+      "fixedByStrategy": {
+        "A0": true,
+        "L": true,
+        "R": true,
+        "LR": true,
+        "D": true
+      }
+    },
+    {
+      "id": "E04-single-char-noise",
+      "corpus": "v3",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 3,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-pharmacy-run",
+          "mrr": 0.5,
+          "ndcg5": 0.6443,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-pharmacy-run",
+            "rec-medicine-drawer",
+            "rec-herb-tea"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-pharmacy-run",
+          "mrr": 0.5,
+          "ndcg5": 0.6443,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-pharmacy-run",
+            "rec-medicine-drawer",
+            "rec-herb-tea"
+          ]
+        },
+        "R": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-pharmacy-run",
+          "mrr": 0.5,
+          "ndcg5": 0.6443,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-pharmacy-run",
+            "rec-medicine-drawer",
+            "rec-herb-tea"
+          ]
+        },
+        "LR": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-pharmacy-run",
+          "mrr": 0.5,
+          "ndcg5": 0.6443,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-pharmacy-run",
+            "rec-medicine-drawer",
+            "rec-herb-tea"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-pharmacy-run",
+          "mrr": 0.5,
+          "ndcg5": 0.6443,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-pharmacy-run",
+            "rec-medicine-drawer",
+            "rec-herb-tea"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 0,
+        "L": 0,
+        "R": 0,
+        "LR": 0,
+        "D": 0
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": false,
+        "LR": false,
+        "D": false
+      }
+    },
+    {
+      "id": "E05-freq-irrelevant-explicit",
+      "corpus": "v3",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 4,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-run-gear",
+          "mrr": 0.3333,
+          "ndcg5": 0.561,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-gym-treadmill",
+            "rec-run-weekend",
+            "rec-gym-run"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-run-gear",
+          "mrr": 0.3333,
+          "ndcg5": 0.561,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-gym-treadmill",
+            "rec-run-weekend",
+            "rec-gym-run"
+          ]
+        },
+        "R": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-run-gear",
+          "mrr": 0.3333,
+          "ndcg5": 0.561,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-gym-treadmill",
+            "rec-run-weekend",
+            "rec-gym-run"
+          ]
+        },
+        "LR": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-run-gear",
+          "mrr": 0.3333,
+          "ndcg5": 0.561,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-gym-treadmill",
+            "rec-run-weekend",
+            "rec-gym-run"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-run-gear",
+          "mrr": 0.3333,
+          "ndcg5": 0.561,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-gym-treadmill",
+            "rec-run-weekend",
+            "rec-gym-run"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 0,
+        "L": 0,
+        "R": 0,
+        "LR": 0,
+        "D": 0
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": false,
+        "LR": false,
+        "D": false
+      }
+    },
+    {
+      "id": "E06-explicit-reask",
+      "corpus": "v3",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-friday-cancel",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-friday-cancel",
+            "rec-friday-meal"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-friday-cancel",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-friday-cancel",
+            "rec-friday-meal"
+          ]
+        },
+        "R": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-friday-meal",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-friday-meal",
+            "rec-friday-cancel"
+          ]
+        },
+        "LR": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-friday-meal",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-friday-meal",
+            "rec-friday-cancel"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-friday-cancel",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-friday-cancel",
+            "rec-friday-meal"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 1,
+        "L": 1,
+        "R": 3,
+        "LR": 3,
+        "D": 1
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": true,
+        "LR": true,
+        "D": false
+      }
+    },
+    {
+      "id": "E07-old-commitment-explicit",
+      "corpus": "v3",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-buy-umbrella",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-buy-umbrella",
+            "rec-umbrella-commitment"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-buy-umbrella",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-buy-umbrella",
+            "rec-umbrella-commitment"
+          ]
+        },
+        "R": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-buy-umbrella",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-buy-umbrella",
+            "rec-umbrella-commitment"
+          ]
+        },
+        "LR": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-buy-umbrella",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-buy-umbrella",
+            "rec-umbrella-commitment"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-buy-umbrella",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-buy-umbrella",
+            "rec-umbrella-commitment"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 1,
+        "L": 1,
+        "R": 1,
+        "LR": 1,
+        "D": 1
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": false,
+        "LR": false,
+        "D": false
+      }
+    },
+    {
+      "id": "E08-duplicate-sources",
+      "corpus": "v3",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-wifi-note",
+          "mrr": 1,
+          "ndcg5": 0.834,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-wifi-note",
+            "rec-wifi-password"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-wifi-note",
+          "mrr": 1,
+          "ndcg5": 0.834,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-wifi-note",
+            "rec-wifi-password"
+          ]
+        },
+        "R": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-wifi-note",
+          "mrr": 1,
+          "ndcg5": 0.834,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-wifi-note",
+            "rec-wifi-password"
+          ]
+        },
+        "LR": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-wifi-note",
+          "mrr": 1,
+          "ndcg5": 0.834,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-wifi-note",
+            "rec-wifi-password"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-wifi-note",
+          "mrr": 1,
+          "ndcg5": 0.834,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-wifi-note",
+            "rec-wifi-password"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 2,
+        "L": 2,
+        "R": 2,
+        "LR": 2,
+        "D": 2
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": false,
+        "LR": false,
+        "D": false
+      }
+    },
+    {
+      "id": "E09-corrected-highfreq",
+      "corpus": "v3",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 3,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "op-d42dbfa4865240e1f5cc07862180d6f9",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 2,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "op-d42dbfa4865240e1f5cc07862180d6f9",
+            "rec-coffee-machine",
+            "rec-xiaolin-cafe"
+          ]
+        },
+        "L": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "op-d42dbfa4865240e1f5cc07862180d6f9",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 2,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "op-d42dbfa4865240e1f5cc07862180d6f9",
+            "rec-coffee-machine",
+            "rec-xiaolin-cafe"
+          ]
+        },
+        "R": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "op-d42dbfa4865240e1f5cc07862180d6f9",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 2,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "op-d42dbfa4865240e1f5cc07862180d6f9",
+            "rec-coffee-machine",
+            "rec-xiaolin-cafe"
+          ]
+        },
+        "LR": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "op-d42dbfa4865240e1f5cc07862180d6f9",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 2,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "op-d42dbfa4865240e1f5cc07862180d6f9",
+            "rec-coffee-machine",
+            "rec-xiaolin-cafe"
+          ]
+        },
+        "D": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "op-d42dbfa4865240e1f5cc07862180d6f9",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 2,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "op-d42dbfa4865240e1f5cc07862180d6f9",
+            "rec-coffee-machine",
+            "rec-xiaolin-cafe"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 3,
+        "L": 3,
+        "R": 3,
+        "LR": 3,
+        "D": 3
+      },
+      "fixedByStrategy": {
+        "A0": true,
+        "L": true,
+        "R": true,
+        "LR": true,
+        "D": true
+      }
+    },
+    {
+      "id": "E10-cross-space-explicit",
+      "corpus": "v3",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 1,
+      "singleCandidate": true,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-xiaolin-book",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book"
+          ]
+        },
+        "L": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-xiaolin-book",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book"
+          ]
+        },
+        "R": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-xiaolin-book",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book"
+          ]
+        },
+        "LR": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-xiaolin-book",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book"
+          ]
+        },
+        "D": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-xiaolin-book",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 3,
+        "L": 3,
+        "R": 3,
+        "LR": 3,
+        "D": 3
+      },
+      "fixedByStrategy": {
+        "A0": true,
+        "L": true,
+        "R": true,
+        "LR": true,
+        "D": true
+      }
+    },
+    {
+      "id": "E11-retracted-unreachable-explicit",
+      "corpus": "v3",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 1,
+      "singleCandidate": true,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-lottery-warning",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-lottery-warning"
+          ]
+        },
+        "L": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-lottery-warning",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-lottery-warning"
+          ]
+        },
+        "R": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-lottery-warning",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-lottery-warning"
+          ]
+        },
+        "LR": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-lottery-warning",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-lottery-warning"
+          ]
+        },
+        "D": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-lottery-warning",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-lottery-warning"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 3,
+        "L": 3,
+        "R": 3,
+        "LR": 3,
+        "D": 3
+      },
+      "fixedByStrategy": {
+        "A0": true,
+        "L": true,
+        "R": true,
+        "LR": true,
+        "D": true
+      }
+    },
+    {
+      "id": "E12-multi-term-and",
+      "corpus": "v3",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 1,
+      "singleCandidate": true,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-trip-tokyo",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-trip-tokyo"
+          ]
+        },
+        "L": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-trip-tokyo",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-trip-tokyo"
+          ]
+        },
+        "R": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-trip-tokyo",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-trip-tokyo"
+          ]
+        },
+        "LR": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-trip-tokyo",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-trip-tokyo"
+          ]
+        },
+        "D": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-trip-tokyo",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-trip-tokyo"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 3,
+        "L": 3,
+        "R": 3,
+        "LR": 3,
+        "D": 3
+      },
+      "fixedByStrategy": {
+        "A0": true,
+        "L": true,
+        "R": true,
+        "LR": true,
+        "D": true
+      }
+    },
+    {
+      "id": "E13-idhit-gate",
+      "corpus": "v3",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-camera-backup",
+          "mrr": 1,
+          "ndcg5": 0.834,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-camera-backup",
+            "rec-x-t30-camera"
+          ]
+        },
+        "L": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-x-t30-camera",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-x-t30-camera",
+            "rec-camera-backup"
+          ]
+        },
+        "R": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-camera-backup",
+          "mrr": 1,
+          "ndcg5": 0.834,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-camera-backup",
+            "rec-x-t30-camera"
+          ]
+        },
+        "LR": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-x-t30-camera",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-x-t30-camera",
+            "rec-camera-backup"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-camera-backup",
+          "mrr": 1,
+          "ndcg5": 0.834,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-camera-backup",
+            "rec-x-t30-camera"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 2,
+        "L": 3,
+        "R": 2,
+        "LR": 3,
+        "D": 2
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": true,
+        "R": false,
+        "LR": true,
+        "D": false
+      }
+    },
+    {
+      "id": "E14-single-candidate-trivial",
+      "corpus": "v3",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 1,
+      "singleCandidate": true,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-camera-bag",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-camera-bag"
+          ]
+        },
+        "L": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-camera-bag",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-camera-bag"
+          ]
+        },
+        "R": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-camera-bag",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-camera-bag"
+          ]
+        },
+        "LR": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-camera-bag",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-camera-bag"
+          ]
+        },
+        "D": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-camera-bag",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-camera-bag"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 3,
+        "L": 3,
+        "R": 3,
+        "LR": 3,
+        "D": 3
+      },
+      "fixedByStrategy": {
+        "A0": true,
+        "L": true,
+        "R": true,
+        "LR": true,
+        "D": true
+      }
+    },
+    {
+      "id": "B01-association-no-lexical",
+      "corpus": "v3",
+      "family": "ambient",
+      "mode": "ambient",
+      "path": "ambient-association",
+      "candidateCount": 4,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "R": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "LR": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 2,
+        "L": 2,
+        "R": 2,
+        "LR": 2,
+        "D": 2
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": false,
+        "LR": false,
+        "D": false
+      }
+    },
+    {
+      "id": "B02-recent-delivery",
+      "corpus": "v3",
+      "family": "ambient",
+      "mode": "ambient",
+      "path": "ambient-association",
+      "candidateCount": 4,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "R": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "LR": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "D": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-b-linran-hike",
+          "mrr": 1,
+          "ndcg5": 0.9872,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate",
+            "rec-b-linran-movie"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 2,
+        "L": 2,
+        "R": 2,
+        "LR": 2,
+        "D": 3
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": false,
+        "LR": false,
+        "D": true
+      }
+    },
+    {
+      "id": "B03-suppression-decay-zone",
+      "corpus": "v3",
+      "family": "ambient",
+      "mode": "ambient",
+      "path": "ambient-association",
+      "candidateCount": 4,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "R": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "LR": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "D": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-b-linran-hike",
+          "mrr": 1,
+          "ndcg5": 0.9872,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate",
+            "rec-b-linran-movie"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 2,
+        "L": 2,
+        "R": 2,
+        "LR": 2,
+        "D": 3
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": false,
+        "LR": false,
+        "D": true
+      }
+    },
+    {
+      "id": "B04-cross-space-association",
+      "corpus": "v3",
+      "family": "ambient",
+      "mode": "ambient",
+      "path": "ambient-association",
+      "candidateCount": 4,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "R": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "LR": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 2,
+        "L": 2,
+        "R": 2,
+        "LR": 2,
+        "D": 2
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": false,
+        "LR": false,
+        "D": false
+      }
+    },
+    {
+      "id": "B05-retracted-ambient-unreachable",
+      "corpus": "v3",
+      "family": "ambient",
+      "mode": "ambient",
+      "path": "ambient-association",
+      "candidateCount": 4,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "R": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "LR": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-b-linran-movie",
+          "mrr": 1,
+          "ndcg5": 0.8636,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-b-linran-movie",
+            "rec-b-linran-hike",
+            "rec-b-linran-tea",
+            "rec-b-session-mate"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 2,
+        "L": 2,
+        "R": 2,
+        "LR": 2,
+        "D": 2
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": false,
+        "LR": false,
+        "D": false
+      }
+    },
+    {
+      "id": "B06-sentence-situation-empty",
+      "corpus": "v3",
+      "family": "ambient",
+      "mode": "ambient",
+      "path": "ambient-association",
+      "candidateCount": 0,
+      "singleCandidate": true,
+      "hasRanking": false,
+      "excludedReason": "zero-candidates",
+      "perStrategy": {
+        "A0": {
+          "skipped": true
+        },
+        "L": {
+          "skipped": true
+        },
+        "R": {
+          "skipped": true
+        },
+        "LR": {
+          "skipped": true
+        },
+        "D": {
+          "skipped": true
+        }
+      },
+      "top1GradeByStrategy": {},
+      "fixedByStrategy": {}
+    },
+    {
+      "id": "C01-scan-after-index-failure",
+      "corpus": "v3",
+      "family": "fallback",
+      "mode": "explicit",
+      "path": "authoritative-scan-fallback",
+      "candidateCount": 4,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-run-gear",
+          "mrr": 0.5,
+          "ndcg5": 0.6576,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-run-weekend",
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-run-gear",
+          "mrr": 0.5,
+          "ndcg5": 0.6576,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-run-weekend",
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "R": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-run-gear",
+          "mrr": 0.5,
+          "ndcg5": 0.6576,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-run-weekend",
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "LR": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-run-gear",
+          "mrr": 0.5,
+          "ndcg5": 0.6576,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-run-weekend",
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-run-gear",
+          "mrr": 0.5,
+          "ndcg5": 0.6576,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-run-weekend",
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 0,
+        "L": 0,
+        "R": 0,
+        "LR": 0,
+        "D": 0
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": false,
+        "LR": false,
+        "D": false
+      }
+    },
+    {
+      "id": "C02-scan-not-wired",
+      "corpus": "v3",
+      "family": "fallback",
+      "mode": "explicit",
+      "path": "authoritative-scan-fallback",
+      "candidateCount": 4,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-run-gear",
+          "mrr": 0.5,
+          "ndcg5": 0.6576,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-run-weekend",
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-run-gear",
+          "mrr": 0.5,
+          "ndcg5": 0.6576,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-run-weekend",
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "R": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-run-gear",
+          "mrr": 0.5,
+          "ndcg5": 0.6576,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-run-weekend",
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "LR": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-run-gear",
+          "mrr": 0.5,
+          "ndcg5": 0.6576,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-run-weekend",
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-run-gear",
+          "mrr": 0.5,
+          "ndcg5": 0.6576,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-run-gear",
+            "rec-run-weekend",
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 0,
+        "L": 0,
+        "R": 0,
+        "LR": 0,
+        "D": 0
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": false,
+        "LR": false,
+        "D": false
+      }
+    },
+    {
+      "id": "C03-scan-old-commitment",
+      "corpus": "v3",
+      "family": "fallback",
+      "mode": "explicit",
+      "path": "authoritative-scan-fallback",
+      "candidateCount": 2,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-buy-umbrella",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-buy-umbrella",
+            "rec-umbrella-commitment"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-buy-umbrella",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-buy-umbrella",
+            "rec-umbrella-commitment"
+          ]
+        },
+        "R": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-buy-umbrella",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-buy-umbrella",
+            "rec-umbrella-commitment"
+          ]
+        },
+        "LR": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-buy-umbrella",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-buy-umbrella",
+            "rec-umbrella-commitment"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-buy-umbrella",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-buy-umbrella",
+            "rec-umbrella-commitment"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 1,
+        "L": 1,
+        "R": 1,
+        "LR": 1,
+        "D": 1
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": false,
+        "LR": false,
+        "D": false
+      }
+    },
+    {
+      "id": "C04-scan-retracted",
+      "corpus": "v3",
+      "family": "fallback",
+      "mode": "explicit",
+      "path": "authoritative-scan-fallback",
+      "candidateCount": 1,
+      "singleCandidate": true,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-lottery-warning",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-lottery-warning"
+          ]
+        },
+        "L": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-lottery-warning",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-lottery-warning"
+          ]
+        },
+        "R": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-lottery-warning",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-lottery-warning"
+          ]
+        },
+        "LR": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-lottery-warning",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-lottery-warning"
+          ]
+        },
+        "D": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-lottery-warning",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-lottery-warning"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 3,
+        "L": 3,
+        "R": 3,
+        "LR": 3,
+        "D": 3
+      },
+      "fixedByStrategy": {
+        "A0": true,
+        "L": true,
+        "R": true,
+        "LR": true,
+        "D": true
+      }
+    },
+    {
+      "id": "C05-browse-suppression",
+      "corpus": "v3",
+      "family": "fallback",
+      "mode": "ambient",
+      "path": "authoritative-scan-fallback",
+      "candidateCount": 4,
+      "singleCandidate": false,
+      "hasRanking": false,
+      "excludedReason": "no-grade2-relevant",
+      "perStrategy": {
+        "A0": {
+          "skipped": true
+        },
+        "L": {
+          "skipped": true
+        },
+        "R": {
+          "skipped": true
+        },
+        "LR": {
+          "skipped": true
+        },
+        "D": {
+          "skipped": true
+        }
+      },
+      "top1GradeByStrategy": {},
+      "fixedByStrategy": {}
+    },
+    {
+      "id": "C06-scan-cross-space",
+      "corpus": "v3",
+      "family": "fallback",
+      "mode": "explicit",
+      "path": "authoritative-scan-fallback",
+      "candidateCount": 1,
+      "singleCandidate": true,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-xiaolin-book",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book"
+          ]
+        },
+        "L": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-xiaolin-book",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book"
+          ]
+        },
+        "R": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-xiaolin-book",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book"
+          ]
+        },
+        "LR": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-xiaolin-book",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book"
+          ]
+        },
+        "D": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-xiaolin-book",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-xiaolin-book"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 3,
+        "L": 3,
+        "R": 3,
+        "LR": 3,
+        "D": 3
+      },
+      "fixedByStrategy": {
+        "A0": true,
+        "L": true,
+        "R": true,
+        "LR": true,
+        "D": true
+      }
+    },
+    {
+      "id": "X01-restart-determinism",
+      "corpus": "v3",
+      "family": "structural",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-gym-treadmill",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "L": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-gym-run",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-gym-run",
+            "rec-gym-treadmill"
+          ]
+        },
+        "R": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-gym-treadmill",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "LR": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-gym-treadmill",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-gym-treadmill",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-gym-treadmill",
+            "rec-gym-run"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 1,
+        "L": 3,
+        "R": 1,
+        "LR": 1,
+        "D": 1
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": true,
+        "R": false,
+        "LR": false,
+        "D": false
+      }
+    },
+    {
+      "id": "X02-shadow-zero-side-effect",
+      "corpus": "v3",
+      "family": "structural",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 4,
+      "singleCandidate": false,
+      "hasRanking": false,
+      "excludedReason": "no-grade2-relevant",
+      "perStrategy": {
+        "A0": {
+          "skipped": true
+        },
+        "L": {
+          "skipped": true
+        },
+        "R": {
+          "skipped": true
+        },
+        "LR": {
+          "skipped": true
+        },
+        "D": {
+          "skipped": true
+        }
+      },
+      "top1GradeByStrategy": {},
+      "fixedByStrategy": {}
+    },
+    {
+      "id": "X03-internal-readonly-events",
+      "corpus": "v3",
+      "family": "structural",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 4,
+      "singleCandidate": false,
+      "hasRanking": false,
+      "excludedReason": "no-grade2-relevant",
+      "perStrategy": {
+        "A0": {
+          "skipped": true
+        },
+        "L": {
+          "skipped": true
+        },
+        "R": {
+          "skipped": true
+        },
+        "LR": {
+          "skipped": true
+        },
+        "D": {
+          "skipped": true
+        }
+      },
+      "top1GradeByStrategy": {},
+      "fixedByStrategy": {}
+    },
+    {
+      "id": "X04-log-failure-honesty",
+      "corpus": "v3",
+      "family": "structural",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 4,
+      "singleCandidate": false,
+      "hasRanking": false,
+      "excludedReason": "no-grade2-relevant",
+      "perStrategy": {
+        "A0": {
+          "skipped": true
+        },
+        "L": {
+          "skipped": true
+        },
+        "R": {
+          "skipped": true
+        },
+        "LR": {
+          "skipped": true
+        },
+        "D": {
+          "skipped": true
+        }
+      },
+      "top1GradeByStrategy": {},
+      "fixedByStrategy": {}
+    },
+    {
+      "id": "V01-phrase-vs-scatter-old",
+      "corpus": "v4",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-idloss-copy",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-idloss-copy",
+            "rec-idloss-report"
+          ]
+        },
+        "L": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-idloss-report",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-idloss-report",
+            "rec-idloss-copy"
+          ]
+        },
+        "R": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-idloss-copy",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-idloss-copy",
+            "rec-idloss-report"
+          ]
+        },
+        "LR": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-idloss-copy",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-idloss-copy",
+            "rec-idloss-report"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-idloss-copy",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-idloss-copy",
+            "rec-idloss-report"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 1,
+        "L": 3,
+        "R": 1,
+        "LR": 1,
+        "D": 1
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": true,
+        "R": false,
+        "LR": false,
+        "D": false
+      }
+    },
+    {
+      "id": "V02-explicit-reask-expense",
+      "corpus": "v4",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-expense-note",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-expense-note",
+            "rec-expense-flow"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-expense-note",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-expense-note",
+            "rec-expense-flow"
+          ]
+        },
+        "R": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-expense-flow",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-expense-flow",
+            "rec-expense-note"
+          ]
+        },
+        "LR": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-expense-flow",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-expense-flow",
+            "rec-expense-note"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-expense-note",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-expense-note",
+            "rec-expense-flow"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 1,
+        "L": 1,
+        "R": 3,
+        "LR": 3,
+        "D": 1
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": true,
+        "LR": true,
+        "D": false
+      }
+    },
+    {
+      "id": "V03-freq-irrelevant-annual",
+      "corpus": "v4",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-annual-lottery",
+          "mrr": 0.5,
+          "ndcg5": 0.6309,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-annual-lottery",
+            "rec-annual-plan"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-annual-lottery",
+          "mrr": 0.5,
+          "ndcg5": 0.6309,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-annual-lottery",
+            "rec-annual-plan"
+          ]
+        },
+        "R": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-annual-lottery",
+          "mrr": 0.5,
+          "ndcg5": 0.6309,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-annual-lottery",
+            "rec-annual-plan"
+          ]
+        },
+        "LR": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-annual-lottery",
+          "mrr": 0.5,
+          "ndcg5": 0.6309,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-annual-lottery",
+            "rec-annual-plan"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 0,
+          "top1Id": "rec-annual-lottery",
+          "mrr": 0.5,
+          "ndcg5": 0.6309,
+          "top3Intrusion": 1,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-annual-lottery",
+            "rec-annual-plan"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 0,
+        "L": 0,
+        "R": 0,
+        "LR": 0,
+        "D": 0
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": false,
+        "LR": false,
+        "D": false
+      }
+    },
+    {
+      "id": "V04-commitment-book-return",
+      "corpus": "v4",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-book-remind",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-book-remind",
+            "rec-book-return"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-book-remind",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-book-remind",
+            "rec-book-return"
+          ]
+        },
+        "R": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-book-return",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-book-return",
+            "rec-book-remind"
+          ]
+        },
+        "LR": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-book-return",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-book-return",
+            "rec-book-remind"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-book-remind",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-book-remind",
+            "rec-book-return"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 1,
+        "L": 1,
+        "R": 3,
+        "LR": 3,
+        "D": 1
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": true,
+        "LR": true,
+        "D": false
+      }
+    },
+    {
+      "id": "V05-multi-revisit-health",
+      "corpus": "v4",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-health-center",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-health-center",
+            "rec-health-report"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-health-center",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-health-center",
+            "rec-health-report"
+          ]
+        },
+        "R": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-health-report",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-health-report",
+            "rec-health-center"
+          ]
+        },
+        "LR": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-health-report",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-health-report",
+            "rec-health-center"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-health-center",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-health-center",
+            "rec-health-report"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 1,
+        "L": 1,
+        "R": 3,
+        "LR": 3,
+        "D": 1
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": true,
+        "LR": true,
+        "D": false
+      }
+    },
+    {
+      "id": "V06-retracted-highfreq-password",
+      "corpus": "v4",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-safe-password",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-safe-password",
+            "rec-safe-box"
+          ]
+        },
+        "L": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-safe-password",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-safe-password",
+            "rec-safe-box"
+          ]
+        },
+        "R": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-safe-password",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-safe-password",
+            "rec-safe-box"
+          ]
+        },
+        "LR": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-safe-password",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-safe-password",
+            "rec-safe-box"
+          ]
+        },
+        "D": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-safe-password",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-safe-password",
+            "rec-safe-box"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 3,
+        "L": 3,
+        "R": 3,
+        "LR": 3,
+        "D": 3
+      },
+      "fixedByStrategy": {
+        "A0": true,
+        "L": true,
+        "R": true,
+        "LR": true,
+        "D": true
+      }
+    },
+    {
+      "id": "V07-recent-weak-invoice",
+      "corpus": "v4",
+      "family": "explicit",
+      "mode": "explicit",
+      "path": "explicit-index",
+      "candidateCount": 2,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-invoice-done",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-invoice-done",
+            "rec-invoice-deadline"
+          ]
+        },
+        "L": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-invoice-deadline",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-invoice-deadline",
+            "rec-invoice-done"
+          ]
+        },
+        "R": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-invoice-deadline",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-invoice-deadline",
+            "rec-invoice-done"
+          ]
+        },
+        "LR": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-invoice-deadline",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-invoice-deadline",
+            "rec-invoice-done"
+          ]
+        },
+        "D": {
+          "top1Correct": false,
+          "top1Grade": 1,
+          "top1Id": "rec-invoice-done",
+          "mrr": 0.5,
+          "ndcg5": 0.7098,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-invoice-done",
+            "rec-invoice-deadline"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 1,
+        "L": 3,
+        "R": 3,
+        "LR": 3,
+        "D": 1
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": true,
+        "R": true,
+        "LR": true,
+        "D": false
+      }
+    },
+    {
+      "id": "V08-ambient-delivery-zhao",
+      "corpus": "v4",
+      "family": "ambient",
+      "mode": "ambient",
+      "path": "ambient-association",
+      "candidateCount": 3,
+      "singleCandidate": false,
+      "hasRanking": true,
+      "excludedReason": null,
+      "perStrategy": {
+        "A0": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-v4b-zhao-dinner",
+          "mrr": 1,
+          "ndcg5": 0.858,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-v4b-zhao-dinner",
+            "rec-v4b-zhao-hike",
+            "rec-v4b-zhao-tea"
+          ]
+        },
+        "L": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-v4b-zhao-dinner",
+          "mrr": 1,
+          "ndcg5": 0.858,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-v4b-zhao-dinner",
+            "rec-v4b-zhao-hike",
+            "rec-v4b-zhao-tea"
+          ]
+        },
+        "R": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-v4b-zhao-dinner",
+          "mrr": 1,
+          "ndcg5": 0.858,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-v4b-zhao-dinner",
+            "rec-v4b-zhao-hike",
+            "rec-v4b-zhao-tea"
+          ]
+        },
+        "LR": {
+          "top1Correct": false,
+          "top1Grade": 2,
+          "top1Id": "rec-v4b-zhao-dinner",
+          "mrr": 1,
+          "ndcg5": 0.858,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-v4b-zhao-dinner",
+            "rec-v4b-zhao-hike",
+            "rec-v4b-zhao-tea"
+          ]
+        },
+        "D": {
+          "top1Correct": true,
+          "top1Grade": 3,
+          "top1Id": "rec-v4b-zhao-hike",
+          "mrr": 1,
+          "ndcg5": 1,
+          "top3Intrusion": 0,
+          "forbiddenHits": [],
+          "primaryReachable": true,
+          "order": [
+            "rec-v4b-zhao-hike",
+            "rec-v4b-zhao-tea",
+            "rec-v4b-zhao-dinner"
+          ]
+        }
+      },
+      "top1GradeByStrategy": {
+        "A0": 2,
+        "L": 2,
+        "R": 2,
+        "LR": 2,
+        "D": 3
+      },
+      "fixedByStrategy": {
+        "A0": false,
+        "L": false,
+        "R": false,
+        "LR": false,
+        "D": true
+      }
+    }
+  ]
+}

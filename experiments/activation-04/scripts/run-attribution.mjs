@@ -154,7 +154,9 @@ async function main() {
   }
 
   // ===== 全集归因矩阵：每个策略修复了哪些 / 独特修复 / 回归 =====
-  const rankingCases = perCase.filter((c) => c.hasRanking);
+  // 结构组（X01 重启确定性探针 = E02 场景的双进程重复运行）不计入归因分母 ——
+  // 它是行为断言，不是独立场景；X01 上 L 的"修复"是 E02 同形重复，只作确定性证据。
+  const rankingCases = perCase.filter((c) => c.hasRanking && c.family !== 'structural');
   const attributionMatrix = {
     fixedBy: {},
     uniqueFixedBy: {},

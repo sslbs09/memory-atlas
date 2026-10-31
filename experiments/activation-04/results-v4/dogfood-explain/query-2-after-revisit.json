@@ -1,0 +1,81 @@
+{
+  "query": "电影",
+  "rankings": {
+    "A0": [
+      "df-towatch",
+      "df-movie"
+    ],
+    "L": [
+      "df-towatch",
+      "df-movie"
+    ],
+    "R": [
+      "df-movie",
+      "df-towatch"
+    ],
+    "LR": [
+      "df-movie",
+      "df-towatch"
+    ],
+    "D": [
+      "df-towatch",
+      "df-movie"
+    ]
+  },
+  "movieExplain": {
+    "recordId": "df-movie",
+    "generatedAt": "2026-10-31T17:55:09.993Z",
+    "searchPath": "atlas-candidates+authoritative",
+    "mode": "explicit",
+    "content": "和小周一起看了电影沙丘第二部，全程都在讨论分镜",
+    "occurredAt": "2026-09-16T17:55:09.940Z",
+    "evidence": {
+      "evidenceClass": "lexical",
+      "a0Score": 1.7498,
+      "coverage": 1,
+      "matchReason": [
+        "term:电影(cjk-2)",
+        "recency:0.875"
+      ],
+      "L": {
+        "recordId": "df-movie",
+        "position": 1,
+        "finalScore": null,
+        "tier": 1,
+        "tierName": "phrase",
+        "tierLabel": "完整短语连续命中（权威 content 影子重算）",
+        "idHit": false,
+        "phraseHit": true,
+        "matchedBigrams": [
+          "电影"
+        ],
+        "order": "tier-asc-stable"
+      },
+      "lexicalTierNote": "tier=词面证据等级（T0 id-hit / T1 phrase / T2 multi-bigram / T3 bigram+residual / T4 weak）"
+    },
+    "activation": {
+      "revisitCount": 2,
+      "revisitTimesIso": [
+        "2026-10-31T17:55:09.987Z",
+        "2026-10-31T17:55:09.988Z"
+      ],
+      "g2Multiplier": {
+        "multiplier": 1.823959,
+        "clamped": null,
+        "count": 2
+      },
+      "lastDeliveryMs": null,
+      "lastDeliveryIso": null,
+      "note": "激活只由合法 user_revisited 驱动；查询本身（candidate_retrieved）永不强化"
+    },
+    "rankBy": {
+      "A0": 2,
+      "L": 2,
+      "R": 1,
+      "LR": 1,
+      "D": 2
+    }
+  },
+  "stateHash": "8875b8943657167b4905a1457e81872bc08a5bf8c5237b586dd69057862f571f",
+  "note": "与 query-1-baseline.json 对比 = 事件前后排序变化示例（LR/R 上移电影，A0/L 不变）"
+}
