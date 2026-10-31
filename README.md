@@ -70,7 +70,8 @@ true.
 ```
 src/model.js      record shape, validation, derived validity, operation ids
 src/store.js      per-space JSON documents: atomic replace, compare-and-swap,
-                  bounded retry for transient Windows lock failures
+                  one writer per data directory, bounded retry for transient
+                  Windows lock failures
 src/query.js      the read view: keyword / id / kind / status / visibility /
                   time window / pagination, and the outcome vocabulary
 src/service.js    the Memory Service and the native authority
@@ -78,7 +79,7 @@ src/http.js       the unified Memory API (loopback, two bearer capabilities)
 src/client.js     standalone Node client - no Electron, no harness
 src/adapters/     delegated authorities (WhiteMoon Host over HTTP)
 bin/              server, query CLI, demo
-test/             24 tests
+test/             the suite: `node --test "test/*.test.js"`
 docs/             API contract, extraction map, limitations
 ```
 
@@ -87,5 +88,7 @@ docs/             API contract, extraction map, limitations
 Read `docs/LIMITATIONS.md` before planning on scale. In short: one JSON document
 per space is rewritten on every write, measured at 717 ms per write and 971 ms
 per scan at 100,000 records / 32 MiB, so the cumulative 20 GB target is
-**NOT VALIDATED** at that size. No model is involved anywhere here, so nothing
-in this repository demonstrates semantic understanding.
+**NOT VALIDATED** at that size. A data directory has **one writer process**; a
+second service pointed at the same directory is refused at startup rather than
+allowed to double-acknowledge writes. No model is involved anywhere here, so
+nothing in this repository demonstrates semantic understanding.

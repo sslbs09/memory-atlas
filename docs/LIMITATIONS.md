@@ -51,10 +51,29 @@ What follows honestly:
 - Writes to the same space from **one process** are serialized and re-applied on
   conflict; verified 8 concurrent writes → 8 persisted (was 1 of 8 before the
   fix).
-- Two processes over the same data directory are protected by compare-and-swap
-  plus retry, which prevents silent loss but can end in a refused write after
-  the retry budget. A multi-process deployment needs one writer per space, or a
-  real transactional store. This is stated, not hidden.
+- **The compare-and-swap in `src/store.js` is not a cross-process guarantee, and
+  the earlier claim that it was is retracted.** CAS checks the document digest
+  and then renames; another process can rename inside that window, and the loser
+  does not notice. Measured with two processes making 40 writes each into one
+  data directory: **79 receipts were handed out, 73 records were on disk** (one
+  `ATLAS_PERSIST_UNVERIFIED`). Acknowledged writes were lost, which is the one
+  thing this service may not do.
+- The boundary is therefore structural: **one data directory has one writer.**
+  A second `SpaceStore`/`NativeAuthority` over the same directory is refused at
+  construction with `ATLAS_WRITE_LOCK_HELD` and writes nothing, so it cannot
+  hand out a receipt for something it did not store. `writer.lock` names the
+  owning pid and start time; a lock left by a killed process is reclaimed and
+  the takeover is announced on stderr rather than silent. Verified by
+  `test/writer-lock.test.js` (L1-L5), including that two stores opened in one
+  process share the write queue, and that a junction alias or a case-flipped
+  spelling of the directory resolves to the same writer instead of starting a
+  competing one.
+- The lock is **cooperative**: it stops two Atlas writers, not a text editor or
+  a hand-run script writing the JSON directly. For that case CAS remains as a
+  second line of defence - it detects the collision, and the retry budget turns
+  an unresolvable one into `ATLAS_SAVE_CONFLICT` / `ATLAS_PERSIST_UNVERIFIED`
+  with the previous document intact. Multi-writer on one directory needs a real
+  transactional store, which is out of scope and not claimed.
 - A transient Windows sharing violation on rename (`EPERM`/`EBUSY`/`EACCES`) is
   retried with a bounded wait; exhausted retries fail as
   `ATLAS_PERSIST_FAILED` with the previous document intact.

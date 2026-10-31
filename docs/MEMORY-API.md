@@ -63,8 +63,23 @@ POST /atlas/record { "spaceId": "mira", "record": { ... }, "operationId": "op-1"
 | outcome | meaning |
 |---|---|
 | `RECORDED` | newly appended |
-| `IDEMPOTENT_DUPLICATE` | this identity was already on record; `duplicateOf` names the original (id, sequence, recordedAt). **Atlas answers 200 here; WhiteMoon's `POST /experience` answers 409 with the same `duplicateOf` body** - the two services differ on this one point because WhiteMoon's 409 is a pre-existing contract it may not quietly relax |
-| `IDEMPOTENT_REPLAY` | the same `operationId` was already used; `recordId` is the original record and `status` its current standing |
+| `IDEMPOTENT_DUPLICATE` | this identity was already on record **with the same semantics**; `duplicateOf` names the original (id, kind, sequence, recordedAt, aboutRecordId). **Atlas answers 200 here; WhiteMoon's `POST /experience` answers 409 with the same `duplicateOf` body** - the two services differ on this one point because WhiteMoon's 409 is a pre-existing contract it may not quietly relax |
+| `IDEMPOTENT_REPLAY` | the same `operationId` was already used **for the same operation**; the answer is the original receipt, and the archive still holds one row |
+
+A receipt is only replayed when the submission means the same thing. Identity is
+checked field by field - `kind`, `content`, `visibility`, `aboutRecordId`,
+`occurredAt`, `source` and `attributes` - never by text similarity, so 「喜欢」
+and 「不喜欢」 stay two records and a reused id carrying different content is a
+refusal, not a success:
+
+| code | status | meaning |
+|---|---|---|
+| `ATLAS_IDENTITY_CONFLICT` | 409 | `recordId` already exists with different content or a different source (no `operationId` was supplied). `differingFields` names the fields, `duplicateOf` names the incumbent. Nothing is written and the incumbent is unchanged |
+| `ATLAS_OPERATION_CONFLICT` | 409 | `operationId` was already used for a different action, target or content. Reusing an operation id cannot smuggle a second operation into the first one's receipt |
+
+The caller's remedy differs from a duplicate: mint a new identity, or send a
+`correct` control against the existing record - do not resend the same id with
+new text.
 
 A control against a record that is no longer active is refused with
 `ATLAS_CONTROL_TARGET_INACTIVE` (409) and writes nothing. A retraction carries

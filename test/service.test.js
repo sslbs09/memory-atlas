@@ -233,3 +233,72 @@ test('A12 a malformed record is refused by name and writes nothing', async (t) =
   const audit = await svc.search({ spaceId: 'mira', status: 'all' });
   assert.equal(audit.records.filter((r) => r.kind === 'correction').length, 1);
 });
+
+test('A13 reusing an identity for a different claim is a conflict, not a duplicate receipt', async (t) => {
+  const { svc, authority } = await service(t);
+  const first = await svc.record('mira', {
+    recordId: 'lamp', kind: 'experience', content: '书桌上有一盏台灯', source: { kind: 'chat', id: 'msg-1' }
+  });
+  assert.equal(first.outcome, 'RECORDED');
+
+  const changedContent = await svc.record('mira', {
+    recordId: 'lamp', kind: 'experience', content: '书桌上有一个书包', source: { kind: 'chat', id: 'msg-1' }
+  }).catch((error) => error);
+  assert.equal(changedContent.code, 'ATLAS_IDENTITY_CONFLICT');
+  assert.deepEqual(changedContent.differingFields, ['content']);
+  assert.equal(changedContent.duplicateOf.recordId, 'lamp');
+
+  const changedSource = await svc.record('mira', {
+    recordId: 'lamp', kind: 'experience', content: '书桌上有一盏台灯', source: { kind: 'photo', id: 'msg-9' }
+  }).catch((error) => error);
+  assert.equal(changedSource.code, 'ATLAS_IDENTITY_CONFLICT');
+  assert.deepEqual(changedSource.differingFields, ['source']);
+
+  const changedKind = await svc.record('mira', {
+    recordId: 'lamp', kind: 'note', content: '书桌上有一盏台灯', source: { kind: 'chat', id: 'msg-1' }
+  }).catch((error) => error);
+  assert.deepEqual(changedKind.differingFields, ['kind']);
+
+  const doc = authority.store.read('mira');
+  assert.equal(doc.records.length, 1, 'a refused reuse must store nothing at all');
+  assert.equal(doc.records[0].content, '书桌上有一盏台灯');
+
+  // The same claim submitted again is still a true duplicate: same receipt, no row.
+  const retry = await svc.record('mira', {
+    recordId: 'lamp', kind: 'experience', content: '书桌上有一盏台灯', source: { kind: 'chat', id: 'msg-1' }
+  });
+  assert.equal(retry.outcome, 'IDEMPOTENT_DUPLICATE');
+  assert.equal(retry.accepted, true);
+  assert.equal(authority.store.read('mira').records.length, 1);
+});
+
+test('A14 one operation id cannot carry two different operations', async (t) => {
+  const { svc, authority } = await service(t);
+  await svc.record('mira', { recordId: 'target', content: '工位代号是铜雀-19' });
+  const operationId = 'op-single-00001';
+  const correction = await svc.correct('mira', { aboutRecordId: 'target', content: '改成银杉-84', operationId });
+  assert.equal(correction.outcome, 'RECORDED');
+
+  const differentAction = await svc.retract('mira', { aboutRecordId: 'target', operationId }).catch((error) => error);
+  assert.equal(differentAction.code, 'ATLAS_OPERATION_CONFLICT',
+    'a retraction reusing a correction operation id must not be answered with that correction');
+  assert.ok(differentAction.differingFields.includes('kind'));
+
+  const differentTarget = await svc.correct('mira', { aboutRecordId: 'lamp', content: '改成银杉-84', operationId })
+    .catch((error) => error);
+  assert.equal(differentTarget.code, 'ATLAS_OPERATION_CONFLICT');
+  assert.ok(differentTarget.differingFields.includes('aboutRecordId'));
+
+  const differentText = await svc.correct('mira', { aboutRecordId: 'target', content: '改成别的', operationId })
+    .catch((error) => error);
+  assert.ok(differentText.differingFields.includes('content'));
+
+  const sameAgain = await svc.correct('mira', { aboutRecordId: 'target', content: '改成银杉-84', operationId });
+  assert.equal(sameAgain.outcome, 'IDEMPOTENT_REPLAY');
+  assert.equal(sameAgain.recordId, correction.recordId);
+  assert.equal(sameAgain.status, 'active');
+
+  const doc = authority.store.read('mira');
+  assert.equal(doc.records.filter((r) => r.kind === 'correction').length, 1);
+  assert.equal(doc.records.length, 2, 'the target and one correction; the refused attempts added nothing');
+});

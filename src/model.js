@@ -140,6 +140,28 @@ function validateSource(source) {
 }
 
 /**
+ * Do two submissions describe the same memory, or a different one wearing the
+ * same identity? Only the caller-supplied fields count: the server assigns
+ * recordedAt and sequence, and comparing those would make every retry look
+ * different. This is an exact field comparison, not a similarity judgement -
+ * 「喜欢」 and 「不喜欢」 differ in one character and are correctly distinct.
+ */
+export function sameRecordSemantics(stored, incoming) {
+  const fields = ['kind', 'content', 'visibility', 'aboutRecordId', 'occurredAt'];
+  const differences = [];
+  for (const field of fields) {
+    const before = stored[field] ?? null;
+    const after = incoming[field] ?? null;
+    if (before !== after) differences.push(field);
+  }
+  const sourceKey = (value) => (value ? `${value.kind}|${value.id ?? ''}|${value.href ?? ''}` : null);
+  if (sourceKey(stored.source ?? null) !== sourceKey(incoming.source ?? null)) differences.push('source');
+  const attributeKey = (value) => (value ? JSON.stringify(Object.entries(value).sort()) : null);
+  if (attributeKey(stored.attributes ?? null) !== attributeKey(incoming.attributes ?? null)) differences.push('attributes');
+  return { identical: differences.length === 0, differences };
+}
+
+/**
  * Derive the current standing of every record from the ordered history.
  *
  * There is no "current" field to write: validity is computed, so a correction

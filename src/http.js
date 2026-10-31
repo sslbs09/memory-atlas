@@ -67,7 +67,7 @@ function statusFor(error) {
   const message = error && error.message ? error.message : '';
   if (code === 'ATLAS_QUERY_INVALID' || code === 'ATLAS_RECORD_INVALID' || code === 'ATLAS_ID_INVALID' ||
       code === 'ATLAS_CONTROL_INVALID' || code === 'ATLAS_OPERATION_INVALID' || code === 'ATLAS_OPERATION_MISMATCH') return 400;
-  if (code === 'ATLAS_SPACE_EXISTS') return 409;
+  if (code === 'ATLAS_SPACE_EXISTS' || code === 'ATLAS_IDENTITY_CONFLICT' || code === 'ATLAS_OPERATION_CONFLICT') return 409;
   if (code === 'ATLAS_SPACE_UNAVAILABLE') return /unknown record|no longer active/.test(message) ? 409 : 404;
   if (code === 'ATLAS_CONTROL_TARGET_MISSING' || code === 'ATLAS_CONTROL_TARGET_INACTIVE') return 409;
   if (code === 'ATLAS_PERSIST_FAILED' || code === 'ATLAS_PERSIST_UNVERIFIED' || code === 'ATLAS_SAVE_CONFLICT') return 503;
@@ -183,7 +183,11 @@ export function createAtlasServer({ service, readToken, writeToken }) {
       send(res, statusFor(error), {
         ok: false,
         error: error && error.message ? error.message : String(error),
-        ...(error && error.code ? { code: error.code } : {})
+        ...(error && error.code ? { code: error.code } : {}),
+        // A refused reuse says what it collided with and on which fields, so the
+        // caller can tell "already stored" from "identity already taken".
+        ...(error && error.duplicateOf ? { duplicateOf: error.duplicateOf } : {}),
+        ...(error && error.differingFields ? { differingFields: error.differingFields } : {})
       });
     } finally {
       // Method, path, status only. Never tokens, never record content.

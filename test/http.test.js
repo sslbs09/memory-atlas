@@ -185,6 +185,22 @@ test('H6 the server starts and stops as its own process, driven only by the clie
   });
 });
 
+test('H8 an identity reused for different content is a 409 that names the fields', async (t) => {
+  const { client, port } = await started(t);
+  await client.record({ spaceId: 'mira', record: { recordId: 'lamp', content: '台灯', source: { kind: 'chat', id: 'm-1' } } });
+  const clash = await raw(port, {
+    path: '/atlas/record', method: 'POST', token: WRITE,
+    body: { spaceId: 'mira', record: { recordId: 'lamp', content: '书包', source: { kind: 'chat', id: 'm-1' } } }
+  });
+  assert.equal(clash.status, 409);
+  assert.equal(clash.body.code, 'ATLAS_IDENTITY_CONFLICT');
+  assert.deepEqual(clash.body.differingFields, ['content']);
+  assert.equal(clash.body.duplicateOf.recordId, 'lamp');
+  const view = await client.search({ spaceId: 'mira', query: '台灯', status: 'all' });
+  assert.equal(view.records.length, 1);
+  assert.equal(view.records[0].content, '台灯', 'the refused write stored nothing');
+});
+
 test('H7 a malformed request is refused with a code and writes nothing', async (t) => {
   const { port, authority } = await started(t);
   const before = fs.readFileSync(authority.store.spacePath('mira'), 'utf8');

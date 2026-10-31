@@ -28,7 +28,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { SpaceStore } from './store.js';
-import { assertId, createRecord, deriveValidity, isIdLike, operationRecordId, DEFAULT_RETRACTION_TEXT } from './model.js';
+import { assertId, createRecord, deriveValidity, isIdLike, operationRecordId, sameRecordSemantics, DEFAULT_RETRACTION_TEXT } from './model.js';
 import { detailSpace, querySpace } from './query.js';
 
 export const SERVICE_VERSION = 'memory-atlas-v0.1';
@@ -64,6 +64,11 @@ export class NativeAuthority {
     }
     this.store.create({ spaceId, label, createdAt, records: [], nextSequence: 1 });
     return { spaceId, createdAt };
+  }
+
+  /** Release this service's claim on its data directory (see SpaceStore). */
+  close() {
+    return this.store.close();
   }
 
   listSpaces() {
@@ -108,15 +113,36 @@ export class NativeAuthority {
         { code: 'ATLAS_SPACE_UNAVAILABLE' });
     }
     const { spaceDoc } = inspected;
-    if (spaceDoc.records.some((existing) => existing.recordId === record.recordId)) {
-      const existing = spaceDoc.records.find((e) => e.recordId === record.recordId);
+    const existing = spaceDoc.records.find((e) => e.recordId === record.recordId);
+    if (existing) {
+      const { identical, differences } = sameRecordSemantics(existing, record);
+      const revision = deriveValidity(spaceDoc.records).revision;
+      if (!identical) {
+        // The same identity carrying different content, source, target or action
+        // is not a retry - it is a different claim wearing a name already in use. Serving
+        // it as a duplicate receipt would silently discard the new claim and
+        // tell the caller it was stored.
+        throw Object.assign(
+          new Error(`Record "${record.recordId}" already exists in space "${spaceId}" with different ` +
+            `content (${differences.join(', ')}). Use a new identity, or correct the existing record.`),
+          {
+            code: operationId === undefined ? 'ATLAS_IDENTITY_CONFLICT' : 'ATLAS_OPERATION_CONFLICT',
+            existingRecordId: existing.recordId,
+            differingFields: differences,
+            duplicateOf: { recordId: existing.recordId, sequence: existing.sequence, recordedAt: existing.recordedAt }
+          }
+        );
+      }
+      // A genuine retry of something already on record: the same receipt, and
+      // still no second row in the archive.
       return {
         accepted: true,
-        outcome: 'IDEMPOTENT_DUPLICATE',
+        outcome: operationId === undefined ? 'IDEMPOTENT_DUPLICATE' : 'IDEMPOTENT_REPLAY',
         spaceId,
         recordId: existing.recordId,
-        duplicateOf: { recordId: existing.recordId, sequence: existing.sequence, recordedAt: existing.recordedAt },
-        revision: deriveValidity(spaceDoc.records).revision
+        duplicateOf: { recordId: existing.recordId, kind: existing.kind, sequence: existing.sequence,
+          recordedAt: existing.recordedAt, aboutRecordId: existing.aboutRecordId ?? null },
+        revision
       };
     }
     const stored = {
@@ -171,12 +197,12 @@ export class NativeAuthority {
       content: action === 'correct' ? content.trim() : DEFAULT_RETRACTION_TEXT,
       aboutRecordId
     }, { operationId });
-    if (receipt.outcome === 'IDEMPOTENT_DUPLICATE') {
+    if (receipt.outcome === 'IDEMPOTENT_REPLAY' || receipt.outcome === 'IDEMPOTENT_DUPLICATE') {
       const inspected = this.inspect(spaceId);
       return {
         ...receipt,
         outcome: 'IDEMPOTENT_REPLAY',
-        status: inspected.available ? inspected.validity.statuses.get(recordId) : null
+        status: inspected.available ? inspected.validity.statuses.get(receipt.recordId) : null
       };
     }
     return { ...receipt, operationId };
