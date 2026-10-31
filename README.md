@@ -12,6 +12,10 @@ npm test                      # node --test "test/*.test.js" - see Verification 
 node bin/atlas-demo.mjs       # full walkthrough against real HTTP on loopback
 node bin/atlas-server.mjs --data-dir <Memory Atlas repo>Data --port 8791
 node bin/atlas-server.mjs --retrieval-module ./my-index.mjs   # attach a derived index
+node bin/atlas-server.mjs --retrieval-module ./adapters/glm-retrieval.mjs
+                                                              # attach the GLM (Backend B) index;
+                                                              # needs ATLAS_GLM_MODULE pointing at
+                                                              # glm-retrieval/src/adapter.mjs
 ATLAS_READ_TOKEN=... node bin/atlas-query.mjs --space mira --query 桂花
 ```
 
@@ -51,6 +55,19 @@ explicit (`status=all`). A retrieval index may rank candidates but may not admit
 them: candidates are identifiers only, and every one is re-read through the
 authority and filtered by space, validity, kind and time before it is shown.
 
+`adapters/glm-retrieval.mjs` is the shipped factory for Backend B's index. It
+exists because the engine exports a class while `--retrieval-module` asks a
+module for a `createRetrievalAdapter` (or `default`) factory; the factory reads
+`ATLAS_GLM_MODULE` (the engine's `src/adapter.mjs`) and `ATLAS_GLM_INDEX`
+(optional SQLite path, default inside the data dir's `derived-cache/`). The
+index is derived data: the store always admits, and deleting the SQLite file
+loses nothing but speed. If a sync or rebuild fails, that ONE space's index is
+taken out of service - answers come from the authoritative scan and say so
+(`searchPath: atlas-authoritative-scan`, `index.state: INDEX_INVALID`,
+`recovery: reindex`) - and only a complete reindex restores index service. A
+later successful write does not restore trust, and neither does a restart: the
+startup rebuild must complete first.
+
 ## Authorities
 
 `src/service.js` talks to an authority, not to a file format:
@@ -80,6 +97,7 @@ src/retrieval.js  the SEARCH-DTO-v1 seam: an attached index ranks, the store adm
 src/http.js       the unified Memory API (loopback, two bearer capabilities)
 src/client.js     standalone Node client - no Electron, no harness
 src/adapters/     delegated authorities (WhiteMoon Host over HTTP)
+adapters/         retrieval factories for --retrieval-module (the GLM index)
 bin/              server, query CLI, demo
 test/             the suite: `node --test "test/*.test.js"`
 docs/             API contract, extraction map, limitations
