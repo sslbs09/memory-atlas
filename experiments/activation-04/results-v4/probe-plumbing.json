@@ -1,0 +1,103 @@
+{
+  "ranAt": "2026-10-31T17:42:02.048Z",
+  "report": [
+    {
+      "scenario": "V01-phrase-vs-scatter-old",
+      "candidateIds": [
+        "rec-idloss-copy",
+        "rec-idloss-report"
+      ],
+      "expected": [
+        "rec-idloss-report",
+        "rec-idloss-copy"
+      ],
+      "missing": []
+    },
+    {
+      "scenario": "V02-explicit-reask-expense",
+      "candidateIds": [
+        "rec-expense-note",
+        "rec-expense-flow"
+      ],
+      "expected": [
+        "rec-expense-flow",
+        "rec-expense-note"
+      ],
+      "missing": []
+    },
+    {
+      "scenario": "V03-freq-irrelevant-annual",
+      "candidateIds": [
+        "rec-annual-lottery",
+        "rec-annual-plan"
+      ],
+      "expected": [
+        "rec-annual-plan",
+        "rec-annual-lottery"
+      ],
+      "missing": []
+    },
+    {
+      "scenario": "V04-commitment-book-return",
+      "candidateIds": [
+        "rec-book-remind",
+        "rec-book-return"
+      ],
+      "expected": [
+        "rec-book-return",
+        "rec-book-remind"
+      ],
+      "missing": []
+    },
+    {
+      "scenario": "V05-multi-revisit-health",
+      "candidateIds": [
+        "rec-health-center",
+        "rec-health-report"
+      ],
+      "expected": [
+        "rec-health-report",
+        "rec-health-center"
+      ],
+      "missing": []
+    },
+    {
+      "scenario": "V06-retracted-highfreq-password",
+      "candidateIds": [
+        "rec-safe-password",
+        "rec-safe-box"
+      ],
+      "expected": [
+        "rec-safe-password",
+        "rec-safe-box"
+      ],
+      "missing": []
+    },
+    {
+      "scenario": "V07-recent-weak-invoice",
+      "candidateIds": [
+        "rec-invoice-done",
+        "rec-invoice-deadline"
+      ],
+      "expected": [
+        "rec-invoice-deadline",
+        "rec-invoice-done"
+      ],
+      "missing": []
+    },
+    {
+      "scenario": "V08-ambient-delivery-zhao",
+      "candidateIds": [
+        "rec-v4b-zhao-dinner",
+        "rec-v4b-zhao-hike",
+        "rec-v4b-zhao-tea"
+      ],
+      "expected": [
+        "rec-v4b-zhao-hike",
+        "rec-v4b-zhao-dinner"
+      ],
+      "missing": []
+    }
+  ],
+  "failures": []
+}

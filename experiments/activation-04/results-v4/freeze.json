@@ -1,0 +1,14 @@
+{
+  "id": "holdout-v4-freeze",
+  "frozenAt": "2026-10-31T17:43:33.066Z",
+  "discipline": "本 commit（fixtures + 归因代码 + 管道探针结果）先于任何五策略运行；运行后不得修改 relevance/forbidden。",
+  "files": {
+    "fixtures/corpus-v4.mjs": "e6608cd5f88a01e893de7dfc96371e42dfc6b7e23fee6bf4af2f1691bc1d9906",
+    "fixtures/holdout-v4.mjs": "a02a1cb55247a41877dd5957348eb9a4833bba00723c767291a9a270d97bf160",
+    "src/attribution-strategies.mjs": "3a929e42e78eede59acb8f311285181b59f45263dc5cda6f80a582c8225d6ea9",
+    "src/attribution-runner.mjs": "5a0fa0c381e7f37c0d3aeaba0733b3e085f738acce32257ed5c6f6ec7455ff7a",
+    "scripts/run-attribution.mjs": "53ba99bfcf143f58a17a7e27f080792261327e6bf0542761af731744206206ab",
+    "scripts/probe-plumbing-v4.mjs": "ba1251042a5610ced0173bf177292f0ebde5e9294bd1a1396d23eb6ccdfdf4df",
+    "results-v4/probe-plumbing.json": "9639cd30ffe56f1047c35b9210ae6ecc3b713431a2ef376a090bad74de916ca8"
+  }
+}

@@ -3,3 +3,6 @@ atlas-data/
 data/
 derived-cache/
 *.log
+activation-04/.tmp/
+activation-04/results-v4/*.tmp
+activation-04/cli/.dogfood/
