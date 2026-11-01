@@ -1,0 +1,33 @@
+{
+  "name": "memory-atlas-mcp",
+  "version": "0.1.0-alpha.1",
+  "description": "Memory Atlas 的统一 MCP Server：让 DSH / MaiBot / 任何 MCP 客户端查询（或在显式启用时写入）同一个正在运行的 Memory Atlas 服务。只读默认，空间绑定，复用 Atlas 正式 API。",
+  "type": "module",
+  "main": "src/index.mjs",
+  "bin": {
+    "memory-atlas-mcp": "dist/atlas-mcp.mjs"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test test/*.test.js"
+  },
+  "files": [
+    "dist",
+    "src",
+    "examples",
+    "README.md"
+  ],
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=24"
+  },
+  "private": true,
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.4.0",
+    "esbuild": "^0.28.2",
+    "zod": "^4.6.7"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}

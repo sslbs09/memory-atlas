@@ -1,12 +1,23 @@
 /**
  * spawn-atlas.mjs — 测试辅助：以子进程启动 atlas-server（stdin 保持打开），
  * 等待就绪行，返回 { child, port, readToken, writeToken, endpointFile, stop() }。
+ * 另提供 spawnNode(argv, env)：以参数数组+环境变量启动一个 node 子进程
+ * （不经 shell，无任何字符串拼接），供 MCP stdio 客户端测试复用。
  * 仅用于发行验证脚本；不是产品代码。
  */
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { randomBytes } from 'node:crypto';
+
+export function spawnNode(argv, env = {}) {
+  const child = spawn(process.execPath, argv, {
+    stdio: ['pipe', 'pipe', 'pipe'],
+    windowsHide: true,
+    env: { ...process.env, ...env }
+  });
+  return child;
+}
 
 export function spawnAtlas({ dataDir, port = 0, repoRoot }) {
   const readToken = randomBytes(8).toString('hex');
