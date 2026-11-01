@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'">
+<title data-i18n="page.memory.title">记忆管理</title>
+<link rel="stylesheet" href="ui.css">
+<link rel="stylesheet" href="memory-workbench.css">
+<link rel="stylesheet" href="memory-universe.css">
+<link rel="stylesheet" href="alpha.css">
+</head>
+<body class="memory-wb-page">
+
+<div class="wb-app" id="wb-app" data-mode="search" data-pane="list">
+
+  <header class="wb-mast">
+    <div class="wb-brand">
+      <span class="wb-mark" aria-hidden="true">記</span>
+      <div class="wb-brand-text">
+        <h1 data-i18n="set.memWbTitle">记忆管理</h1>
+        <p data-i18n="set.memWbIntro">查找她真正记得的事，看清原始记录与当前理解，并纠正或撤回。</p>
+      </div>
+    </div>
+    <div class="wb-telemetry">
+      <label class="wb-tel wb-space" id="wb-space-wrap" hidden>
+        <span data-i18n="set.wbSpaceLabel">记忆空间</span>
+        <select id="wb-space" data-testid="space-select" aria-label="记忆空间"></select>
+      </label>
+      <div class="wb-tel">
+        <span data-i18n="set.memWbInstance">角色实例</span>
+        <b id="wb-instance" data-testid="instance">—</b>
+      </div>
+      <div class="wb-tel">
+        <span id="wb-revision-label" data-i18n="set.memWbRevisionLabel">档案修订</span>
+        <b id="wb-revision" data-testid="revision">—</b>
+      </div>
+      <div class="wb-conn" id="wb-conn" data-tone="idle" data-testid="connection">
+        <i aria-hidden="true"></i><span id="wb-conn-text" data-i18n="set.wbConnUnknown">未连接</span>
+      </div>
+    </div>
+  </header>
+
+  <nav class="wb-rail" role="tablist" aria-orientation="vertical" aria-label="工作台区域">
+    <button type="button" class="wb-rail-item" role="tab" data-mode="search" aria-selected="true" data-testid="nav-search">
+      <span class="g" aria-hidden="true">查</span>
+      <span class="t" data-i18n="set.wbNavSearch">查找</span>
+    </button>
+    <button type="button" class="wb-rail-item" role="tab" data-mode="manage" aria-selected="false" data-testid="nav-manage">
+      <span class="g" aria-hidden="true">管</span>
+      <span class="t" data-i18n="set.wbNavManage">管理</span>
+    </button>
+    <button type="button" class="wb-rail-item" role="tab" data-mode="maint" aria-selected="false" data-testid="nav-maint">
+      <span class="g" aria-hidden="true">维</span>
+      <span class="t" data-i18n="set.wbNavMaint">维护</span>
+    </button>
+    <button type="button" class="wb-rail-item" role="tab" data-mode="universe" aria-selected="false" data-testid="nav-universe">
+      <span class="g" aria-hidden="true">宇</span>
+      <span class="t" data-i18n="set.wbNavUniverse">宇宙</span>
+    </button>
+    <div class="wb-rail-foot">
+      <button type="button" class="wb-rail-tool" id="wb-size" aria-label="阅读字号" title="阅读字号">
+        <span aria-hidden="true">Aa</span>
+      </button>
+      <button type="button" class="wb-rail-tool" id="wb-refresh" aria-label="重新读取" title="重新读取">
+        <span aria-hidden="true">↻</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ============ 左列：检索 ============ -->
+  <section class="wb-column wb-column-list" aria-label="检索与结果">
+    <div class="wb-query">
+      <div class="wb-searchbox">
+        <span class="wb-search-glyph" aria-hidden="true">⌕</span>
+        <input id="wb-q" type="search" autocomplete="off" spellcheck="false" data-testid="search-input"
+               aria-label="搜索记忆" data-i18n-placeholder="set.memWbSearchPh" placeholder="关键词、人物名或记录 ID">
+        <kbd class="wb-kbd" aria-hidden="true">/</kbd>
+      </div>
+      <button type="button" id="wb-go" class="wb-btn wb-btn-primary" data-testid="search-submit" data-i18n="set.memWbSearch">查找</button>
+    </div>
+
+    <div class="wb-facets">
+      <div class="wb-seg" id="wb-status" role="group" aria-label="有效性筛选">
+        <button type="button" data-status="active" aria-pressed="true" data-i18n="set.memWbStatusActive">当前有效</button>
+        <button type="button" data-status="all" aria-pressed="false" data-i18n="set.memWbStatusAll">全部历史</button>
+        <button type="button" data-status="superseded" aria-pressed="false" data-i18n="set.memWbStatusSuperseded">已被更新</button>
+        <button type="button" data-status="retracted" aria-pressed="false" data-i18n="set.memWbStatusRetracted">已撤回</button>
+      </div>
+      <div class="wb-selects">
+        <label class="wb-field">
+          <span data-i18n="set.wbFacetType">记录类型</span>
+          <select id="wb-type" data-testid="facet-type">
+            <option value="" data-i18n="set.memWbTypeAll">全部类型</option>
+          </select>
+        </label>
+        <label class="wb-field">
+          <span data-i18n="set.wbFacetTime">时间</span>
+          <select id="wb-time" data-testid="facet-time">
+            <option value="all" data-i18n="set.wbTimeAll">全部时间</option>
+            <option value="1d" data-i18n="set.wbTime1d">近 24 小时</option>
+            <option value="7d" data-i18n="set.wbTime7d">近 7 天</option>
+            <option value="30d" data-i18n="set.wbTime30d">近 30 天</option>
+          </select>
+        </label>
+        <label class="wb-field">
+          <span data-i18n="set.wbFacetOrder">排序</span>
+          <select id="wb-order" data-testid="facet-order">
+            <option value="newest" data-i18n="set.wbOrderNewest">最新在前</option>
+            <option value="oldest" data-i18n="set.wbOrderOldest">最早在前</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div class="wb-listmeta">
+      <span id="wb-count" data-testid="result-count">—</span>
+      <span id="wb-source-chip" class="wb-chip" title="正式记忆的唯一来源">FORMAL_CORE</span>
+    </div>
+    <div class="wb-window-note" id="wb-window-note" hidden data-testid="window-note"></div>
+
+    <div class="wb-results" id="wb-list" role="listbox" aria-label="记忆结果" data-testid="result-list"></div>
+
+    <div class="wb-pager">
+      <button type="button" id="wb-prev" data-i18n="set.memWbPrev" data-testid="page-prev">上一页</button>
+      <span id="wb-page" data-testid="page-label"></span>
+      <button type="button" id="wb-next" data-i18n="set.memWbNext" data-testid="page-next">下一页</button>
+    </div>
+  </section>
+
+  <!-- ============ 左列：管理（操作台账 + 纠正链） ============ -->
+  <section class="wb-column wb-column-manage" aria-label="记忆管理">
+    <div class="wb-block">
+      <div class="wb-block-head">
+        <h2 data-i18n="set.wbLedgerTitle">操作台账</h2>
+        <button type="button" class="wb-linkbtn" id="wb-ledger-clear" data-i18n="set.wbLedgerClear">清空</button>
+      </div>
+      <p class="wb-note" data-i18n="set.wbLedgerNote">只记录本窗口发起的写入，是本机的旁注，不是权威数据。</p>
+      <div id="wb-ledger" class="wb-ledger" data-testid="ledger"></div>
+    </div>
+    <div class="wb-block wb-block-chain">
+      <div class="wb-block-head">
+        <h2 data-i18n="set.wbChainTitle">纠正链</h2>
+        <span class="wb-block-hint" id="wb-chain-target"></span>
+      </div>
+      <div id="wb-chain-list" class="wb-chain-list" data-testid="chain-list"></div>
+    </div>
+  </section>
+
+  <!-- ============ 右列：阅读 ============ -->
+  <section class="wb-reader" id="wb-reader" aria-label="记忆详情">
+    <button type="button" class="wb-back" id="wb-back" data-i18n="set.wbBack">← 返回结果</button>
+    <div class="wb-reader-empty" id="wb-reader-empty" data-testid="reader-empty">
+      <p class="wb-empty-title" data-i18n="set.memWbDetailEmpty">从左侧选择一条记录查看详情。</p>
+      <p class="wb-note" data-i18n="set.wbReaderHint">原始记录、当前理解与纠正链都来自 Host 的只读视图；本窗口不持有任何记忆。</p>
+
+    </div>
+    <article class="wb-sheet" id="wb-sheet" hidden data-testid="sheet">
+      <header class="wb-sheet-head">
+        <div class="wb-idline">
+          <span class="wb-seq" id="wb-seq">—</span>
+          <span class="wb-recid" id="wb-recid" data-testid="record-id">—</span>
+          <span class="wb-typechip" id="wb-typechip"></span>
+        </div>
+        <div class="wb-stamp" id="wb-stamp" data-status="active" aria-hidden="true"></div>
+      </header>
+      <div class="wb-sheet-body">
+        <div class="wb-reading" id="wb-reading"></div>
+        <aside class="wb-margin" id="wb-margin" aria-label="档案字段"></aside>
+      </div>
+    </article>
+  </section>
+
+
+  <!-- ============ 记忆宇宙（第二种可视化，按需启动 WebGL） ============ -->
+  <section class="wb-universe" id="wb-universe" aria-label="记忆宇宙">
+    <div class="wb-uni-stage" id="wb-uni-stage">
+      <div class="wb-uni-canvas" id="wb-uni-canvas" data-testid="universe-canvas"></div>
+      <canvas class="wb-uni-stars" id="wb-uni-stars" aria-hidden="true"></canvas>
+
+      <div class="wb-uni-overlay">
+        <p class="wb-uni-kicker" data-i18n="set.wbUniKicker">MEMORY UNIVERSE</p>
+        <h2 data-i18n="set.wbUniTitle">记忆宇宙</h2>
+        <p class="wb-uni-intro" data-i18n="set.wbUniIntro">同一批正式记忆的另一种读法：节点是记录，线是可解释的关系。</p>
+        <p class="wb-uni-scope" id="wb-uni-scope" data-testid="universe-scope">—</p>
+      </div>
+
+      <div class="wb-uni-loading" id="wb-uni-loading" hidden data-testid="universe-loading">
+        <span></span><span></span><span></span>
+        <p data-i18n="set.wbUniLoading">正在构建星图…</p>
+      </div>
+
+      <div class="wb-uni-blocked" id="wb-uni-blocked" hidden data-testid="universe-blocked">
+        <h3 data-i18n="set.wbUniBlockedTitle">这台设备无法渲染 3D 视图</h3>
+        <p data-i18n="set.wbUniBlockedBody">需要 WebGL2。记忆数据本身不受影响，可以回到档案视图继续查看与修改。</p>
+        <p class="wb-uni-blocked-reason" id="wb-uni-blocked-reason"></p>
+        <button type="button" class="wb-btn" id="wb-uni-back">回到档案</button>
+      </div>
+
+      <ul class="wb-uni-legend" aria-label="图例">
+        <li><i data-kind="confirmed"></i><span data-i18n="set.wbUniLegendConfirmed">确认关系（来源字段直接给出）</span></li>
+        <li><i data-kind="inferred"></i><span data-i18n="set.wbUniLegendInferred">推测关联（字面共现，非因果）</span></li>
+        <li><i data-kind="active"></i><span data-i18n="set.wbUniLegendActive">当前有效</span></li>
+        <li><i data-kind="superseded"></i><span data-i18n="set.wbUniLegendSuperseded">已被更新</span></li>
+        <li><i data-kind="retracted"></i><span data-i18n="set.wbUniLegendRetracted">已撤回</span></li>
+      </ul>
+    </div>
+
+    <footer class="wb-uni-timeline">
+      <div class="wb-uni-tl-head">
+        <span class="wb-uni-tl-label" data-i18n="set.wbUniTimeline">时间线</span>
+        <span class="wb-uni-tl-read" id="wb-uni-tl-read" data-testid="universe-cutoff">全部时间</span>
+      </div>
+      <canvas class="wb-uni-hist" id="wb-uni-hist" height="34" aria-hidden="true"></canvas>
+      <input type="range" id="wb-uni-range" min="0" max="100" step="1" value="0"
+             aria-label="按时间筛选" data-testid="universe-range">
+    </footer>
+  </section>
+
+  <!-- ============ 宇宙：右侧面板 ============ -->
+  <aside class="wb-uni-panel" aria-label="记忆宇宙面板">
+    <header class="wb-uni-panel-head">
+      <div class="wb-uni-panel-tools">
+        <button type="button" class="wb-linkbtn" id="wb-uni-refresh" data-testid="universe-refresh" data-i18n="set.wbUniRefresh">重新读取</button>
+        <button type="button" class="wb-linkbtn" id="wb-uni-recenter" data-i18n="set.wbUniRecenter">回到中心</button>
+      </div>
+    </header>
+
+    <section class="wb-uni-block" data-testid="universe-stats">
+      <h3 data-i18n="set.wbUniStats">视图统计</h3>
+      <dl class="wb-uni-dl" id="wb-uni-stats"></dl>
+    </section>
+
+    <section class="wb-uni-block" data-testid="universe-regions">
+      <h3 data-i18n="set.wbUniRegions">分区（解剖学名称仅作隐喻）</h3>
+      <ul class="wb-uni-regions" id="wb-uni-regions"></ul>
+    </section>
+
+    <section class="wb-uni-block wb-uni-block-recall" data-testid="universe-recall">
+      <h3 data-i18n="set.wbUniRecall">本次召回</h3>
+      <p class="wb-uni-recall-line" id="wb-uni-recall">—</p>
+      <p class="wb-uni-note" data-i18n="set.wbUniRecallHint">高亮来自当前筛选的匹配记录及其纠正链。</p>
+    </section>
+
+    <section class="wb-uni-block wb-uni-block-pick" data-testid="universe-selection">
+      <h3 data-i18n="set.wbUniSelection">选中节点</h3>
+      <div id="wb-uni-selection"></div>
+    </section>
+
+    <p class="wb-uni-note wb-uni-footer-note" data-i18n="set.wbUniNote">节点是正式记忆记录，线是记录里的来源字段或字面共现；这里没有任何「神经活动」数据。</p>
+    <p class="wb-uni-note" id="wb-uni-graph-source" data-testid="universe-graph-source">—</p>
+    <p class="wb-uni-note" data-i18n="set.wbUniMetaDerived">本视图为本地派生布局，不是图数据库，也不构成第二套事实来源。</p>
+  </aside>
+
+  <!-- ============ 维护与容量 ============ -->
+  <section class="wb-maintenance" aria-label="维护与容量">
+    <header class="wb-maint-head">
+      <div>
+        <h2 data-i18n="set.wbMaintTitle">维护与容量</h2>
+        <p class="wb-note" data-i18n="set.wbMaintIntro">占用由 Host 实测上报；界面不估算、不补零，也不会把派生缓存算成原文。</p>
+      </div>
+      <button type="button" class="wb-btn" id="wb-maint-refresh" data-testid="maint-refresh" data-i18n="set.wbMaintRefresh">重新查询</button>
+    </header>
+    <div class="wb-figures" id="wb-figures" data-testid="figures"></div>
+    <div class="wb-budget" id="wb-budget" data-testid="budget"></div>
+    <div class="wb-maint-cols">
+      <section class="wb-maint-block">
+        <h3 data-i18n="set.wbIndexTitle">索引状态</h3>
+        <div id="wb-index" data-testid="index-state"></div>
+      </section>
+      <section class="wb-maint-block">
+        <h3 data-i18n="set.wbFaultsTitle">最近维护错误</h3>
+        <div id="wb-faults" data-testid="maint-faults"></div>
+      </section>
+    </div>
+    <section class="wb-maint-block">
+      <h3 data-i18n="set.wbActionsTitle">可执行动作</h3>
+      <div id="wb-actions" data-testid="maint-actions"></div>
+    </section>
+  </section>
+
+</div>
+
+<script src="i18n.js"></script>
+<script src="theme.js"></script>
+<script src="theme-init.js"></script>
+<script src="universe-projection.js"></script>
+<script src="memory-universe.js"></script>
+<script src="memory-workbench.js"></script>
+<script src="memory-capture.js"></script>
+</body>
+</html>

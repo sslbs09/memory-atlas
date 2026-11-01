@@ -7,3 +7,9 @@ activation-04/.tmp/
 activation-04/results-v4/*.tmp
 experiments/activation-04/.dogfood/
 experiments/activation-04/.dogfood/
+
+# Alpha-01 桌面应用运行时产物
+desktop/node_modules/
+desktop/docs/screenshots/
+
+data-alpha-test/

@@ -9,7 +9,8 @@
     "start": "node bin/atlas-server.mjs",
     "query": "node bin/atlas-query.mjs",
     "demo": "node bin/atlas-demo.mjs",
-    "test": "node --test \"test/*.test.js\""
+    "test": "node --test \"test/*.test.js\"",
+    "alpha": "npm run alpha --prefix desktop"
   },
   "engines": {
     "node": ">=20"

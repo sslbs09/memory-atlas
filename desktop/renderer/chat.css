@@ -1,0 +1,277 @@
+/* =============================================================================
+   chat.css — 记忆对话实验窗口。沿用 --ui-* 令牌与工作台的"档案室"气质：
+   细线、留白、克制的颜色；不做聊天软件模仿秀。深色主题自动跟随。
+   ========================================================================== */
+
+html, body { height: 100%; }
+
+body.chat-page {
+  margin: 0;
+  background: var(--ui-bg);
+  color: var(--ui-ink);
+  font: 13px/1.55 "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+  overflow: hidden;
+}
+
+.chat-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ---------------- 头部 ---------------- */
+
+.chat-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px 10px;
+  border-bottom: 1px solid var(--ui-line);
+  background: var(--ui-surface);
+}
+.chat-title h1 { margin: 0; font-size: 16px; letter-spacing: -.01em; }
+.chat-sub { margin: 2px 0 0; font-size: 11px; color: var(--ui-muted); }
+.chat-head-chips { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+.chat-chip {
+  display: inline-block;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 3px 10px;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 999px;
+  background: var(--ui-surface);
+  color: var(--ui-muted);
+  font-size: 11.5px;
+}
+.chat-chip-btn { cursor: pointer; color: var(--ui-ink); }
+.chat-chip-btn:hover { border-color: var(--ui-accent); color: var(--ui-accent-strong); }
+
+/* ---------------- 配置区 ---------------- */
+
+.chat-config {
+  flex: 0 0 auto;
+  padding: 12px 18px 14px;
+  border-bottom: 1px solid var(--ui-line);
+  background: var(--ui-surface-soft);
+}
+.chat-note { margin: 0 0 10px; font-size: 11.5px; line-height: 1.65; color: var(--ui-subtle); }
+.chat-note code {
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 11px;
+}
+.chat-config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+.chat-config-grid label { display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: var(--ui-muted); }
+.chat-config-grid input {
+  padding: 6px 9px;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: var(--ui-radius-sm);
+  background: var(--ui-surface);
+  color: var(--ui-ink);
+  font: 12.5px/1.4 "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+.chat-config-grid input:focus { outline: var(--ui-focus); border-color: var(--ui-accent); }
+.chat-config-actions { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.chat-feedback { font-size: 11.5px; color: var(--ui-ink); }
+
+.chat-btn {
+  padding: 6px 16px;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: var(--ui-radius-sm);
+  background: var(--ui-surface);
+  color: var(--ui-ink);
+  font: 12.5px/1.4 "Segoe UI", "Microsoft YaHei", sans-serif;
+  cursor: pointer;
+}
+.chat-btn:hover { border-color: var(--ui-accent); color: var(--ui-accent-strong); }
+.chat-btn:disabled { opacity: .55; cursor: default; }
+.chat-btn-primary { background: var(--ui-accent); border-color: var(--ui-accent); color: #fff; }
+.chat-btn-primary:hover { background: var(--ui-accent-strong); color: #fff; }
+
+/* ---------------- 消息区 ---------------- */
+
+.chat-log {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 16px 18px 10px;
+}
+
+.chat-empty { max-width: 560px; margin: 8vh auto 0; text-align: center; }
+.chat-empty-title { margin: 0 0 8px; font-size: 15px; color: var(--ui-ink); }
+.chat-empty .chat-note { text-align: left; }
+
+.chat-turn { margin: 0 0 16px; }
+.chat-msg { display: flex; flex-direction: column; }
+.chat-msg-user { align-items: flex-end; }
+.chat-msg-assistant { align-items: stretch; }
+
+.chat-bubble {
+  max-width: 78%;
+  padding: 9px 13px;
+  border-radius: var(--ui-radius-md);
+  font-size: 13px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.chat-msg-user .chat-bubble {
+  background: var(--ui-accent-soft);
+  border: 1px solid var(--ui-line);
+  border-bottom-right-radius: 4px;
+}
+.chat-msg-assistant .chat-bubble {
+  align-self: stretch;
+  max-width: 100%;
+  background: var(--ui-surface);
+  border: 1px solid var(--ui-line);
+  border-bottom-left-radius: 4px;
+  font-family: "Source Han Serif SC", "Noto Serif SC", "Songti SC", "SimSun", serif;
+  font-size: 13.5px;
+}
+.chat-bubble .chat-cite {
+  display: inline-block;
+  margin: 0 1px;
+  padding: 0 5px;
+  border: 1px solid var(--ui-accent);
+  border-radius: 999px;
+  background: var(--ui-accent-soft);
+  color: var(--ui-accent-strong);
+  font: 11px/1.5 "Cascadia Mono", Consolas, monospace;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.chat-bubble .chat-cite:hover { background: var(--ui-accent); color: #fff; }
+
+.chat-err {
+  max-width: 100%;
+  padding: 9px 13px;
+  border: 1px solid var(--ui-danger);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-danger-soft);
+  color: var(--ui-ink);
+  font-size: 12.5px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ---------------- 每轮调试视图 ---------------- */
+
+.chat-debug {
+  margin-top: 6px;
+  border: 1px solid var(--ui-line);
+  border-radius: var(--ui-radius-sm);
+  background: var(--ui-surface);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 11px;
+}
+.chat-debug summary {
+  padding: 6px 10px;
+  cursor: pointer;
+  color: var(--ui-muted);
+  font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+  font-size: 11.5px;
+  user-select: none;
+}
+.chat-debug summary:hover { color: var(--ui-accent-strong); }
+.chat-debug-body { padding: 8px 12px 12px; }
+.chat-debug h4 {
+  margin: 10px 0 4px;
+  font: 600 11px/1.4 "Segoe UI", "Microsoft YaHei", sans-serif;
+  color: var(--ui-ink);
+}
+.chat-debug h4:first-child { margin-top: 0; }
+.chat-debug table { border-collapse: collapse; width: 100%; margin: 2px 0 6px; }
+.chat-debug th, .chat-debug td {
+  padding: 3px 6px;
+  border: 1px solid var(--ui-line);
+  text-align: left;
+  vertical-align: top;
+  font-weight: 400;
+  word-break: break-all;
+}
+.chat-debug th { background: var(--ui-surface-soft); color: var(--ui-muted); font-family: "Segoe UI", sans-serif; font-size: 10.5px; }
+.chat-debug .mono { white-space: pre-wrap; }
+.chat-debug .dim { color: var(--ui-subtle); }
+.chat-debug .bad { color: var(--ui-danger); }
+.chat-debug .good { color: var(--ui-success); }
+.chat-debug .cite-link { color: var(--ui-accent-strong); cursor: pointer; text-decoration: underline dotted; }
+.chat-debug .mini-btn {
+  padding: 1px 7px;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 999px;
+  background: var(--ui-surface);
+  color: var(--ui-muted);
+  font-size: 10.5px;
+  cursor: pointer;
+  margin-left: 4px;
+}
+.chat-debug .mini-btn:hover { border-color: var(--ui-accent); color: var(--ui-accent-strong); }
+
+/* ---------------- 输入区 ---------------- */
+
+.chat-composer {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  padding: 12px 18px 14px;
+  border-top: 1px solid var(--ui-line);
+  background: var(--ui-surface);
+}
+#chat-input {
+  flex: 1 1 auto;
+  resize: none;
+  padding: 8px 11px;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: var(--ui-radius-sm);
+  background: var(--ui-surface);
+  color: var(--ui-ink);
+  font: 13px/1.5 "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+#chat-input:focus { outline: var(--ui-focus); border-color: var(--ui-accent); }
+#chat-stop { border-color: var(--ui-danger); color: var(--ui-danger); }
+
+/* ---------------- 引用详情浮层 ---------------- */
+
+.chat-detail-pop {
+  position: fixed;
+  z-index: 400;
+  top: 64px;
+  right: 24px;
+  width: 400px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding: 12px 14px;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-surface);
+  box-shadow: var(--ui-shadow);
+}
+.chat-detail-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.chat-detail-head b { font-family: "Cascadia Mono", Consolas, monospace; font-size: 12px; word-break: break-all; }
+.chat-detail-close { border: 0; background: none; color: var(--ui-muted); font-size: 16px; cursor: pointer; }
+.chat-detail-close:hover { color: var(--ui-danger); }
+.chat-detail-body { font-size: 12px; }
+.chat-detail-body .kv { display: flex; gap: 8px; margin-bottom: 3px; }
+.chat-detail-body .kv span { flex: 0 0 76px; color: var(--ui-muted); font-size: 11px; }
+.chat-detail-body .kv b { font-weight: 400; word-break: break-all; }
+.chat-detail-body .content {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--ui-line);
+  border-radius: var(--ui-radius-sm);
+  background: var(--ui-surface-soft);
+  font-family: "Source Han Serif SC", "Noto Serif SC", "Songti SC", "SimSun", serif;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

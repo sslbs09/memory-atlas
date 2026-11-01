@@ -1,0 +1,17 @@
+{
+  "name": "memory-atlas-alpha-desktop",
+  "productName": "Memory Atlas Alpha",
+  "version": "0.1.0",
+  "description": "Memory Atlas Alpha-01：独立于 WhiteMoon 的本地记忆桌面应用（Atlas 服务 + GLM 检索 + 记忆工作台 + 记忆对话实验）",
+  "type": "module",
+  "main": "main.mjs",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "alpha": "electron .",
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^43.3.0"
+  }
+}

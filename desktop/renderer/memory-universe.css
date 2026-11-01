@@ -1,0 +1,391 @@
+/* =============================================================================
+   memory-universe.css — 记忆宇宙：工作台的第二种可视化
+
+   它不是"另一个皮肤"，而是同一栋楼里的另一个房间：
+   档案区是白天的阅览室（纸、线、宋体），宇宙区是夜里的星图（黑、微光、等宽）。
+   两边的编号、状态语汇、来源口径完全一致，切换时不需要重新认识一遍。
+
+   两条设计纪律：
+   - 星图只用真实数据：节点数、边数、分区计数全部来自一次正式 API 查询；
+     没有装饰性粒子去冒充"神经活动"。
+   - 确认关系（来自来源字段）比推测关联（字面共现）更亮、更实；图例写明区别。
+   ========================================================================== */
+
+.wb-app[data-mode="universe"] {
+  grid-template-columns: var(--wb-rail-w) minmax(0, 1fr) 338px;
+  grid-template-rows: var(--wb-mast-h) minmax(0, 1fr);
+  grid-template-areas:
+    "rail mast mast"
+    "rail uni panel";
+}
+
+.wb-universe,
+.wb-uni-panel { display: none; }
+
+.wb-app[data-mode="universe"] .wb-universe {
+  grid-area: uni;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) 86px;
+  min-height: 0;
+  min-width: 0;
+  background: #05070a;
+  position: relative;
+}
+
+.wb-app[data-mode="universe"] .wb-uni-panel {
+  grid-area: panel;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  background: #0a0e12;
+  color: #c9d8dc;
+  border-left: 1px solid #1b2429;
+}
+
+/* 进入这个房间时，报头也沉下去：浅色报头压在黑色星图上方会像两块拼贴 */
+.wb-app[data-mode="universe"] .wb-mast {
+  --wb-ink: #e6eef0;
+  --wb-ink-2: #93a7ad;
+  --wb-ink-3: #6d7f85;
+  --wb-hair: #1c262b;
+  background: #0a0e12;
+  border-bottom-color: #1b2429;
+}
+.wb-app[data-mode="universe"] .wb-mark { border-color: #3b4a50; color: #b9cdd2; }
+.wb-app[data-mode="universe"] .wb-conn[data-tone="ok"] { color: #6fc7a8; }
+.wb-app[data-mode="universe"] .wb-conn[data-tone="bad"] { color: #e0938f; }
+
+/* ---------- 舞台 ---------------------------------------------------------- */
+
+.wb-uni-stage {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  /* 远景星尘：装饰性背景，与记忆数据无关。极低亮度，只为让黑色不空。 */
+  background:
+    radial-gradient(1px 1px at 12% 18%, rgba(230, 244, 248, .30), transparent 60%),
+    radial-gradient(1px 1px at 68% 12%, rgba(230, 244, 248, .22), transparent 60%),
+    radial-gradient(1px 1px at 84% 62%, rgba(230, 244, 248, .18), transparent 60%),
+    radial-gradient(1px 1px at 26% 78%, rgba(230, 244, 248, .16), transparent 60%),
+    radial-gradient(1px 1px at 46% 42%, rgba(230, 244, 248, .12), transparent 60%),
+    radial-gradient(1px 1px at 92% 28%, rgba(230, 244, 248, .14), transparent 60%),
+    radial-gradient(1px 1px at 6% 54%, rgba(230, 244, 248, .12), transparent 60%),
+    radial-gradient(circle at 38% 44%, rgba(26, 44, 52, .55), transparent 58%),
+    #05070a;
+}
+
+.wb-uni-canvas {
+  position: absolute;
+  inset: 0;
+}
+.wb-uni-canvas canvas { display: block; outline: none; }
+
+/* 星图叠加层：节点位置仍由 WebGL 引擎计算（同一套坐标），这里只负责把它画成"星"。 */
+.wb-uni-stars {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.wb-uni-overlay {
+  position: absolute;
+  left: 26px;
+  top: 22px;
+  max-width: 320px;
+  pointer-events: none;
+  z-index: 2;
+  /* 星点会落到文字底下：一层极淡的暗角保证标题始终可读，同时不切断星图 */
+  padding: 16px 22px 18px 0;
+  background: radial-gradient(120% 90% at 8% 12%, rgba(5, 7, 10, .9) 0%, rgba(5, 7, 10, .55) 45%, rgba(5, 7, 10, 0) 78%);
+  margin: -14px 0 0 -10px;
+  padding-left: 10px;
+}
+.wb-uni-kicker {
+  margin: 0 0 6px;
+  font-family: var(--wb-mono);
+  font-size: 9px;
+  letter-spacing: .3em;
+  color: #5f767d;
+}
+.wb-uni-overlay h2 {
+  margin: 0 0 6px;
+  font-family: var(--wb-serif);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: .06em;
+  color: #dfeaec;
+}
+.wb-uni-intro {
+  margin: 0 0 10px;
+  font-size: 11px;
+  line-height: 1.7;
+  color: #7e939a;
+  max-width: 30ch;
+}
+.wb-uni-scope {
+  margin: 0;
+  font-family: var(--wb-mono);
+  font-size: 9.5px;
+  line-height: 1.7;
+  color: #6b8189;
+  border-top: 1px solid #1b2429;
+  padding-top: 7px;
+  max-width: 34ch;
+}
+
+/* ---------- 图例 ---------------------------------------------------------- */
+
+.wb-uni-legend {
+  position: absolute;
+  left: 26px;
+  bottom: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 3px 16px;
+  font-size: 9.5px;
+  color: #6b8189;
+  pointer-events: none;
+  z-index: 2;
+}
+.wb-uni-legend li { display: flex; align-items: center; gap: 6px; }
+.wb-uni-legend i {
+  width: 14px;
+  height: 1px;
+  background: rgba(190, 220, 230, .55);
+  display: block;
+  flex: 0 0 auto;
+}
+.wb-uni-legend i[data-kind="confirmed"] { background: rgba(190, 220, 230, .55); height: 2px; }
+.wb-uni-legend i[data-kind="inferred"] { background: rgba(120, 150, 160, .35); }
+.wb-uni-legend i[data-kind="active"] {
+  width: 5px; height: 5px; border: 0; background: #bfe6f0;
+}
+.wb-uni-legend i[data-kind="superseded"] {
+  width: 5px; height: 5px; border: 0; background: #c9a06a;
+}
+.wb-uni-legend i[data-kind="retracted"] {
+  width: 5px; height: 5px; border: 0; background: #c76a63;
+}
+
+/* ---------- 加载 / 不可用 -------------------------------------------------- */
+
+.wb-uni-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  gap: 10px;
+  justify-items: center;
+  color: #7e939a;
+  font-size: 11px;
+  letter-spacing: .08em;
+  z-index: 3;
+}
+.wb-uni-loading span {
+  display: block;
+  width: 46px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #4a626a, transparent);
+  animation: wb-uni-scan 1.4s ease-in-out infinite;
+}
+.wb-uni-loading span:nth-child(2) { animation-delay: .18s; width: 30px; }
+.wb-uni-loading span:nth-child(3) { animation-delay: .36s; width: 18px; }
+@keyframes wb-uni-scan {
+  0%, 100% { opacity: .2; transform: scaleX(.7); }
+  50% { opacity: 1; transform: scaleX(1); }
+}
+
+.wb-uni-blocked {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 12% 0 26px;
+  max-width: 520px;
+  z-index: 3;
+}
+.wb-uni-blocked h3 { margin: 0; font-family: var(--wb-serif); font-size: 16px; color: #dfeaec; }
+.wb-uni-blocked p { margin: 0; font-size: 11.5px; line-height: 1.7; color: #8fa3a9; }
+.wb-uni-blocked-reason { font-family: var(--wb-mono); font-size: 10px !important; color: #6b8189 !important; }
+.wb-uni-blocked .wb-btn {
+  margin-top: 6px;
+  background: transparent;
+  border-color: #33454b;
+  color: #c9d8dc;
+}
+
+/* ---------- 时间线 -------------------------------------------------------- */
+
+.wb-uni-timeline {
+  border-top: 1px solid #1b2429;
+  background: #070a0d;
+  padding: 8px 18px 10px;
+  display: grid;
+  grid-template-rows: auto 30px auto;
+  gap: 3px;
+  min-width: 0;
+}
+.wb-uni-tl-head { display: flex; justify-content: space-between; align-items: baseline; }
+.wb-uni-tl-label {
+  font-family: var(--wb-mono);
+  font-size: 9px;
+  letter-spacing: .22em;
+  color: #5f767d;
+}
+.wb-uni-tl-read { font-family: var(--wb-mono); font-size: 10px; color: #93a7ad; }
+
+.wb-uni-hist { width: 100%; height: 34px; display: block; }
+
+.wb-uni-timeline input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 14px;
+  background: transparent;
+  margin: 0;
+}
+.wb-uni-timeline input[type="range"]::-webkit-slider-runnable-track {
+  height: 1px;
+  background: #263238;
+}
+.wb-uni-timeline input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 9px;
+  height: 9px;
+  margin-top: -4px;
+  background: #7fd6cf;
+  border: 0;
+  border-radius: 0;
+  cursor: ew-resize;
+}
+.wb-uni-timeline input[type="range"]:focus-visible { outline: 1px solid #7fd6cf; outline-offset: 4px; }
+
+/* ---------- 右侧面板 ------------------------------------------------------ */
+
+.wb-uni-panel-head {
+  padding: 12px 16px 8px;
+  border-bottom: 1px solid #1b2429;
+  display: flex;
+  justify-content: flex-end;
+}
+.wb-uni-panel-tools { display: flex; gap: 14px; }
+.wb-uni-panel .wb-linkbtn { color: #7e939a; font-size: 10.5px; }
+.wb-uni-panel .wb-linkbtn:hover { color: #cfe0e4; }
+
+.wb-uni-block { padding: 12px 16px 14px; border-bottom: 1px solid #141c21; }
+.wb-uni-block h3 {
+  margin: 0 0 8px;
+  font-family: var(--wb-mono);
+  font-size: 9px;
+  letter-spacing: .2em;
+  font-weight: 500;
+  color: #5f767d;
+}
+
+.wb-uni-dl { margin: 0; display: grid; gap: 5px; }
+.wb-uni-dl > div { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.wb-uni-dl dt { font-size: 11px; color: #8fa3a9; }
+.wb-uni-dl dd {
+  margin: 0;
+  font-family: var(--wb-mono);
+  font-size: 13px;
+  color: #dfeaec;
+  letter-spacing: .02em;
+}
+.wb-uni-dl dd small { font-size: 9.5px; color: #6b8189; margin-left: 4px; }
+
+.wb-uni-regions { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; }
+.wb-uni-regions li {
+  display: grid;
+  grid-template-columns: 6px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  font-size: 11px;
+  color: #8fa3a9;
+  padding: 3px 0;
+}
+.wb-uni-regions i { width: 4px; height: 4px; background: #3d5259; display: block; }
+.wb-uni-regions li[data-region="hippocampus"] i { background: #6fb7c9; }
+.wb-uni-regions li[data-region="cortex"] i { background: #9ec9a8; }
+.wb-uni-regions li[data-region="amygdala"] i { background: #c98f83; }
+.wb-uni-regions li[data-region="prefrontal"] i { background: #cbb98a; }
+.wb-uni-regions b { font-family: var(--wb-mono); font-size: 12px; font-weight: 400; color: #dfeaec; }
+
+.wb-uni-recall-line { margin: 0 0 6px; font-size: 11.5px; color: #cfe0e4; line-height: 1.6; }
+.wb-uni-recall-line b { font-family: var(--wb-mono); font-size: 13px; font-weight: 400; }
+
+.wb-uni-block-pick { border-bottom: 1px solid #141c21; }
+.wb-uni-pick { display: grid; gap: 7px; }
+.wb-uni-pick-id {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  font-family: var(--wb-mono);
+  font-size: 10px;
+  color: #93a7ad;
+}
+.wb-uni-pick-id .st { letter-spacing: .08em; }
+.wb-uni-pick-id .st[data-status="active"] { color: #8fd3b6; }
+.wb-uni-pick-id .st[data-status="superseded"] { color: #c9a06a; }
+.wb-uni-pick-id .st[data-status="retracted"] { color: #c76a63; }
+.wb-uni-pick-text {
+  margin: 0;
+  font-family: var(--wb-serif);
+  font-size: 13px;
+  line-height: 1.75;
+  color: #dfeaec;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.wb-uni-pick-facts { margin: 0; display: grid; gap: 3px; }
+.wb-uni-pick-facts > div { display: flex; gap: 8px; font-size: 10.5px; }
+.wb-uni-pick-facts dt { color: #6b8189; min-width: 52px; }
+.wb-uni-pick-facts dd { margin: 0; color: #b9cdd2; font-family: var(--wb-mono); overflow-wrap: anywhere; }
+.wb-uni-pick-open { justify-self: start; margin-top: 2px; }
+.wb-uni-pick-open.wb-btn {
+  background: transparent;
+  border-color: #33454b;
+  color: #cfe0e4;
+  font-size: 11px;
+  padding: 4px 10px;
+}
+.wb-uni-pick-open.wb-btn:hover { border-color: #7fd6cf; color: #eaf6f7; }
+
+.wb-uni-empty { margin: 0; font-size: 11px; line-height: 1.7; color: #6b8189; }
+
+.wb-uni-note { margin: 8px 16px 0; font-size: 10px; line-height: 1.7; color: #5f767d; }
+.wb-uni-footer-note { border-top: 1px solid #141c21; padding-top: 10px; margin-top: 12px; }
+.wb-uni-panel > .wb-uni-note:last-child { margin-bottom: 16px; }
+
+/* ---------- 窄窗 ---------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .wb-app[data-mode="universe"] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: var(--wb-mast-h) 46px minmax(220px, 1fr) minmax(240px, 42vh);
+    grid-template-areas:
+      "mast"
+      "rail"
+      "uni"
+      "panel";
+  }
+  .wb-app[data-mode="universe"] .wb-uni-panel { border-left: 0; border-top: 1px solid #1b2429; }
+  .wb-uni-legend { display: none; }
+  .wb-uni-overlay { left: 16px; top: 14px; max-width: 260px; }
+  .wb-uni-overlay h2 { font-size: 16px; }
+  .wb-uni-intro { display: none; }
+}

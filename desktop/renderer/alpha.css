@@ -1,0 +1,120 @@
+/* =============================================================================
+   alpha.css — Alpha-01 注入层（工具条 / 写入面板 / 重提面板 / 服务状态）。
+   只用既有 --ui-* 令牌派生，不新增第二套配色；深色主题自动跟随。
+   ========================================================================== */
+
+.alpha-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 10px;
+  padding-left: 10px;
+  border-left: 1px solid var(--ui-line);
+}
+
+.alpha-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: 999px;
+  background: var(--ui-surface);
+  color: var(--ui-ink);
+  font: 12px/1.4 "Segoe UI", "Microsoft YaHei", sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.alpha-chip:hover { border-color: var(--ui-accent); color: var(--ui-accent-strong); }
+.alpha-chip:disabled { opacity: .55; cursor: default; }
+.alpha-chip-dim { border-style: dashed; color: var(--ui-muted); }
+
+.alpha-chip-status { cursor: pointer; }
+.alpha-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ui-subtle); }
+.alpha-dot[data-tone="ok"] { background: var(--ui-success); }
+.alpha-dot[data-tone="pending"] { background: var(--ui-warm); }
+.alpha-dot[data-tone="bad"] { background: var(--ui-danger); }
+.alpha-status-text { font-size: 11px; color: var(--ui-muted); }
+
+/* ---------------- 面板 ---------------- */
+
+.alpha-panel {
+  position: fixed;
+  top: 54px;
+  right: 16px;
+  z-index: 300;
+  width: 380px;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  padding: 16px 18px 18px;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-surface);
+  box-shadow: var(--ui-shadow);
+}
+
+.alpha-panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.alpha-panel-title { margin: 0; font-size: 14px; color: var(--ui-ink); }
+.alpha-panel-close {
+  border: 0; background: none; color: var(--ui-muted);
+  font-size: 16px; cursor: pointer; line-height: 1; padding: 2px 6px;
+}
+.alpha-panel-close:hover { color: var(--ui-danger); }
+
+.alpha-note { margin: 0 0 10px; font-size: 11px; line-height: 1.6; color: var(--ui-subtle); }
+.alpha-row { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; }
+.alpha-label { flex: 0 0 64px; font-size: 11px; color: var(--ui-muted); }
+.alpha-row b { font-size: 12px; color: var(--ui-ink); word-break: break-all; }
+
+.alpha-textarea, .alpha-input, .alpha-select {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: var(--ui-radius-sm);
+  background: var(--ui-surface);
+  color: var(--ui-ink);
+  font: 13px/1.5 "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+.alpha-textarea { resize: vertical; }
+.alpha-textarea:focus, .alpha-input:focus, .alpha-select:focus { outline: var(--ui-focus); border-color: var(--ui-accent); }
+
+.alpha-btn {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1px solid var(--ui-line-strong);
+  border-radius: var(--ui-radius-sm);
+  background: var(--ui-surface);
+  color: var(--ui-ink);
+  font: 12.5px/1.4 "Segoe UI", "Microsoft YaHei", sans-serif;
+  cursor: pointer;
+}
+.alpha-btn:hover { border-color: var(--ui-accent); color: var(--ui-accent-strong); }
+.alpha-btn:disabled { opacity: .55; cursor: default; }
+.alpha-btn-primary { background: var(--ui-accent); border-color: var(--ui-accent); color: #fff; }
+.alpha-btn-primary:hover { background: var(--ui-accent-strong); color: #fff; }
+
+.alpha-feedback { margin-top: 8px; font-size: 12px; line-height: 1.6; color: var(--ui-ink); word-break: break-all; }
+.alpha-feedback-bad { color: var(--ui-danger); }
+
+.alpha-create { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--ui-line); }
+.alpha-create .alpha-input { display: block; }
+
+.alpha-service-row { display: flex; gap: 8px; margin-bottom: 4px; font-size: 12px; }
+.alpha-service-row .alpha-label { flex: 0 0 132px; }
+.alpha-service-row b { font-weight: 600; word-break: break-all; }
+.alpha-service-err, .alpha-service-tail {
+  margin: 10px 0 0;
+  padding: 10px;
+  border: 1px solid var(--ui-danger);
+  border-radius: var(--ui-radius-sm);
+  background: var(--ui-danger-soft);
+  color: var(--ui-ink);
+  font: 11px/1.5 "Cascadia Mono", Consolas, monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.alpha-service-tail { border-color: var(--ui-line-strong); background: var(--ui-surface-soft); color: var(--ui-muted); }
+
+/* 详情页动作行里的重提按钮 */
+.alpha-revisit-btn { margin-left: 6px; }

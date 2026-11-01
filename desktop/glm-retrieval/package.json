@@ -1,0 +1,17 @@
+{
+  "name": "whitemoon-universal-memory-glm-retrieval",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "WhiteMoon Universal Memory v0.1 Backend B：独立检索索引与维护后端（GLM）。派生索引，不是第二套事实权威。",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "demo": "node scripts/demo-sync.mjs",
+    "bench": "node scripts/bench.mjs"
+  },
+  "comments": {
+    "storage": "node:sqlite（Node 24 内置，无原生编译）+ 自建 CJK 一元/二元倒排。不用 FTS5：unicode61 无法切分中文、trigram 无法命中 1~2 字短词。",
+    "boundary": "正式效力由 Backend A（Core/Host）决定；本模块只保存调用方交付的 status 并默认只投影 active 记录；候选默认不携带正文。"
+  }
+}

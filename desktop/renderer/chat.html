@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'">
+<title>记忆对话实验 · Memory Atlas Alpha</title>
+<link rel="stylesheet" href="ui.css">
+<link rel="stylesheet" href="chat.css">
+</head>
+<body class="chat-page">
+
+<div class="chat-shell" id="chat-shell">
+
+  <header class="chat-head">
+    <div class="chat-title">
+      <h1>记忆对话实验</h1>
+      <p class="chat-sub">真实模型 · 真实检索 · 看得见的记忆使用</p>
+    </div>
+    <div class="chat-head-chips">
+      <span class="chat-chip" id="chat-space-chip" title="当前记忆空间">空间 —</span>
+      <span class="chat-chip" id="chat-model-chip" title="模型配置">模型未配置</span>
+      <button type="button" class="chat-chip chat-chip-btn" id="chat-config-toggle">设置</button>
+    </div>
+  </header>
+
+  <section class="chat-config" id="chat-config" hidden>
+    <p class="chat-note">
+      任何实现 OpenAI-compatible <code>/v1/chat/completions</code> 的服务都可以：
+      本地 Ollama 填 <code>http://127.0.0.1:11434/v1</code>，或填你的服务商地址。
+      API Key 只保存在本机应用数据目录，不进日志、不发给渲染层之外的地方。
+      没有模型配置时，档案工作台的搜索、管理与宇宙功能照常可用。
+    </p>
+    <div class="chat-config-grid">
+      <label><span>BaseURL</span><input id="cfg-baseurl" type="text" spellcheck="false" placeholder="http://127.0.0.1:11434/v1"></label>
+      <label><span>Model</span><input id="cfg-model" type="text" spellcheck="false" placeholder="qwen2.5:7b / gpt-4o-mini / …"></label>
+      <label><span>API Key（留空 = 保留原值）</span><input id="cfg-apikey" type="password" spellcheck="false" placeholder="••••••••"></label>
+      <label><span>超时（毫秒）</span><input id="cfg-timeout" type="number" min="3000" max="300000" step="1000"></label>
+      <label><span>进入上下文的记忆条数（1–20）</span><input id="cfg-context" type="number" min="1" max="20" step="1"></label>
+    </div>
+    <div class="chat-config-actions">
+      <button type="button" class="chat-btn chat-btn-primary" id="cfg-save">保存配置</button>
+      <span class="chat-feedback" id="cfg-feedback"></span>
+    </div>
+  </section>
+
+  <main class="chat-log" id="chat-log" aria-live="polite">
+    <div class="chat-empty" id="chat-empty">
+      <p class="chat-empty-title">向它问一件你写过进记忆的事。</p>
+      <p class="chat-note">
+        每一轮：Atlas 先在当前空间检索 → 你可以看到候选与 A0/L/R/LR/D 影子排序 →
+        按 A0 取前几条进入上下文 → 模型回答。回复里它用了哪条记忆、用没用，三个集合分开看。
+      </p>
+    </div>
+  </main>
+
+  <footer class="chat-composer">
+    <button type="button" class="chat-btn" id="chat-stop" hidden>中断</button>
+    <textarea id="chat-input" rows="2" placeholder="问点什么……（Enter 发送，Shift+Enter 换行）"></textarea>
+    <button type="button" class="chat-btn chat-btn-primary" id="chat-send">发送</button>
+  </footer>
+
+</div>
+
+<div class="chat-detail-pop" id="chat-detail-pop" hidden>
+  <div class="chat-detail-head">
+    <b id="chat-detail-id">—</b>
+    <button type="button" class="chat-detail-close" id="chat-detail-close">×</button>
+  </div>
+  <div class="chat-detail-body" id="chat-detail-body"></div>
+</div>
+
+<script src="chat.js"></script>
+</body>
+</html>
