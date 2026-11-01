@@ -7,7 +7,7 @@
 //      Atlas NativeAuthority + createMemoryService + RetrievalCoordinator
 //      （src/service.js / src/retrieval.js，worktree 根 = master 4f112f2 逐字）
 //      + adapters/glm-retrieval.mjs 工厂 + 真 glm-retrieval SearchAdapter
-//      （<WhiteMoon repo>/work/universal-memory-v0.1\glm-retrieval\src\adapter.mjs，
+//      （glm-retrieval 引擎的 src/adapter.mjs，上游见 desktop/PROVENANCE.md；
 //       生产 ATLAS_GLM_MODULE 指向的同一个文件，只读导入）。
 //      候选 = coordinator.search() 的返回顺序（生产 A0 排序原样）。
 //
@@ -39,8 +39,9 @@ import { pathToFileURL } from 'node:url';
 const WORKTREE_ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname)
   .replace(/^\/(?=[A-Za-z]:)/, ''), '..', '..', '..');
 
-export const REAL_GLM_MODULE = process.env.ATLAS_GLM_MODULE
-  ?? '<WhiteMoon repo>/work/universal-memory-v0.1/glm-retrieval/src/adapter.mjs';
+// 本文件是实验跑批器（不入产品运行时路径）：需要真实的 ATLAS_GLM_MODULE
+// 环境变量指向 glm-retrieval/src/adapter.mjs，不再内置任何机器相关默认路径。
+export const REAL_GLM_MODULE = process.env.ATLAS_GLM_MODULE ?? '';
 
 function toFileUrl(p) {
   const abs = path.isAbsolute(p) ? p : path.resolve(p);

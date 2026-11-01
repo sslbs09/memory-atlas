@@ -1,34 +1,34 @@
 {
-  "when": "2026-11-01T13:20:13.816Z",
+  "when": "2026-11-01T15:58:54.624Z",
   "atlasEndpoint": {
-    "bootId": "ad6e8feae9edd896",
-    "url": "http://127.0.0.1:50728"
+    "bootId": "96bd273a571aba19",
+    "url": "http://127.0.0.1:56866"
   },
   "results": [
     {
       "name": "实验前置：Atlas 可达且健康",
-      "ok": true,
-      "detail": "authority=native"
+      "ok": false,
+      "detail": "connect ECONNREFUSED 127.0.0.1:56866"
     },
     {
       "name": "桌面端查询 A 命中",
-      "ok": true,
-      "detail": "recordId=demo-a source={\"kind\":\"manual\",\"id\":\"seed-a\"}"
+      "ok": false,
+      "detail": "recordId=undefined source=undefined"
     },
     {
       "name": "MCP 客户端（DSH/MaiBot 所用同一 server）查询 A 命中",
-      "ok": true,
-      "detail": "recordId=demo-a matchReason=[\"term:小林(cjk-2)\",\"term:电影(cjk-2)\",\"recency:1.000\"]"
+      "ok": false,
+      "detail": "recordId=undefined matchReason=undefined"
     },
     {
       "name": "MaiBot 客户端查询 A 命中（其自带 MCPConnection）",
-      "ok": true,
-      "detail": "5/5 项 PASS"
+      "ok": false,
+      "detail": "2/5 项 PASS"
     },
     {
       "name": "三端 recordId 与 source 一致",
-      "ok": true,
-      "detail": "source={\"kind\":\"manual\",\"id\":\"seed-a\"}"
+      "ok": false,
+      "detail": "source=undefined"
     },
     {
       "name": "DSH：Atlas 工具已注册进模型工具列表（会话日志证据，模型调用因 403 未执行）",
@@ -37,63 +37,61 @@
     },
     {
       "name": "通过 Atlas 正式接口纠正 A",
-      "ok": true,
-      "detail": "correction=ctl-f028eb05-284f-4287-bed9-f44dd2f548e9"
+      "ok": false,
+      "detail": "correction=undefined"
     },
     {
       "name": "纠正后：桌面端查到 小陈 版本",
-      "ok": true,
-      "detail": "MATCHED"
+      "detail": ""
     },
     {
       "name": "纠正后：桌面端不再把 小林 版本当当前事实",
       "ok": true,
-      "detail": "NO_MATCH"
+      "detail": ""
     },
     {
       "name": "纠正后：MCP 客户端查到 小陈 版本",
-      "ok": true,
-      "detail": "MATCHED"
+      "detail": ""
     },
     {
       "name": "纠正后：MCP 客户端不再返回 小林 为当前事实",
-      "ok": true,
-      "detail": "NO_MATCH"
+      "ok": false,
+      "detail": ""
     },
     {
       "name": "通过 Atlas 正式接口撤回 C",
-      "ok": true,
-      "detail": "retraction=ctl-efb241cf-1f80-4312-9133-541a9c13e347"
+      "ok": false,
+      "detail": "retraction=undefined"
     },
     {
       "name": "撤回后：桌面端搜索不含 C",
-      "ok": true,
-      "detail": "NO_MATCH"
+      "ok": false,
+      "detail": ""
     },
     {
       "name": "撤回后：MCP atlas_get 标注 C 非当前事实",
-      "ok": true,
-      "detail": "status=retracted"
+      "ok": false,
+      "detail": "status=undefined"
     },
     {
       "name": "撤回后：MaiBot 客户端不把 C 当当前事实（EXPECT_C_RETRACTED=1 全 PASS）",
-      "ok": true,
-      "detail": "PASS  connect to atlas-mcp via MaiBot MCPConnection\r | PASS  tool discovery  — atlas_get, atlas_health, atlas_search\r | PASS  atlas_health via MaiBot client  — {\"origin\": \"endpoint-file\", \"url\": \"http://127.0.0.1:50728\","
+      "ok": false,
+      "detail": "PASS  connect to atlas-mcp via MaiBot MCPConnection\r | PASS  tool discovery  — atlas_get, atlas_health, atlas_search\r | FAIL  atlas_health via MaiBot client  — {\"origin\": \"endpoint-file\", \"url\": \"http://127.0.0.1:56866\","
     },
     {
       "name": "其他空间不可见 interop-demo 的记录（还书/墨盒 均不命中）",
       "ok": true,
-      "detail": "还书=NO_MATCH 墨盒=NO_MATCH"
+      "detail": "还书=false 墨盒=false"
     },
     {
       "name": "Atlas 关闭后 endpoint.json 移除",
-      "ok": true,
+      "ok": false,
       "detail": ""
     },
     {
       "name": "Atlas 重启成功，bootId 已更新",
       "ok": true,
-      "detail": "bootId=96bd273a571aba19"
+      "detail": "bootId=2065c0d804145485"
     },
     {
       "name": "恢复后：纠正版 A 仍是当前事实（正式记录未丢）",
@@ -108,7 +106,7 @@
     {
       "name": "恢复后：MCP server 自动跟随新 endpoint（新 bootId）",
       "ok": true,
-      "detail": "mcp bootId=96bd273a571aba19"
+      "detail": "mcp bootId=2065c0d804145485"
     },
     {
       "name": "恢复后：MCP 检索 B 正常",

@@ -1,5 +1,5 @@
 // B1 中文词法分析 —— 自 glm-retrieval/src/tokenize.mjs @ 4f112f2 原样内联（vendored copy）。
-// 来源：<WhiteMoon repo>/work/universal-memory-v0.1\glm-retrieval\src\tokenize.mjs
+// 来源：glm-retrieval 引擎（上游见 desktop/PROVENANCE.md）src/tokenize.mjs
 // 本实验不修改原目录；此处副本仅用于在独立 worktree 中复现与真实 HEAD 完全一致的
 // 词元语义（CJK 一元/二元 + ASCII 段），保证 A0 基线是真实基线而非任务书转述。
 // 逐行与原文件一致（除本头注释）。

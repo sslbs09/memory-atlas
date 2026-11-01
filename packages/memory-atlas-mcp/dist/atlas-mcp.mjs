@@ -34702,13 +34702,7 @@ server.registerTool("atlas_health", {
     endpoint: resolved.provenance,
     writesEnabled: config2.allowWrites,
     writeToolsNote: config2.allowWrites ? "\u5199\u5165\u5DE5\u5177\u5DF2\u5F00\u653E\uFF1Aatlas_remember / atlas_correct / atlas_retract \u53EA\u5E94\u7531\u7528\u6237\u660E\u786E\u8981\u6C42\u7684\u5BF9\u8BDD\u8C03\u7528\u3002" : "\u672C\u5B9E\u4F8B\u4E3A\u53EA\u8BFB\u63A5\u5165\uFF1B\u5199\u5165\u8BF7\u4F7F\u7528 Memory Atlas \u684C\u9762\u7A0B\u5E8F\u3002",
-    health: {
-      outcome: health.outcome ?? null,
-      capacity: health.capacity ?? null,
-      sources: health.sources ?? null,
-      index: health.index ?? null
-    },
-    spaces: spaceIds
+    note: "\u672C\u5DE5\u5177\u53EA\u62A5\u544A\u7ED1\u5B9A\u7A7A\u95F4\u7684\u72B6\u6001\uFF1B\u5176\u4ED6\u8BB0\u5FC6\u7A7A\u95F4\u7684\u5B58\u5728\u4E0E\u5426\u4E0D\u5728\u6B64\u5DE5\u5177\u7684\u8F93\u51FA\u91CC\u3002"
   });
 });
 server.registerTool("atlas_search", {
