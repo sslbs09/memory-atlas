@@ -29,10 +29,14 @@ function firstLine(text) {
 }
 
 /** 在 PATH 里找 node.exe 并验证主版本 >= 24（GLM 索引的 node:sqlite 依赖）。 */
-export async function resolveNode24() {
+export async function resolveNode24({ bundled = [] } = {}) {
   const override = process.env.MEMORY_ATLAS_NODE;
   const candidates = [];
   if (override) candidates.push(override);
+  // 发行包自带的运行时优先于 PATH：目标用户不需要安装 Node。
+  for (const bundledPath of bundled) {
+    if (bundledPath) candidates.push(bundledPath);
+  }
   if (process.platform === "win32") {
     candidates.push("node.exe");
   } else {
@@ -67,12 +71,14 @@ export async function resolveNode24() {
 }
 
 export class AtlasService {
-  constructor({ repoRoot, desktopRoot, dataDir, port }) {
+  constructor({ repoRoot, desktopRoot, dataDir, port, bundledNodePath }) {
     this.repoRoot = repoRoot;
     this.desktopRoot = desktopRoot;
     this.dataDir = dataDir;
     // port: 数字（固定）或 0（Atlas 在环回上挑一个空闲端口并在就绪行里报告）
     this.requestedPort = Number.isInteger(port) && port >= 0 ? port : 0;
+    // 发行包里随包携带的 node.exe（可选）；存在时优先于 PATH。
+    this.bundledNodePath = bundledNodePath || null;
     this.state = "stopped"; // stopped | starting | running | failed
     this.child = null;
     this.port = null;
@@ -102,7 +108,7 @@ export class AtlasService {
 
     try {
       fs.mkdirSync(this.dataDir, { recursive: true });
-      const node = await resolveNode24();
+      const node = await resolveNode24({ bundled: [this.bundledNodePath] });
       this.nodePath = node.nodePath;
       this.nodeVersion = node.nodeVersion;
 

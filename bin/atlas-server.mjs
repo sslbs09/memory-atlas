@@ -119,6 +119,37 @@ const service = createMemoryService({
 const server = createAtlasServer({ service, readToken, writeToken });
 const wantedPort = Number(args.port ?? process.env.ATLAS_PORT ?? 8791);
 
+// Endpoint discovery for callers that were not handed the ready line (an MCP
+// bridge under a chat host, a desktop shell restarting the service): the file
+// lives beside the data it describes, holds the same tokens the environment
+// already gave this process, and is removed on graceful shutdown. A file left
+// behind by a crash is stale by construction - readers must verify liveness
+// through /atlas/health before trusting it.
+const endpointFile = process.env.ATLAS_ENDPOINT_FILE === '0'
+  ? null
+  : path.resolve(args['endpoint-file'] ?? process.env.ATLAS_ENDPOINT_FILE ?? path.join(dataDir, 'endpoint.json'));
+
+function writeEndpointFile(port) {
+  if (!endpointFile) return;
+  fs.mkdirSync(path.dirname(endpointFile), { recursive: true });
+  fs.writeFileSync(endpointFile, `${JSON.stringify({
+    service: 'memory-atlas',
+    endpointVersion: 1,
+    url: `http://127.0.0.1:${port}`,
+    readToken,
+    writeToken,
+    pid: process.pid,
+    bootId: randomBytes(8).toString('hex'),
+    dataDir,
+    startedAt: new Date().toISOString()
+  }, null, 2)}\n`);
+}
+
+function removeEndpointFile() {
+  if (!endpointFile) return;
+  try { fs.unlinkSync(endpointFile); } catch { /* already gone */ }
+}
+
 server.listen(wantedPort, '127.0.0.1', async () => {
   const { port } = server.address();
   let indexReport = { state: 'NOT_WIRED' };
@@ -133,6 +164,7 @@ server.listen(wantedPort, '127.0.0.1', async () => {
       process.stderr.write(`[atlas] index rebuild incomplete (${bad}) - those spaces are answered from the store\n`);
     }
   }
+  writeEndpointFile(port);
   process.stdout.write(`${JSON.stringify({ event: 'listening', service: 'memory-atlas', dataDir, port, index: indexReport })}\n`);
 });
 
@@ -141,6 +173,7 @@ function shutdown(via) {
   if (closing) return;
   closing = true;
   process.stderr.write(`[atlas] shutting down (${via})\n`);
+  removeEndpointFile();
   server.closeAllConnections();
   server.close(() => {
     try { retrieval?.close?.(); } catch (error) { process.stderr.write(`[atlas] index close failed: ${error.message}\n`); }

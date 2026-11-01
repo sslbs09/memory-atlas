@@ -29,7 +29,11 @@ import { createActivationExplain } from "./activation-explain.mjs";
 import { chatCompletion, isConfigured } from "./chat-model.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = path.resolve(HERE, "..");
+// 打包发行（resources/app/main.mjs）时，Atlas 服务端代码随包放在 app 目录的
+// atlas/ 下；源码运行（desktop/main.mjs）时仍是上一级仓库根。
+const REPO_ROOT = app.isPackaged ? path.join(HERE, "atlas") : path.resolve(HERE, "..");
+// 发行包自带 Node 24 运行时（runtime/node.exe）；源码运行没有这个目录。
+const BUNDLED_NODE = path.join(HERE, "runtime", process.platform === "win32" ? "node.exe" : "node");
 const LOCALES = path.join(HERE, "locales");
 
 const gotLock = app.requestSingleInstanceLock({ id: "memory-atlas-alpha-01" });
@@ -167,7 +171,8 @@ async function connectOrStartAtlas() {
     repoRoot: REPO_ROOT,
     desktopRoot: HERE,
     dataDir,
-    port
+    port,
+    bundledNodePath: fs.existsSync(BUNDLED_NODE) ? BUNDLED_NODE : null
   });
   await atlasService.start();
 }
