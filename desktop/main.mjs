@@ -589,6 +589,8 @@ function registerIpc() {
       await adapter.setSpace(spaceId);
       currentSpace = spaceId;
       configStore.setLastSpace(currentSpace);
+      // 新空间必须让工作台重拉列表，否则下拉选择器看不到它（QA-01）。
+      if (mainWin && !mainWin.isDestroyed()) mainWin.webContents.send("alpha:spaces-changed");
     }
     return result;
   });
@@ -603,7 +605,14 @@ function registerIpc() {
     });
   });
 
-  ipcMain.handle("alpha:seed-demo", () => seedDemoSpace());
+  ipcMain.handle("alpha:seed-demo", async () => {
+    const result = await seedDemoSpace();
+    if (result.ok && mainWin && !mainWin.isDestroyed()) {
+      // 种子会新建并切换到 alpha-demo 空间：让工作台重拉空间列表（QA-01）。
+      mainWin.webContents.send("alpha:spaces-changed");
+    }
+    return result;
+  });
 
   ipcMain.handle("alpha:open-chat", async () => {
     await ensureChatWindow();

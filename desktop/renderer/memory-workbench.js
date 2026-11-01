@@ -658,7 +658,9 @@
     }
     state.spaceSupported = true;
     state.spaces = Array.isArray(listed.spaceIds) ? listed.spaceIds : [];
-    if (!state.instanceId && listed.current) state.instanceId = listed.current;
+    // 主进程的 currentSpace 是空间权威：即使本地已有 instanceId 也要跟住，
+    // 否则演示种子/新建空间后选择器会与实际空间脱节（QA-01）。
+    if (listed.current) state.instanceId = listed.current;
     if (!state.instanceId && state.spaces.length) {
       // 没有显式指定空间时选第一个：选择器同时显示出来，用户看得到自己在哪个空间
       const picked = await api.selectSpace(state.spaces[0]);
@@ -684,7 +686,9 @@
     state.chain = [];
     els.sheet.hidden = true;
     renderTelemetry();
-    renderSpaceOptions();
+    // 重拉空间列表：别的入口（演示种子/新建空间）可能刚加了空间，
+    // 用启动时的陈旧列表重绘会把新空间选项抹掉（QA-01）。
+    await loadSpaces();
     await search({ reset: true });
     await loadCapacity({ silent: true });
     // 宇宙视图如果开着，跟着切到同一个空间（重新拉取并重建投影）
@@ -1065,7 +1069,11 @@
       return section;
     }
 
-    const editable = record.status === "active" && record.recordType !== "memory-control";
+    // 当前有效的纠正记录（memory-control / correct）本身也是"当前事实"，
+    // 必须能继续纠正或撤回，否则同一件事只能纠正一次（QA-02：二级纠正无入口）。
+    const correctableControl = record.recordType === "memory-control" && record.action === "correct";
+    const editable = record.status === "active" &&
+      (record.recordType !== "memory-control" || correctableControl);
     if (!editable) {
       section.append(el("p", "wb-action-note", t("set.wbNotEditable")));
       return section;
@@ -1903,6 +1911,8 @@
     }
 
     bindEvents();
+    // 空间在别处被创建/切换（演示种子、新建空间面板）时重拉列表，保持选择器与实际一致。
+    if (api.onSpacesChanged) api.onSpacesChanged(() => { void loadSpaces(); });
     void (async () => {
       await loadSpaces();
       await initialLoad();
