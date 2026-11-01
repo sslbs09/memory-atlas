@@ -16,7 +16,7 @@ command = "C:\\path\\to\\MemoryAtlas-v0.1.0-alpha.1-win-x64\\resources\\app\\run
 args = [
   "C:\\path\\to\\MemoryAtlas-v0.1.0-alpha.1-win-x64\\resources\\app\\mcp\\atlas-mcp.mjs"
 ]
-env = { MEMORY_ATLAS_SPACE = "maibot-space", MEMORY_ATLAS_DATA_DIR = "C:\\Users\\%USERNAME%\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data" }
+env = { MEMORY_ATLAS_SPACE = "maibot-space", MEMORY_ATLAS_DATA_DIR = "C:\\Users\\<你>\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data" }
 
 # 需要写入工具时（默认只读，不建议在聊天机器人上开启自动写入）：
 # env = { MEMORY_ATLAS_SPACE = "maibot-space", MEMORY_ATLAS_DATA_DIR = "...", MEMORY_ATLAS_ALLOW_WRITES = "1" }

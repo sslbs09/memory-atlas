@@ -7,7 +7,7 @@
       ],
       "env": {
         "MEMORY_ATLAS_SPACE": "my-space",
-        "MEMORY_ATLAS_DATA_DIR": "C:\\Users\\%USERNAME%\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data"
+        "MEMORY_ATLAS_DATA_DIR": "C:\\Users\\<你>\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data"
       }
     }
   }

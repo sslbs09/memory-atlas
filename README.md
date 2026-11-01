@@ -7,6 +7,16 @@ currently stands.
 It runs on its own: no desktop pet, no character runtime, no model, no build
 step. Node 20+ and nothing else.
 
+> **Release: v0.1.0-alpha.1 (Windows portable, Alpha).**
+> A double-click Windows build ships from this branch: see
+> [RELEASE-NOTES-v0.1.0-alpha.1](docs/RELEASE-NOTES-v0.1.0-alpha.1.md),
+> the [installation & usage guide](release/docs/README-RELEASE.md) (zh-CN),
+> and the [MCP integration guide](release/docs/MCP-GUIDE.md) (zh-CN) for
+> connecting DSH / MaiBot / any MCP client. Verification status — including
+> what was and was not tested with real models — is in
+> [VERIFICATION-v0.1.0-alpha.1](docs/VERIFICATION-v0.1.0-alpha.1.md).
+> License is intentionally undecided: [LICENSE-CANDIDATES.md](LICENSE-CANDIDATES.md).
+
 ```
 npm test                      # node --test "test/*.test.js" - see Verification below
 node bin/atlas-demo.mjs       # full walkthrough against real HTTP on loopback
