@@ -740,6 +740,31 @@ async function ensureChatWindow() {
 async function runFlowSelfcheck(target) {
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const report = {};
+  // —— QA 回归（alpha/qa-dogfood-fixes 分支）——
+  // QA-01 必须在 seedDemoSpace() 之前做：此时渲染层只见过 alpha 空间，
+  // 通过 UI 点击"载入演示记忆"创建 alpha-demo 后，下拉框必须立即出现新空间。
+  // （缺陷：switchSpace 用启动时的陈旧空间列表重绘，把新空间选项抹掉。）
+  for (let i = 0; i < 40; i += 1) {
+    const ready = await target.webContents.executeJavaScript(
+      "!!Array.from(document.querySelectorAll('.alpha-chip')).find(b => b.textContent.includes('载入演示记忆'))", true);
+    if (ready) break;
+    await wait(250);
+  }
+  report.demoSpaceDropdown = await target.webContents.executeJavaScript(`(async () => {
+    const btn = Array.from(document.querySelectorAll('.alpha-chip')).find(b => b.textContent.includes('载入演示记忆'));
+    if (!btn) return { error: 'no demo button' };
+    btn.click();
+    for (let i = 0; i < 20; i += 1) {
+      await new Promise((r) => setTimeout(r, 500));
+      const done = Array.from(document.querySelectorAll('#wb-space option')).some(o => o.value === 'alpha-demo');
+      if (done) break;
+    }
+    await new Promise((r) => setTimeout(r, 1500));
+    return {
+      options: Array.from(document.querySelectorAll('#wb-space option')).map(o => o.value),
+      value: document.getElementById('wb-space').value
+    };
+  })()`, true);
   report.seed = await seedDemoSpace();
   await wait(300);
 
@@ -779,6 +804,25 @@ async function runFlowSelfcheck(target) {
     })),
     notes: explainResult.notes
   };
+  // QA-02：当前有效的纠正记录（memory-control/correct）必须能再次纠正
+  // （缺陷：renderActions 把 memory-control 一律判为不可编辑，二级纠正无 UI 入口）。
+  await target.webContents.executeJavaScript(`(async () => {
+    const q = document.querySelector('[data-testid="search-input"]');
+    const go = document.querySelector('[data-testid="search-submit"]');
+    if (!q || !go) return false;
+    q.value = '例会';
+    go.click();
+    await new Promise((r) => setTimeout(r, 1200));
+    const row = Array.from(document.querySelectorAll('#wb-list .wb-row'))[0];
+    if (row) row.click();
+    await new Promise((r) => setTimeout(r, 1200));
+    return true;
+  })()`, true);
+  report.uiCorrectControlRecord = await target.webContents.executeJavaScript(`(() => ({
+    recId: (document.querySelector('[data-testid="record-id"]')||{}).textContent ? document.querySelector('[data-testid="record-id"]').textContent.trim() : null,
+    hasCorrectOpen: !!document.querySelector('[data-testid="correct-open"]'),
+    note: (document.querySelector('.wb-action-note')||{}).textContent || null
+  }))()`, true);
   report.events = ledger.events().slice(-12).map((e) => ({ eventType: e.eventType, recordId: e.recordId }));
   return report;
 }
