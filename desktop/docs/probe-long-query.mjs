@@ -1,9 +1,9 @@
 // 临时探针：长问句在 GLM 引擎上的匹配语义。不属于交付面。
 import { pathToFileURL } from "node:url";
 
-const engineModule = await import(pathToFileURL("<Memory Atlas checkout>/desktop/glm-retrieval/src/adapter.mjs").href);
+const engineModule = await import(pathToFileURL(path.resolve(root, "desktop/glm-retrieval/src/adapter.mjs")).href);
 const SearchAdapter = engineModule.SearchAdapter;
-const adapter = new SearchAdapter({ indexFile: "<Memory Atlas checkout>/data-alpha-test/probe-long.sqlite" });
+const adapter = new SearchAdapter({ indexFile: path.join(root, "data-alpha-test/probe-long.sqlite") });
 
 await adapter.upsertRecords([
   { recordId: "demo-movie", instanceId: "s", revision: 1, text: "和大学室友一起看了电影《流浪地球2》，散场后在路边摊聊到半夜。", status: "active", sourceKind: "synthetic-seed", sourceId: "x", occurredAt: new Date().toISOString(), acceptedAt: new Date().toISOString() },

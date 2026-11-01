@@ -24,7 +24,7 @@ step. Node 20+ and nothing else.
 ```
 npm test                      # node --test "test/*.test.js" - see Verification below
 node bin/atlas-demo.mjs       # full walkthrough against real HTTP on loopback
-node bin/atlas-server.mjs --data-dir <Memory Atlas repo>Data --port 8791
+node bin/atlas-server.mjs --data-dir D:\MemoryAtlasData --port 8791
 node bin/atlas-server.mjs --retrieval-module ./my-index.mjs   # attach a derived index
 node bin/atlas-server.mjs --retrieval-module ./adapters/glm-retrieval.mjs
                                                               # attach the GLM (Backend B) index;

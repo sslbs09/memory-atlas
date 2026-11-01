@@ -83,7 +83,7 @@ function processAlive(pid) {
 
 /**
  * The lock is keyed on the real directory, not on the spelling the caller used:
- * `D:\tmp\x`, `e:\TMP\x` and a junction pointing at the same store must all land
+ * `D:\tmp\x`, `d:\TMP\x` and a junction pointing at the same store must all land
  * on one writer, otherwise two stores in one process would race while both
  * believed they held the claim.
  */

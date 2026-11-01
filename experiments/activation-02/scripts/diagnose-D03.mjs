@@ -116,9 +116,9 @@ const summary = {
   premise: {
     // 任务书：真实 GLM AND 检索下，非 ID 候选 matchedTerms/totalTerms 通常恒为 1 —— 验证这个前提。
     realAdapterCodeCitations: [
-      '<WhiteMoon repo>/work/universal-memory-v0.1/glm-retrieval/src/adapter.mjs:233-239 — “collectCandidates 已按词元求交：到达这里的文档命中了全部词元”→ coverage = matchedTerms.length / terms.length；id 命中 min(1, coverage+0.5) 也恒为 1',
-      '<WhiteMoon repo>/work/universal-memory-v0.1/glm-retrieval/src/store.mjs:274-289 — collectCandidates 对每个词元做 postings 交集，空集即返回；幸存文档必然命中全部词元',
-      '<WhiteMoon repo>/work/universal-memory-v0.1/glm-retrieval/src/association.mjs — 正式 ambient/关联路径只用 subject/source_session 结构共现，不产生词面 coverage'
+      'glm-retrieval src/adapter.mjs:233-239 — “collectCandidates 已按词元求交：到达这里的文档命中了全部词元”→ coverage = matchedTerms.length / terms.length；id 命中 min(1, coverage+0.5) 也恒为 1',
+      'glm-retrieval src/store.mjs:274-289 — collectCandidates 对每个词元做 postings 交集，空集即返回；幸存文档必然命中全部词元',
+      'glm-retrieval src/association.mjs — 正式 ambient/关联路径只用 subject/source_session 结构共现，不产生词面 coverage'
     ],
     explicitAudit: { cases: explicitCoverageAudit.length + probeAudit.length, allExactlyOne: explicitAlwaysOne, detail: [...explicitCoverageAudit, ...probeAudit] },
     ambientD03: { distinctCoverages: ambientDistinct, coverageAlwaysOne: ambientDistinct.length === 1 && ambientDistinct[0] === 1 },

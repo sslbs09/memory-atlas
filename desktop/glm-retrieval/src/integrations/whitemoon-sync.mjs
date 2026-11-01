@@ -11,7 +11,8 @@
 
 import { pathToFileURL } from 'node:url';
 
-const DEFAULT_CORE_SRC = '<WhiteMoon repo>/work/universal-memory-v0.1/core/src/memory-control.js';
+// 本辅助未接线（打包已排除）：需要时经环境变量 WHITEMOON_CORE_SRC 指向 core/src/memory-control.js。
+const DEFAULT_CORE_SRC = process.env.WHITEMOON_CORE_SRC ?? '';
 
 let cached = null;
 async function coreSemantics() {

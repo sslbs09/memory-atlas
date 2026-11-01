@@ -64,13 +64,13 @@ Alpha 提交：`1489c31`（主交付）→ `3e8bc79`（入口与修复）及后�
 - 工作台/宇宙前端：ds-ui worktree `9c3ea62` 逐字复制（六个 JS 以 git blob
   哈希比对一致；HTML 仅加两行引入 Alpha 注入层）。
 - Atlas 适配层：ds-ui harness `f3fcf69` 的 `api-atlas.js` / `atlas-map.js` 逐字复制。
-- GLM 检索引擎：`<WhiteMoon repo>/work/universal-memory-v0.1\glm-retrieval` 逐字复制
+- GLM 检索引擎：`<WhiteMoon 仓库>/work/universal-memory-v0.1\glm-retrieval` 逐字复制
   （9 文件 blob 一致；来源不是 git 仓库，以复制日期+哈希锚定）。
 - Activation：`experiments/activation-01..04` 直接 import（同一仓库分支内，
   无复制，公式零改动）。
 - Alpha 新写：Electron 主进程、服务子进程管理、事件账本持久化、影子解释编排、
   模型客户端、对话窗口、注入工具条（见 PROVENANCE §5）。
-- 运行时不依赖 `<WhiteMoon repo>` 与 `<Memory Atlas repo>`（master 工作树）任何文件。
+- 运行时不依赖 `<WhiteMoon repo>` 与 `<Memory Atlas 仓库>`（master 工作树）任何文件。
 
 ## 验证证据（自动自检，stdout JSON + 截图）
 

@@ -1,8 +1,9 @@
 // 临时探针：in-process 复现 Atlas 服务 + GLM 适配器的写入同步。不属于交付面。
 import fs from "node:fs";
+import path from "node:path";
 import { pathToFileURL } from "node:url";
 
-const root = "<Memory Atlas checkout>";
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const dataDir = root + "/data-alpha-test/probe-service";
 fs.rmSync(dataDir, { recursive: true, force: true });
 fs.mkdirSync(dataDir, { recursive: true });

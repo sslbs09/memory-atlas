@@ -1,7 +1,7 @@
 /**
  * harness/api-atlas.js — 统一 Memory Atlas API Adapter
  *
- * 说话对象是 Memory Atlas 原生服务（<Memory Atlas repo>），不是 WhiteMoon Host。
+ * 说话对象是 Memory Atlas 原生服务（独立 Memory Atlas 仓库），不是 WhiteMoon Host。
  * 两种模式并存、互不依赖：
  *   --adapter=atlas  → 本文件（Atlas 独立运行，不启动 WhiteMoon 也成立）
  *   --adapter=http   → api-http.js（WhiteMoon Host，正式 Experience 权威）

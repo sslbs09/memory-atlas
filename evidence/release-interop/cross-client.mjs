@@ -28,8 +28,8 @@ const ROOT = path.resolve(HERE, '../..');
 const RELEASE_DIR = path.join(ROOT, 'release', 'out', 'MemoryAtlas-v0.1.0-alpha.1-win-x64');
 const ATLAS_MCP = path.join(RELEASE_DIR, 'resources', 'app', 'mcp', 'atlas-mcp.mjs');
 const DATA_DIR = path.join(HERE, 'interop-data');
-const MAIBOT_PY = '<MaiBot checkout>\\MaiBot-1.3.6\\MaiBot-1.3.6\\.venv\\Scripts\\python.exe';
-const MAIBOT_CWD = '<MaiBot checkout>\\MaiBot-1.3.6\\MaiBot-1.3.6';
+const MAIBOT_PY = process.env.MAIBOT_PYTHON || '';
+const MAIBOT_CWD = process.env.MAIBOT_CHECKOUT || '';
 const MAIBOT_SCRIPT = path.join(HERE, 'maibot', 'mcp-toolcall.py');
 
 const results = [];

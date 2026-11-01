@@ -1,12 +1,13 @@
 // 临时探针：隔离 suggestKeywords 的行为。不属于交付面。
 import { pathToFileURL } from "node:url";
 
-const root = "<Memory Atlas checkout>";
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const mod = await import(pathToFileURL(root + "/desktop/activation-explain.mjs").href);
 
 // 用与 main.mjs 相同的 rawSearch 实现，指向一个手动的 Atlas（这里用 8795 之类外部端口时改这里）。
 // 为了自包含：直接在进程内搭一个最小 Atlas service。
 import fs from "node:fs";
+import path from "node:path";
 const dataDir = root + "/data-alpha-test/probe-suggest";
 fs.rmSync(dataDir, { recursive: true, force: true });
 fs.mkdirSync(dataDir, { recursive: true });

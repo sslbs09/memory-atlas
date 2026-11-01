@@ -5,7 +5,7 @@
 The cumulative memory target is 20,000,000,000 bytes. Nothing in this repository
 proves the current persistence shape reaches it. Measured on this machine
 (Windows, Node 24, a local drive, synthetic records, probe
-`<WhiteMoon repo>/work/universal-memory-v0.1\evidence\capacity-probe-a7.mjs`,
+`<WhiteMoon 仓库>/work/universal-memory-v0.1\evidence\capacity-probe-a7.mjs`,
 result `capacity-probe-a7-result.json`):
 
 | records | space document | one write | parse whole document | full scan |

@@ -1,9 +1,9 @@
 # Memory Atlas Alpha-01 · 独立体验验收报告（QA Dogfood）
 
 - 执行：GLM（独立 QA 会话），日期 2026-11-01
-- 被测：`<Memory Atlas checkout>`，分支 `alpha/desktop-dogfood-01` @ `d6101c0`
+- 被测：`<Memory Atlas checkout>`（alpha/desktop-dogfood-01），分支 `alpha/desktop-dogfood-01` @ `d6101c0`
 - 修复分支：`alpha/qa-dogfood-fixes`（`116e37a` 回归测试 → RED → `aeca6fb` 修复 → GREEN）
-- QA 工作区：`<QA workspace>\alpha01\`（截图证据 `evidence\`、逐项日志 `reports\*.jsonl`）
+- QA 工作区：`<QA 工作区>`（截图证据 `evidence\`、逐项日志 `reports\*.jsonl`）
 - 数据隔离：全部测试使用 `run1/run2/run3/flow-*/sc-*/run-fault-data` 独立目录与独立
   `--user-data-dir`；用户真实数据 `%APPDATA%\Memory Atlas Alpha\atlas-data` 与
   `config.json`/`state.json` 经字节级比对确认零改动。用户内存写入冒烟（此前 PASS）未重复。

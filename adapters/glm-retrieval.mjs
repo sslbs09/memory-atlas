@@ -25,7 +25,7 @@ function moduleUrl(specifier) {
   if (!specifier) {
     throw Object.assign(
       new Error('ATLAS_GLM_MODULE is not set. Point it at glm-retrieval/src/adapter.mjs, e.g. ' +
-        'ATLAS_GLM_MODULE=<WhiteMoon repo>/work/universal-memory-v0.1\\glm-retrieval\\src\\adapter.mjs'),
+        'ATLAS_GLM_MODULE=<path to glm-retrieval>/src/adapter.mjs'),
       { code: 'ATLAS_GLM_MODULE_MISSING' });
   }
   if (/^file:/i.test(specifier)) return specifier;

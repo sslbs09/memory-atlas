@@ -5,7 +5,7 @@ looks generic. This is that classification, as actually implemented.
 
 ## 1. Generic Memory Service — now in Memory Atlas
 
-Extracted into `<Memory Atlas repo>\src\` and runnable with no character runtime
+Extracted into `<Memory Atlas 仓库>\src\` and runnable with no character runtime
 present:
 
 | concern | Atlas file | extracted from | what changed in the move |
@@ -35,7 +35,7 @@ present:
 
 ## 3. WhiteMoon Core's formal adjudication — untouched and not copied
 
-`<WhiteMoon repo>/work/universal-memory-v0.1\whitemoon-core` remains the authority
+`<WhiteMoon 仓库>/work/universal-memory-v0.1\whitemoon-core` remains the authority
 for a WhiteMoon character: what was accepted, what a correction superseded, what
 is currently effective, and what a client may be told. When Atlas talks to a
 WhiteMoon space it asks, and reports the answer including the answer "I cannot

@@ -32,7 +32,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const EXP_ROOT = path.resolve(HERE, '..');
 const WORKTREE_ROOT = path.resolve(EXP_ROOT, '..', '..');
 const REAL_GLM_MODULE = process.env.ATLAS_GLM_MODULE
-  ?? '<WhiteMoon repo>/work/universal-memory-v0.1/glm-retrieval/src/adapter.mjs';
+  ?? ''; // 实验跑批器：必须经环境变量提供 ATLAS_GLM_MODULE
 
 const DEFAULT_WORKSPACE = path.join(EXP_ROOT, '.dogfood');
 const EXPLAIN_DIR = path.join(EXP_ROOT, 'results-v4', 'dogfood-explain');

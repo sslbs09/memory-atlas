@@ -1,11 +1,11 @@
 // 临时探针：直接驱动 GLM 适配器，隔离 Atlas 与引擎之间的同步问题。不属于交付面。
 import { pathToFileURL } from "node:url";
 
-const adapterUrl = pathToFileURL("<Memory Atlas checkout>/desktop/glm-retrieval/src/adapter.mjs").href;
+const adapterUrl = pathToFileURL(path.resolve(root, "desktop/glm-retrieval/src/adapter.mjs")).href;
 const engineModule = await import(adapterUrl);
 const SearchAdapter = engineModule.SearchAdapter ?? engineModule.default;
 
-const indexFile = "<Memory Atlas checkout>/data-alpha-test/probe-index.sqlite";
+const indexFile = path.join(root, "data-alpha-test/probe-index.sqlite");
 const adapter = new SearchAdapter({ indexFile });
 await adapter.open?.();
 

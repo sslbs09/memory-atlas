@@ -2,7 +2,7 @@
 /**
  * atlas-server - start and stop the Memory Atlas service.
  *
- *   node bin/atlas-server.mjs --data-dir <Memory Atlas repo>Data --port 8791
+ *   node bin/atlas-server.mjs --data-dir D:\\MemoryAtlasData --port 8791
  *   node bin/atlas-server.mjs --retrieval-module ./my-index.mjs
  *
  * With --retrieval-module (or ATLAS_RETRIEVAL_MODULE) the service attaches a
