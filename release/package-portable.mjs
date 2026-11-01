@@ -57,6 +57,15 @@ for (const part of ['bin', 'src', 'adapters', 'package.json']) {
   copy(path.join(ROOT, part), path.join(STAGING, 'atlas', part));
 }
 
+// Activation 运行时闭包：desktop/event-ledger.mjs 与 activation-explain.mjs
+// 以相对路径 import experiments/activation-01..04 的 src 模块（必须在包内保持
+// 相同相对布局）。fixtures / 实验结果 / 用户数据不入包。
+for (const mod of ['activation-01', 'activation-02', 'activation-03', 'activation-04']) {
+  const src = path.join(ROOT, 'experiments', mod, 'src');
+  if (!fs.existsSync(src)) throw new Error(`experiments/${mod}/src 缺失，拒绝打包（Activation 运行时依赖）`);
+  copy(src, path.join(STAGING, 'atlas', 'experiments', mod, 'src'));
+}
+
 // 检索引擎依赖清单自检（桌面端引用的 GLM 适配器必须随包）
 const glmSrc = path.join(desktopSrc, 'glm-retrieval');
 for (const needed of ['src/adapter.mjs', 'src/store.mjs', 'src/tokenize.mjs', 'src/association.mjs', 'src/graph.mjs', 'package.json']) {
@@ -119,16 +128,19 @@ if (path.resolve(packagedDirRaw) !== path.resolve(packagedDir)) {
 console.log(`      packaged -> ${packagedDir}`);
 
 // 发行级顶层文档（README、MCP 接入指南、验证说明来自 release/docs；
-// 第三方声明、变更日志、许可证候选来自仓库根）
+// 许可与第三方材料来自仓库根）
 console.log('[5/6] top-level release docs');
 for (const doc of ['README-RELEASE.md', 'MCP-GUIDE.md', 'VERIFY.md']) {
   const src = path.join(HERE, 'docs', doc);
   if (fs.existsSync(src)) copy(src, path.join(packagedDir, doc));
 }
-for (const doc of ['THIRD_PARTY_NOTICES.md', 'CHANGELOG.md', 'LICENSE-CANDIDATES.md']) {
+for (const doc of ['LICENSE', 'THIRD_PARTY_NOTICES.md', 'FFMPEG-LGPL-SOURCE.md', 'CHANGELOG.md']) {
   const src = path.join(ROOT, doc);
-  if (fs.existsSync(src)) copy(src, path.join(packagedDir, doc));
+  if (!fs.existsSync(src)) throw new Error(`发行材料缺失：${doc}（拒绝打不完整的包）`);
+  copy(src, path.join(packagedDir, doc));
 }
+if (!fs.existsSync(path.join(ROOT, 'licenses', 'README.md'))) throw new Error('licenses/ 目录缺失（第三方许可全文）');
+copy(path.join(ROOT, 'licenses'), path.join(packagedDir, 'licenses'));
 for (const example of fs.readdirSync(path.join(HERE, 'examples'))) {
   copy(path.join(HERE, 'examples', example), path.join(packagedDir, 'mcp', 'examples', example));
 }

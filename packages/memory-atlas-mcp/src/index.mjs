@@ -163,6 +163,8 @@ server.registerTool('atlas_health', {
   }
   const spaces = await resolved.client.spaces();
   const spaceIds = spaces.ok ? (spaces.spaceIds ?? []) : null;
+  // 越权信息不外泄：只回答绑定空间是否存在，不列出其他空间的名称，
+  // 也不转发全局容量/来源统计——模型用它无益，却会暴露部署形状。
   return toolJson({
     atlas: SERVER_NAME,
     space: config.space,
@@ -174,13 +176,7 @@ server.registerTool('atlas_health', {
     writeToolsNote: config.allowWrites
       ? '写入工具已开放：atlas_remember / atlas_correct / atlas_retract 只应由用户明确要求的对话调用。'
       : '本实例为只读接入；写入请使用 Memory Atlas 桌面程序。',
-    health: {
-      outcome: health.outcome ?? null,
-      capacity: health.capacity ?? null,
-      sources: health.sources ?? null,
-      index: health.index ?? null
-    },
-    spaces: spaceIds
+    note: '本工具只报告绑定空间的状态；其他记忆空间的存在与否不在此工具的输出里。'
   });
 });
 

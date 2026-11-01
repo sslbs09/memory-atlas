@@ -45,11 +45,13 @@ fs.mkdirSync(dataDir, { recursive: true });
 const readToken = process.env.ATLAS_READ_TOKEN ?? randomBytes(24).toString('hex');
 const writeToken = process.env.ATLAS_WRITE_TOKEN ?? randomBytes(24).toString('hex');
 if (!process.env.ATLAS_READ_TOKEN || !process.env.ATLAS_WRITE_TOKEN) {
-  // Ephemeral tokens are fine for a demo and useless to a caller, so say where
-  // they are instead of leaving an operator to guess why every request 401s.
-  process.stderr.write('[atlas] generated one-shot tokens for this process only:\n');
-  process.stderr.write(`[atlas]   ATLAS_READ_TOKEN=${readToken}\n`);
-  process.stderr.write(`[atlas]   ATLAS_WRITE_TOKEN=${writeToken}\n`);
+  // One-shot tokens are fine for a demo but useless to a caller, so say where
+  // they live instead of printing them: saved terminal output would otherwise
+  // preserve still-valid local credentials. The endpoint file written on
+  // listen holds the same tokens, beside the data it describes.
+  process.stderr.write('[atlas] tokens were not provided via ATLAS_READ_TOKEN/ATLAS_WRITE_TOKEN;\n');
+  process.stderr.write('[atlas] one-shot tokens generated for this process - read them from the\n');
+  process.stderr.write('[atlas] endpoint file written next to the data once the service is listening.\n');
 }
 
 const authority = new NativeAuthority({ dataDir });

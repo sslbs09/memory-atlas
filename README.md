@@ -15,7 +15,11 @@ step. Node 20+ and nothing else.
 > connecting DSH / MaiBot / any MCP client. Verification status — including
 > what was and was not tested with real models — is in
 > [VERIFICATION-v0.1.0-alpha.1](docs/VERIFICATION-v0.1.0-alpha.1.md).
-> License is intentionally undecided: [LICENSE-CANDIDATES.md](LICENSE-CANDIDATES.md).
+> License: **MIT** for the original content of this project — see [LICENSE](LICENSE).
+> Third-party components keep their own licenses:
+> [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) (Electron, Node.js, the
+> Apache-2.0-licensed MCP TypeScript SDK, 3d-force-graph, FFmpeg inside
+> Electron, and others).
 
 ```
 npm test                      # node --test "test/*.test.js" - see Verification below
@@ -122,3 +126,13 @@ per scan at 100,000 records / 32 MiB, so the cumulative 20 GB target is
 second service pointed at the same directory is refused at startup rather than
 allowed to double-acknowledge writes. No model is involved anywhere here, so
 nothing in this repository demonstrates semantic understanding.
+
+## License
+
+The original content of this project is released under the **MIT License** —
+see [LICENSE](LICENSE). Third-party components (Electron, Node.js, the MCP
+TypeScript SDK, 3d-force-graph and its embedded dependencies, FFmpeg as
+shipped by Electron, and others) remain under their own licenses and are
+documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) with full texts
+in [`licenses/`](licenses/README.md). FFmpeg's corresponding-source statement:
+[FFMPEG-LGPL-SOURCE.md](FFMPEG-LGPL-SOURCE.md).

@@ -1,7 +1,7 @@
 # 验证说明（随包）
 
-本包发布前执行的验证与复现方法。完整报告见仓库
-`docs/VERIFICATION-v0.1.0-alpha.1.md`。
+本包发布前执行的验证与复现方法。完整报告见公开仓库：
+https://github.com/sslbs09/memory-atlas/blob/v0.1.0-alpha.1/docs/VERIFICATION-v0.1.0-alpha.1.md
 
 ## 随包验证结论
 

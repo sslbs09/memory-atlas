@@ -19,6 +19,10 @@ Memory Atlas 像档案员一样记事：每条记忆都是有稳定 ID、有来�
 | 桌面工作台（查 / 管 / 维 / 宇宙视图 + 记忆对话实验） | `desktop/` |
 | 给外部 Agent 的 MCP Server（DSH、MaiBot、任何 MCP 宿主） | `packages/memory-atlas-mcp/` |
 
+> 本项目原创内容以 **MIT** 许可发布——见 [LICENSE](LICENSE)。第三方组件各自保留
+> 其原许可：[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)（Electron、Node.js、
+> Apache-2.0 的 MCP TypeScript SDK、3d-force-graph、Electron 内的 FFmpeg 等）。
+
 ## 快速开始（Windows，无需安装 Node/npm）
 
 1. 下载 `MemoryAtlas-v0.1.0-alpha.1-win-x64.zip`，解压到任意目录。
@@ -42,14 +46,42 @@ Windows 包未做代码签名，首次运行 SmartScreen 会提示确认。详�
 ## 开发
 
 ```bash
-npm test                                     # 核心服务测试
+npm test                                     # 根包：核心服务测试
 cd packages/memory-atlas-mcp && npm test     # MCP 协议测试（真实 stdio）
 node evidence/release-interop/verify-core-flow.mjs
-node release/package-portable.mjs            # 构建 Windows Portable ZIP
-node release/verify-portable.mjs             # 全新目录 31 项验证
-node evidence/release-interop/cross-client.mjs  # 三客户端一致性实验
+node evidence/release-interop/cross-client.mjs  # 三客户端一致性实验（需发行包）
+```
+
+### 从源码构建 Windows Portable
+
+各子包按序安装依赖：
+
+```bash
+npm install                                        # 根包（核心服务，零运行时依赖）
+cd packages/memory-atlas-mcp && npm install        # MCP SDK + esbuild + zod
+```
+
+打包脚本（`node release/package-portable.mjs`）还需要一个**构建期输入**：
+官方 Node v24.22.2 win-x64 运行时压缩包，放到 `release/vendor/`：
+
+- 下载：https://nodejs.org/dist/v24.22.2/node-v24.22.2-win-x64.zip
+- SHA-256（官方 SHASUMS256.txt 值）：`ca1bff5d8ead13c9f2ea404a176db46bd430704d5b5113734049fa365e7799e2`
+- 落点：`release/vendor/node-v24.22.2-win-x64.zip`（该目录被 .gitignore 排除，
+  不入库）
+
+Electron 43.3.0 二进制由 `@electron/packager` 在打包时自动下载（可用
+`ELECTRON_MIRROR` 指定镜像）。随后：
+
+```bash
+node release/package-portable.mjs    # 产物：release/dist/MemoryAtlas-v0.1.0-alpha.1-win-x64.zip
+node release/verify-portable.mjs     # 全新目录 31 项验证
 ```
 
 ## 许可证
 
-**尚未决定**——候选方案与权衡见 [LICENSE-CANDIDATES.md](LICENSE-CANDIDATES.md)，不由本仓库替你做主。第三方组件声明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+本项目原创内容以 **MIT** 许可发布（见 [LICENSE](LICENSE)）。第三方组件（Electron、
+Node.js、MCP TypeScript SDK、3d-force-graph 及其内嵌依赖、Electron 内的 FFmpeg 等）
+各自保留原许可，清单与全文见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 与
+[`licenses/`](licenses/README.md)；FFmpeg 对应源码声明见
+[FFMPEG-LGPL-SOURCE.md](FFMPEG-LGPL-SOURCE.md)。
+（`LICENSE-CANDIDATES.md` 保留为决策过程记录：最终决定为 MIT。）

@@ -212,5 +212,8 @@ test('space binding is enforced: another space is invisible even if the model as
     const health = await c.call('atlas_health', {});
     assert.equal(health.json.space, 'interop-demo');
     assert.equal(health.json.spaceExists, true);
+    // R7 回归：健康工具不得向模型暴露其他空间的名称或全局容量信息。
+    assert.equal(health.json.spaces, undefined, 'no cross-space name list');
+    assert.equal(health.json.health, undefined, 'no global capacity/sources dump');
   } finally { await c.close(); }
 });

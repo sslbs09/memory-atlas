@@ -17,7 +17,7 @@ First distributable Alpha: Windows portable build + unified MCP bridge.
 
 ### Changed
 
-- Desktop provenance comments no longer embed developer-machine absolute paths; the unwired `glm-retrieval/src/integrations` helpers are excluded from the shipped package.
+- Desktop provenance comments no longer embed developer-machine absolute paths; the unwired `glm-retrieval/src/integrations` helpers are excluded from the shipped package. `desktop/PROVENANCE.md` references upstreams by repository-relative descriptions instead of local disk paths.
 
 ### Verified
 

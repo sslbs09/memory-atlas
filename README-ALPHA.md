@@ -3,7 +3,7 @@
 一个独立于 WhiteMoon 的本地记忆桌面应用：独立 Memory Atlas 服务 + GLM 检索索引
 + 记忆工作台（查 / 管 / 维 / 宇）+ 记忆对话实验 + Activation 影子解释。
 
-分支：`alpha/desktop-dogfood-01`（工作树 `<Memory Atlas checkout>`，
+分支：`alpha/desktop-dogfood-01`（源码树任意 checkout 位置，
 自 `experiment/activation-04` 的 `17398b7` 创建，包含 master `4f112f2` 的全部
 Memory Atlas 能力）。资产来源见 `desktop/PROVENANCE.md`。
 
@@ -12,14 +12,14 @@ Memory Atlas 能力）。资产来源见 `desktop/PROVENANCE.md`。
 前置：Windows 10/11、Node.js ≥ 24（GLM 检索索引用 `node:sqlite`）、npm。
 
 ```bat
-cd /d <Memory Atlas checkout>\desktop
+cd /d <checkout>\desktop
 npm install
 node_modules\.bin\install-electron
 ```
 
 ## 启动（任选其一）
 
-1. **双击** `<Memory Atlas checkout>\MemoryAtlas-Alpha.cmd`
+1. **双击** `<checkout>\MemoryAtlas-Alpha.cmd`
 2. 仓库根目录执行 `npm run alpha`
 3. `cd desktop && npm run alpha`
 

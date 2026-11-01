@@ -58,6 +58,31 @@ check('bundled node runtime present', fs.existsSync(path.join(installDir, 'resou
 check('atlas server entry present', fs.existsSync(path.join(installDir, 'resources', 'app', 'atlas', 'bin', 'atlas-server.mjs')));
 check('mcp bundle present', fs.existsSync(path.join(installDir, 'resources', 'app', 'mcp', 'atlas-mcp.mjs')));
 
+/* R5 回归：Activation 运行时闭包必须随包（event-ledger / activation-explain 的导入闭包） */
+const activationModules = [
+  'activation-01/src/events.mjs', 'activation-01/src/tokenizer.mjs',
+  'activation-01/src/candidates.mjs', 'activation-01/src/activation.mjs',
+  'activation-02/src/event-ids.mjs', 'activation-02/src/strategies.mjs', 'activation-02/src/tiers.mjs',
+  'activation-03/src/event-bridge.mjs', 'activation-03/src/evidence.mjs', 'activation-03/src/shadow-strategies.mjs',
+  'activation-04/src/attribution-strategies.mjs'
+];
+const expRoot = path.join(installDir, 'resources', 'app', 'atlas', 'experiments');
+const missingActivation = activationModules.filter((m) => !fs.existsSync(path.join(expRoot, ...m.split('/'))));
+check('activation runtime modules shipped (R5 closure)', missingActivation.length === 0, missingActivation.join(', ') || 'all present');
+if (missingActivation.length === 0) {
+  const bundledNode = path.join(installDir, 'resources', 'app', 'runtime', 'node.exe');
+  let importSmokeOk = true;
+  for (const m of activationModules) {
+    const target = path.join(expRoot, ...m.split('/'));
+    const probe = await execP(bundledNode, ['--input-type=module', '-e', `await import(${JSON.stringify('file:///' + target.replace(/\\/g, '/'))});`], 30000);
+    if (probe.error) { importSmokeOk = false; console.log('   import failed:', m, String(probe.stderr).slice(0, 120)); break; }
+  }
+  check('activation modules import cleanly via bundled node', importSmokeOk);
+}
+check('project LICENSE shipped in package', fs.existsSync(path.join(installDir, 'LICENSE')) && fs.readFileSync(path.join(installDir, 'LICENSE'), 'utf8').includes('Memory Atlas contributors'));
+check('licenses/ full texts shipped', fs.existsSync(path.join(installDir, 'licenses', 'mcp-typescript-sdk-Apache-2.0.txt')) && fs.existsSync(path.join(installDir, 'licenses', '3d-force-graph-v1.80.1-MIT.txt')));
+check('ffmpeg source statement shipped', fs.existsSync(path.join(installDir, 'FFMPEG-LGPL-SOURCE.md')));
+
 /* 2. 无开发机路径 */
 console.log('[2] scanning for dev-machine paths...');
 const badNeedles = ['<Memory Atlas worktrees>', '<Memory Atlas worktrees>', '<WhiteMoon repo>', '<WhiteMoon repo>', '<Memory Atlas repo>\\'];

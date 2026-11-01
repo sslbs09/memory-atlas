@@ -3,8 +3,8 @@
 本文件回答一个问题：Alpha 桌面应用里每一块不是本分支新写的代码，从哪来、什么版本。
 
 原则：**复用而不隐藏**。所有复制进 `desktop/` 的外部资产都登记在这里；
-原始位置保持只读，不被 Alpha 修改。运行时不依赖 `<WhiteMoon repo>` 与
-`<Memory Atlas repo>`（master 工作树）的任何文件——一切都随本工作树走。
+原始位置保持只读，不被 Alpha 修改。运行时不依赖 WhiteMoon 仓库与
+`<MemoryAtlas 仓库>`（master 工作树）的任何文件——一切都随本工作树走。
 
 ## 1. 本工作树自带的（无需复制）
 
@@ -21,7 +21,7 @@ Alpha 工作树 `alpha/desktop-dogfood-01` 从 `experiment/activation-04` 的
 
 ## 2. 从 ds-ui 仓库复制的（UI 资产与 Atlas 适配层）
 
-来源仓库：`<WhiteMoon repo>/work/universal-memory-v0.1\ds-ui`（HEAD `f3fcf69`）
+来源仓库：`<WhiteMoon 仓库>/work/universal-memory-v0.1\ds-ui`（HEAD `f3fcf69`）
 其内嵌工作树 `ds-ui\worktree`（HEAD `9c3ea62`，分支 `frontend/memory-workbench-archive`）。
 复制日期：2026-11-01。原始文件未做任何修改。
 
@@ -41,7 +41,7 @@ Alpha 工作树 `alpha/desktop-dogfood-01` 从 `experiment/activation-04` 的
 
 ## 3. 从 GLM Retrieval 复制的（检索引擎）
 
-来源：`<WhiteMoon repo>/work/universal-memory-v0.1\glm-retrieval`（**不是 git
+来源：`<WhiteMoon 仓库>/work/universal-memory-v0.1\glm-retrieval`（**不是 git
 仓库**，无版本号；2026-11-01 复制时的内容）。
 目标：`desktop/glm-retrieval/`（9 个文件，git blob 逐一比对全部一致：
 `package.json`、`README.md`、`src/{adapter,association,graph,store,tokenize}.mjs`、
