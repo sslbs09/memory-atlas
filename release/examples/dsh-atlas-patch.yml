@@ -1,0 +1,27 @@
+# DeepSeek Harness 接入 Memory Atlas —— 配置补丁示例
+# 用法（不改动你现有 Profile 的任何文件）：
+#
+#   dsh --profile <你的Profile> --patch C:\path\to\dsh-atlas-patch.yml
+#
+# 或把下面的条目并入某个隔离 Profile 的 cordis.patch.yml。
+#
+# 约定：
+#   - serverName: atlas        → 工具名形如 mcp__atlas__atlas_search
+#   - 只读接入（默认）。写入工具需要 MCP 服务端以 MEMORY_ATLAS_ALLOW_WRITES=1 启动。
+#   - MEMORY_ATLAS_DATA_DIR 指向 Memory Atlas 桌面端的数据目录
+#     （默认 %APPDATA%\Memory Atlas Alpha\atlas-data，以桌面端"关于"页显示为准）。
+#   - node.exe 用 Memory Atlas 发行包自带的运行时，无需本机安装 Node。
+
+patches:
+  - id: mcp-atlas
+    name: "@deepseek-ai/dsh-mcp-client"
+    config:
+      serverName: atlas
+      transport: stdio
+      command: "C:\\path\\to\\MemoryAtlas-v0.1.0-alpha.1-win-x64\\resources\\app\\runtime\\node.exe"
+      args:
+        - "C:\\path\\to\\MemoryAtlas-v0.1.0-alpha.1-win-x64\\resources\\app\\mcp\\atlas-mcp.mjs"
+      env:
+        MEMORY_ATLAS_SPACE: my-space
+        MEMORY_ATLAS_DATA_DIR: "C:\\Users\\%USERNAME%\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data"
+        # MEMORY_ATLAS_ALLOW_WRITES: "1"   # 需要写入工具时再打开

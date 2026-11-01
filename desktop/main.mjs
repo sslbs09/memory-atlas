@@ -17,6 +17,7 @@
 
 import { app, BrowserWindow, ipcMain, nativeTheme } from "electron";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomBytes } from "node:crypto";
@@ -843,7 +844,11 @@ async function runFlowSelfcheck(target) {
 
 async function runSelfcheck(kind, startError) {
   const target = kind === "chat" ? await ensureChatWindow() : mainWin;
-  const shotDir = path.join(HERE, "docs", "screenshots");
+  // 截图是自检产物，不是用户数据：源码树里进 docs/screenshots，打包态进系统临时
+  // 目录，绝不写入发行程序目录。
+  const shotDir = app.isPackaged
+    ? path.join(os.tmpdir(), "memory-atlas-selfcheck")
+    : path.join(HERE, "docs", "screenshots");
   fs.mkdirSync(shotDir, { recursive: true });
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const report = { kind, startError: startError ? String(startError.message) : null };

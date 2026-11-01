@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "memory-atlas": {
+      "command": "C:\\path\\to\\MemoryAtlas-v0.1.0-alpha.1-win-x64\\resources\\app\\runtime\\node.exe",
+      "args": [
+        "C:\\path\\to\\MemoryAtlas-v0.1.0-alpha.1-win-x64\\resources\\app\\mcp\\atlas-mcp.mjs"
+      ],
+      "env": {
+        "MEMORY_ATLAS_SPACE": "my-space",
+        "MEMORY_ATLAS_DATA_DIR": "C:\\Users\\%USERNAME%\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data"
+      }
+    }
+  }
+}

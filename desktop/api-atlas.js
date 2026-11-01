@@ -13,7 +13,7 @@
  *     不合并成"没有记忆"。
  *
  * Alpha-01 来源：逐字复制自 ds-ui src/harness/api-atlas.js（HEAD f3fcf69，
- * 2026-11-01 复制），仅本注释为新增。原始文件在 <WhiteMoon repo>\...\ds-ui 下保持只读。
+ * 2026-11-01 复制），仅本注释为新增。上游文件在 WhiteMoon 仓库 ds-ui 下保持只读。
  */
 
 import {

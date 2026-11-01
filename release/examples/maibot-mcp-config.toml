@@ -1,0 +1,22 @@
+# MaiBot 接入 Memory Atlas —— bot_config.toml 片段示例
+#
+# 合并进你的 bot_config.toml 的 [mcp] 段（保留 MaiBot 其余配置不动）。
+# MaiBot 把 MCP 工具按原名交给模型：atlas_search / atlas_get / atlas_health。
+#
+# 建议为 MaiBot 使用一个专门的记忆空间（例如 maibot-space），
+# 与桌面端手动记忆隔离；每个 MCP 客户端一个空间是当前的推荐映射规则。
+
+[mcp]
+enable = true
+
+[[mcp.servers]]
+name = "memory-atlas"
+transport = "stdio"
+command = "C:\\path\\to\\MemoryAtlas-v0.1.0-alpha.1-win-x64\\resources\\app\\runtime\\node.exe"
+args = [
+  "C:\\path\\to\\MemoryAtlas-v0.1.0-alpha.1-win-x64\\resources\\app\\mcp\\atlas-mcp.mjs"
+]
+env = { MEMORY_ATLAS_SPACE = "maibot-space", MEMORY_ATLAS_DATA_DIR = "C:\\Users\\%USERNAME%\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data" }
+
+# 需要写入工具时（默认只读，不建议在聊天机器人上开启自动写入）：
+# env = { MEMORY_ATLAS_SPACE = "maibot-space", MEMORY_ATLAS_DATA_DIR = "...", MEMORY_ATLAS_ALLOW_WRITES = "1" }

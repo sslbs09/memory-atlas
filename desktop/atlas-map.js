@@ -11,7 +11,7 @@
  *     不会被抹平成"写入失败"，更不会变成成功。
  *
  * Alpha-01 来源：逐字复制自 ds-ui src/harness/atlas-map.js（HEAD f3fcf69，
- * 2026-11-01 复制），仅本注释为新增。原始文件在 <WhiteMoon repo>\...\ds-ui 下保持只读。
+ * 2026-11-01 复制），仅本注释为新增。上游文件在 WhiteMoon 仓库 ds-ui 下保持只读。
  */
 
 export const ATLAS_AUTHORITY_LABEL = "ATLAS_NATIVE";
