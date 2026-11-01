@@ -318,6 +318,7 @@
   async function send() {
     const text = input.value.trim();
     if (!text || streaming) return;
+    await refreshChips(); // 空间/模型可能在别处被切换，发送前对齐一次
     input.value = "";
     userTurn(text);
     history.push({ role: "user", content: text });

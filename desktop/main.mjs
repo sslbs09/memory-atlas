@@ -783,6 +783,29 @@ async function runSelfcheck(kind, startError) {
       app.exit(0);
       return;
     }
+    if (kind === "universe") {
+      report.seed = await seedDemoSpace();
+      await wait(300);
+      await target.webContents.executeJavaScript(
+        "document.querySelector('[data-testid=\"nav-universe\"]').click()", true);
+      await wait(5000);
+      report.universe = await target.webContents.executeJavaScript(`(() => ({
+        blocked: !(document.getElementById('wb-uni-blocked').hidden),
+        blockedReason: (document.getElementById('wb-uni-blocked-reason')||{}).textContent || null,
+        loading: !(document.getElementById('wb-uni-loading').hidden),
+        stats: (document.getElementById('wb-uni-stats')||{}).textContent || null,
+        graphSource: (document.getElementById('wb-uni-graph-source')||{}).textContent || null,
+        scope: (document.getElementById('wb-uni-scope')||{}).textContent || null,
+        canvasChildren: document.getElementById('wb-uni-canvas').children.length
+      }))()`, true);
+      const image = await target.webContents.capturePage();
+      const file = path.join(shotDir, `selfcheck-universe-${Date.now()}.png`);
+      fs.writeFileSync(file, image.toPNG());
+      report.screenshot = file;
+      process.stdout.write("[selfcheck] " + JSON.stringify(report, null, 2) + "\n");
+      app.exit(0);
+      return;
+    }
     await wait(kind === "chat" ? 1200 : 2200);
     report.serviceStatus = atlasService ? atlasService.status() : null;
     report.spaces = await adapter.listSpaces();
@@ -829,6 +852,26 @@ async function runSelfcheck(kind, startError) {
       report.activationEvents = ledger.events().slice(-8).map((e) => ({
         eventId: e.eventId, eventType: e.eventType, recordId: e.recordId, spaceId: e.spaceId
       }));
+      // UI 驱动的一轮（像用户一样输入并发送），供截图验证渲染与调试视图。
+      await target.webContents.executeJavaScript(`(async () => {
+        const input = document.getElementById("chat-input");
+        const send = document.getElementById("chat-send");
+        input.value = "我以前看过什么电影？";
+        send.click();
+        for (let i = 0; i < 120; i += 1) {
+          await new Promise((r) => setTimeout(r, 500));
+          if (document.querySelector(".chat-debug")) break;
+        }
+        const details = document.querySelector(".chat-debug");
+        if (details) details.open = true;
+        await new Promise((r) => setTimeout(r, 400));
+      })()`, true);
+      report.uiTurn = await target.webContents.executeJavaScript(`(() => ({
+        bubbles: document.querySelectorAll(".chat-turn").length,
+        cites: document.querySelectorAll(".chat-cite").length,
+        debugOpen: Boolean(document.querySelector(".chat-debug[open]")),
+        debugRows: document.querySelectorAll(".chat-debug tbody tr").length
+      }))()`, true);
     }
     const image = await target.webContents.capturePage();
     const file = path.join(shotDir, `selfcheck-${kind}-${Date.now()}.png`);
