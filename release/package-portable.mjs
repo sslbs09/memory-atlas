@@ -118,10 +118,15 @@ if (path.resolve(packagedDirRaw) !== path.resolve(packagedDir)) {
 }
 console.log(`      packaged -> ${packagedDir}`);
 
-// 发行级顶层文档（README、MCP 接入指南、示例配置、许可说明）
+// 发行级顶层文档（README、MCP 接入指南、验证说明来自 release/docs；
+// 第三方声明、变更日志、许可证候选来自仓库根）
 console.log('[5/6] top-level release docs');
-for (const doc of ['README-RELEASE.md', 'MCP-GUIDE.md', 'THIRD_PARTY_NOTICES.md', 'VERIFY.md']) {
+for (const doc of ['README-RELEASE.md', 'MCP-GUIDE.md', 'VERIFY.md']) {
   const src = path.join(HERE, 'docs', doc);
+  if (fs.existsSync(src)) copy(src, path.join(packagedDir, doc));
+}
+for (const doc of ['THIRD_PARTY_NOTICES.md', 'CHANGELOG.md', 'LICENSE-CANDIDATES.md']) {
+  const src = path.join(ROOT, doc);
   if (fs.existsSync(src)) copy(src, path.join(packagedDir, doc));
 }
 for (const example of fs.readdirSync(path.join(HERE, 'examples'))) {

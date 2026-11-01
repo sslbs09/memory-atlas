@@ -1,1 +1,1 @@
-257bf1a99f3c79b0b9a33de418ff1ff70f5484d91496705bc60a38ccbcfbd9b4 *dist/MemoryAtlas-v0.1.0-alpha.1-win-x64.zip
+6b7554fc11aeac22146a25e44b78aabb4b8ed1ae068f8204b36570ebc073bebe *dist/MemoryAtlas-v0.1.0-alpha.1-win-x64.zip
