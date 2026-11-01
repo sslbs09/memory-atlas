@@ -4,3 +4,6 @@ release/staging/
 release/dist/
 release/vendor/
 node_modules/
+
+# 互操作实验运行时数据（可由 reset-experiment.mjs 重建）
+evidence/release-interop/interop-data/
