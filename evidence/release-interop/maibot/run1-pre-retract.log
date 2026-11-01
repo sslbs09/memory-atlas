@@ -1,0 +1,8 @@
+[memory-atlas-mcp] read-only mode: write tools not registered (set MEMORY_ATLAS_ALLOW_WRITES=1 to enable)
+[memory-atlas-mcp] serving space "interop-demo" (writes disabled)
+[memory-atlas-mcp] connected via endpoint-file: http://127.0.0.1:55207 (bootId=16c14f0a6372c851)
+PASS  connect to atlas-mcp via MaiBot MCPConnection
+PASS  tool discovery  — atlas_get, atlas_health, atlas_search
+PASS  atlas_health via MaiBot client  — {"origin": "endpoint-file", "url": "http://127.0.0.1:55207", "bootId": "16c14f0a6372c851", "pid": 172764}
+PASS  atlas_search 小林 电影 hits demo-a  — outcome=MATCHED recordId=demo-a status=active matchReason=['term:小林(cjk-2)', 'term:电影(cjk-2)', 'recency:1.000']
+PASS  atlas_get active demo-c is a current fact  — status=active

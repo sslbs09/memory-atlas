@@ -1,0 +1,16 @@
+# Memory Atlas 接入 DSH 的 --patch overlay（内存叠加，不修改任何 Profile 文件）
+# 运行：dsh --profile headless --patch <本文件> "<任务>"
+- id: mcp-atlas
+  insert: true
+  name: "@deepseek-ai/dsh-mcp-client"
+  config:
+    serverName: atlas
+    transport: stdio
+    command: "<Memory Atlas checkout>\\release\\out\\MemoryAtlas-v0.1.0-alpha.1-win-x64\\resources\\app\\runtime\\node.exe"
+    args:
+      - "<Memory Atlas checkout>\\release\\out\\MemoryAtlas-v0.1.0-alpha.1-win-x64\\resources\\app\\mcp\\atlas-mcp.mjs"
+    env:
+      MEMORY_ATLAS_SPACE: interop-demo
+      MEMORY_ATLAS_DATA_DIR: "<Memory Atlas checkout>\\evidence\\release-interop\\interop-data"
+    failOnStartupError: false
+    toolCallTimeoutMs: 30000

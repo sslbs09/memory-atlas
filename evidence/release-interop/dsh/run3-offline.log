@@ -1,0 +1,9 @@
+[memory-atlas-mcp] read-only mode: write tools not registered (set MEMORY_ATLAS_ALLOW_WRITES=1 to enable)
+[memory-atlas-mcp] serving space "interop-demo" (writes disabled)
+{"type":"session","sessionId":"session-2dd8c0c1-fdab-4b6e-9e24-02e9c442e897","cwd":"<DSH install>"}
+{"type":"status","phase":"turn_start","turn":1}
+{"type":"status","phase":"step_start","turn":1,"step":1}
+{"type":"status","phase":"step_end","turn":1,"step":1,"usage":{"inputTokens":0,"outputTokens":0,"totalTokens":0}}
+{"type":"status","phase":"turn_end","turn":1,"reason":{"kind":"error","error":{"message":"403: {\"message\":\"Access to model denied. Please make sure you are eligible for using the model.\",\"id\":\"28f74ab4-7851-954a-9920-3497c4d733c7\",\"type\":\"AccessDenied.Unpurchased\",\"code\":\"AccessDenied.Unpurchased\"}","code":"AUTH"}}}
+{"type":"final","text":""}
+dsh: AUTH: 403: {"message":"Access to model denied. Please make sure you are eligible for using the model.","id":"28f74ab4-7851-954a-9920-3497c4d733c7","type":"AccessDenied.Unpurchased","code":"AccessDenied.Unpurchased"}
