@@ -401,6 +401,43 @@ async function runChatTurn({ requestId, message, history = [] }) {
   }
 }
 
+/* ---------------- 写入记忆（「记住这段内容」面板与自检共用） ---------------- */
+
+async function addMemoryRecord({ spaceId, text, kind, occurredAt }) {
+  const content = String(text || "").trim();
+  if (!content) return { ok: false, status: "ATLAS_RECORD_INVALID", error: "内容为空。" };
+  const space = String(spaceId || currentSpace || "");
+  if (!space) return { ok: false, status: "ATLAS_SPACE_REQUIRED", error: "还没有选择记忆空间。" };
+  const recordKind = ["experience", "observation", "note"].includes(kind) ? kind : "experience";
+  const when = typeof occurredAt === "string" && occurredAt
+    ? new Date(occurredAt).toISOString()
+    : new Date().toISOString();
+  const suffix = Date.now().toString(36) + "-" + randomBytes(3).toString("hex");
+  const body = {
+    spaceId: space,
+    record: {
+      recordId: "u-" + suffix,
+      kind: recordKind,
+      content: content.slice(0, 32000),
+      source: { kind: "manual", id: "alpha-capture" },
+      occurredAt: when,
+      visibility: "space"
+    }
+  };
+  const result = await atlasRawRequest("POST", "/atlas/record", { body, write: true });
+  if (result.transport) return { ok: false, status: result.transport, error: "Atlas 未应答，写入未确认。" };
+  if (result.status >= 200 && result.status < 300 && result.payload?.ok !== false) {
+    return {
+      ok: true, status: "OK",
+      outcome: result.payload.outcome ?? "RECORDED",
+      recordId: result.payload.recordId,
+      recordRevision: result.payload.revision ?? result.payload.sequence ?? null,
+      recordedAt: result.payload.recordedAt ?? null
+    };
+  }
+  return { ok: false, status: "ATLAS_WRITE_FAILED", error: result.payload?.error || `HTTP ${result.status}` };
+}
+
 /* ---------------- 合法重提确认（IPC 与自检共用同一入口语义） ---------------- */
 
 async function confirmRevisit(recordId, utterance) {
@@ -557,37 +594,13 @@ function registerIpc() {
   });
 
   ipcMain.handle("alpha:add-memory", async (_event, payload) => {
-    const text = String(payload?.text || "").trim();
-    if (!text) return { ok: false, status: "ATLAS_RECORD_INVALID", error: "内容为空。" };
-    if (!currentSpace) return { ok: false, status: "ATLAS_SPACE_REQUIRED", error: "还没有选择记忆空间。" };
-    const kind = ["experience", "observation", "note"].includes(payload?.kind) ? payload.kind : "experience";
-    const occurredAt = typeof payload?.occurredAt === "string" && payload.occurredAt
-      ? new Date(payload.occurredAt).toISOString()
-      : new Date().toISOString();
-    const suffix = Date.now().toString(36) + "-" + randomBytes(3).toString("hex");
-    const body = {
+    const input = payload && typeof payload === "object" ? payload : {};
+    return addMemoryRecord({
       spaceId: currentSpace,
-      record: {
-        recordId: "u-" + suffix,
-        kind,
-        content: text.slice(0, 32000),
-        source: { kind: "manual", id: "alpha-capture" },
-        occurredAt,
-        visibility: "space"
-      }
-    };
-    const result = await atlasRawRequest("POST", "/atlas/record", { body, write: true });
-    if (result.transport) return { ok: false, status: result.transport, error: "Atlas 未应答，写入未确认。" };
-    if (result.status >= 200 && result.status < 300 && result.payload?.ok !== false) {
-      return {
-        ok: true, status: "OK",
-        outcome: result.payload.outcome ?? "RECORDED",
-        recordId: result.payload.recordId,
-        recordRevision: result.payload.revision ?? result.payload.sequence ?? null,
-        recordedAt: result.payload.recordedAt ?? null
-      };
-    }
-    return { ok: false, status: "ATLAS_WRITE_FAILED", error: result.payload?.error || `HTTP ${result.status}` };
+      text: String(input.text || ""),
+      kind: input.kind,
+      occurredAt: typeof input.occurredAt === "string" ? input.occurredAt : undefined
+    });
   });
 
   ipcMain.handle("alpha:seed-demo", () => seedDemoSpace());
@@ -731,6 +744,10 @@ async function runFlowSelfcheck(target) {
   await wait(300);
 
   report.searchBefore = await adapter.memorySearch({ query: "电影", status: "active", limit: 25 });
+  report.addMemory = await addMemoryRecord({
+    spaceId: "alpha-demo",
+    text: "这是一条通过写入面板添加的流程自检记忆（flow-add）。"
+  });
   report.correct = await adapter.controlFormalMemory({
     action: "correct",
     targetExperienceId: "demo-chat",

@@ -36,7 +36,7 @@ Alpha 工作树 `alpha/desktop-dogfood-01` 从 `experiment/activation-04` 的
 | `renderer/vendor/universe/3d-force-graph.min.js` | `worktree/renderer/vendor/universe/` | 3D 力导向图库，逐字复制 |
 | `renderer/alpha.css`、`renderer/memory-capture.js` | **Alpha 新写** | 注入工具条/写入面板/重提面板，只用既有 `--ui-*` 令牌 |
 | `renderer/chat.html` / `chat.js` / `chat.css` | **Alpha 新写** | 记忆对话实验窗口 |
-| `locales/zh.json` `en.json` `ja.json` | `worktree/src/locales/` @ 9c3ea62 | 界面词典，逐字复制 |
+| `locales/zh.json` `en.json` `ja.json` | `worktree/src/locales/` @ 9c3ea62 | 界面词典。唯一改动：`set.wbReaderHint` 一处把 "Host 的只读视图" 改为 "记忆服务（Atlas）的只读视图"（三种语言同步），因为 Alpha 只有 Atlas 一种后端 |
 | `api-atlas.js`、`atlas-map.js` | `ds-ui/src/harness/` @ f3fcf69 | Atlas HTTP → 渲染层契约适配层，逐字复制（仅文件头注释补充来源说明） |
 
 ## 3. 从 GLM Retrieval 复制的（检索引擎）
