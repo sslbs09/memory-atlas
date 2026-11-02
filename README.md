@@ -39,8 +39,8 @@ Older releases: [Releases](https://github.com/sslbs09/memory-atlas/releases).
 
 1. Download the ZIP and extract it anywhere (Chinese characters and spaces in the path are fine).
 2. Double-click `MemoryAtlas.exe`. On first launch it prepares its search index; wait for "Atlas connected" in the top bar.
-3. Click **载入演示记忆** (load demo memories) in the top-right. It fills a demo space called `alpha-demo` with synthetic records — separate from your data — and switches the space dropdown to it.
-4. **Write your first record**: click **＋ 记住这段内容** (remember this), type one sentence — for example "dentist appointment Friday 4:30 pm" — click **写入记忆** (write), then **刷新列表查看** (refresh the list) in the panel. The record is in the list.
+3. (Optional look-around) Click **载入演示记忆** (load demo memories) in the top-right. It fills a demo space called `alpha-demo` with synthetic records — separate from your data — and switches the space dropdown to it. **When you're done, switch the dropdown (top-left) back to `alpha`**: your own memories go into alpha, and that's the space your agent will bind to in the next section.
+4. **Write your first record**: make sure the 记忆空间 (space) dropdown shows `alpha`, click **＋ 记住这段内容** (remember this), type one sentence — for example "dentist appointment Friday 4:30 pm" — click **写入记忆** (write), then **刷新列表查看** (refresh the list) in the panel. The record is in the list.
 5. **Search**: type a keyword (say, 牙医) in the left search box and click **查找**.
 6. **Correct it**: click the record, scroll the detail pane, click **更正** (correct), write the right version, click **保存纠正** (save correction). The old wording isn't deleted — switch the list to 全部历史 (all history) and you'll see it marked 已被更新 (superseded).
 7. **Retract one**: click 撤回 (retract) in the detail pane. It disappears from "currently valid" and stays under the 已撤回 (retracted) tab.
@@ -56,7 +56,7 @@ Two files from the package matter to your config:
 - MCP server: `<install>\resources\app\mcp\atlas-mcp.mjs`
 - Bundled Node runtime: `<install>\resources\app\runtime\node.exe`
 
-**About spaces**: a fresh install has exactly one space, `alpha`, created on first launch — the examples below all use it. In the current version the "create space" form only appears in the UI when no space exists at all; that's a known limitation. To get another space today, click 载入演示记忆 (loads `alpha-demo` with synthetic records) or start over with a different `--data-dir`. Which space a client sees is entirely decided by its `MEMORY_ATLAS_SPACE` binding (see the sharing FAQ below).
+**About spaces**: a fresh install has exactly one space, `alpha`, created on first launch — the examples below all use it. In the current version the "create space" form only appears in the UI when no space exists at all; that's a known limitation ([issue #1](https://github.com/sslbs09/memory-atlas/issues/1), planned for a future release). For a quick look at synthetic data, 载入演示记忆 gives you the `alpha-demo` space — it is not a way to create spaces. Also note that `--data-dir` pointing at a new directory starts a **completely separate data environment** — its own `alpha`, its own index, sharing nothing with your existing data — it does not add a space to your current Atlas.
 
 Generic `mcpServers` JSON (Claude Desktop and similar clients. Config example, unverified — the hosts we actually tested are DSH and MaiBot):
 
@@ -84,7 +84,11 @@ Generic `mcpServers` JSON (Claude Desktop and similar clients. Config example, u
 
 When it works, the agent's tool list contains `atlas_search` (currently-valid memories by default; the `status` parameter can query history explicitly), `atlas_get` (details and the correction chain by record ID — superseded and retracted records are readable too), and `atlas_health` (connectivity). A quick check: ask it to "look up memories about the dentist" and it should return record contents, not an error.
 
-**Verifying your first connection** (a path we actually ran against the release package): write a memory in the desktop app — say, "dentist appointment Friday 4:30 pm" — with the space set to `alpha`; then start the MCP client bound to `alpha` and ask it to look up the dentist. It should return that exact record, with the same recordId the desktop detail pane shows. On a fresh install we ran this end to end: boot → write into alpha → two separate MCP clients both returned the same record (same recordId), while a client bound to a different space could not see it.
+**Verifying your first connection**, in two layers:
+
+Layer 1 (verified): call the tools directly, no model involved. After starting an MCP client bound to `alpha`, call `atlas_health` first — it should return `available: true`, `spaceExists: true`; then call `atlas_search` with the keyword you just wrote on the desktop (say, 牙医) — it should return that record, with the same recordId the desktop detail pane shows. We ran this end to end against the release package: fresh boot → write into alpha → two separate MCP clients both returned the same record (same recordId), while a client bound to a different space could not see it.
+
+Layer 2 (not verified): the model deciding on its own when to call these tools. Tool registration and the protocol are in place, but model-initiated use is the next layer of the experience and has no test results yet — tools being registered does not mean your model will use them, or use them well.
 
 **DeepSeek Harness (DSH)** — no changes to your existing profile; use a `--patch` overlay (verified: registration and discovery):
 
