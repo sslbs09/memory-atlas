@@ -2,6 +2,13 @@
 
 All notable changes to Memory Atlas are documented here. Dates are ISO 8601.
 
+## [Unreleased]
+
+- Changed: README rebuilt for first-time readers (download, two-minute tutorial,
+  agent connection configs, honest capability table, real screenshots and a
+  screen-capture GIF from synthetic data). The previous developer-oriented
+  README moved to `docs/ARCHITECTURE.md`.
+
 ## [0.1.0-alpha.1] — 2026-11-01
 
 First distributable Alpha: Windows portable build + unified MCP bridge.

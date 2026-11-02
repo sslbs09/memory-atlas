@@ -1,87 +1,224 @@
-# Memory Atlas（中文说明）
+# Memory Atlas
 
-**独立的本地记忆服务：原生记录、来源、纠正链、有效性、回执，以及任何 Agent 都能用的统一 Memory API。**
+一个装在你电脑上的记忆库。事情记下来，之后能查到、能改、能撤回——每一条都留着来龙去脉。
 
-Memory Atlas 像档案员一样记事：每条记忆都是有稳定 ID、有来源、有效力状态的记录。纠正与撤回本身也是记录——"过去以为什么"始终可审计，"现在成立什么"始终干净。派生检索索引只负责快，永远不是事实权威。
+![release](https://img.shields.io/badge/release-v0.1.0--alpha.1-blue) ![license](https://img.shields.io/badge/license-MIT-green) ![platform](https://img.shields.io/badge/platform-Windows%20x64-lightgrey)
 
-- **当前状态：Alpha（v0.1.0-alpha.1）。** 提供 Windows 免安装发行包；不是人脑模拟，也不是向量数据库服务，而是记忆的**事实权威系统**。
-- English: [README.md](README.md)。
+![写入、更正、再查——真实界面录制](docs/assets/demo.gif)
 
-## 它做什么
+它解决一个具体的问题：和 AI 工具打交道越多，"说过的话、定过的事"散得越广，回头想不起来在哪。Memory Atlas 把这些事放进一个本地程序：你亲手记、亲手改；连接的 AI 只能查询你明确授权的部分，而且查到的一定是当前有效的那一条。
 
-| 能力 | 位置 |
+这是 Alpha 阶段的开源项目。核心功能完整可用，没验证过的部分在[能力边界](#能力边界)里写明白，不画饼。
+
+English version: [README.md](README.md)
+
+## 下载
+
+| 文件 | 适合 |
 |---|---|
-| 带来源的正式记忆记录（recordId / source / revision） | `src/` — 原生权威存储 |
-| 纠正与撤回是一等记录（旧版本从不被悄悄改写） | `src/model.js`、`src/service.js` |
-| 多空间隔离（一个 Atlas，多个互不串线的记忆空间） | `src/store.js` |
-| 每次写入都有回执（operationId、幂等重放、冲突有名字） | `src/service.js` |
-| 可按空间"失去信任"的 CJK 派生检索索引，失败时如实降级 | `adapters/glm-retrieval.mjs`、`desktop/glm-retrieval/` |
-| 桌面工作台（查 / 管 / 维 / 宇宙视图 + 记忆对话实验） | `desktop/` |
-| 给外部 Agent 的 MCP Server（DSH、MaiBot、任何 MCP 宿主） | `packages/memory-atlas-mcp/` |
+| [MemoryAtlas-v0.1.0-alpha.1-win-x64.zip](https://github.com/sslbs09/memory-atlas/releases/download/v0.1.0-alpha.1/MemoryAtlas-v0.1.0-alpha.1-win-x64.zip) | Windows 10/11 x64，解压即用 |
 
-> 本项目原创内容以 **MIT** 许可发布——见 [LICENSE](LICENSE)。第三方组件各自保留
-> 其原许可：[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)（Electron、Node.js、
-> Apache-2.0 的 MCP TypeScript SDK、3d-force-graph、Electron 内的 FFmpeg 等）。
+- 不需要装 Node、Python，不需要命令行——运行时都在包里。
+- 数据存在 `%APPDATA%\Memory Atlas Alpha\`，删掉解压目录不丢数据。
+- 安装包没有代码签名，第一次运行 Windows 会拦一下：点「更多信息 → 仍要运行」。
+- 在意完整性的话，Release 页的 `SHA256SUMS` 里有哈希可以核对。
 
-## 快速开始（Windows，无需安装 Node/npm）
+历史版本见 [Releases](https://github.com/sslbs09/memory-atlas/releases)。
 
-1. 下载 `MemoryAtlas-v0.1.0-alpha.1-win-x64.zip`，解压到任意目录。
-2. 双击 `MemoryAtlas.exe`。数据存放在 `%APPDATA%\Memory Atlas Alpha\`，绝不写入解压目录。
-3. 直接使用：写入、检索、纠正、撤回。GLM 检索索引首次启动自动构建。
+## 三种用法
 
-Windows 包未做代码签名，首次运行 SmartScreen 会提示确认。详见[发行包安装与使用指南](release/docs/README-RELEASE.md)；把 DSH / MaiBot / 任意 MCP 客户端接到同一个正在运行的 Atlas 见 [MCP 接入指南](release/docs/MCP-GUIDE.md)。
+**当个桌面记忆本。** 打开程序，手动记录、查询、更正、撤回。
 
-## 架构一段话
+![档案视图：每条记录带状态与来源](docs/assets/screenshot-archive.png)
 
-桌面程序只是壳：它以 Node 24 子进程启动真正的 Atlas 服务；服务持有权威存储（每空间一份 JSON + 单写者锁）与可选的派生检索索引（node:sqlite）。所有访问走同一套环回 HTTP API，每次启动轮换 token，并通过发现文件 `endpoint.json` 发布给 MCP 桥。GUI、DSH 下的 MCP server、MaiBot 下的 MCP server 全部走同一个正式 API——没有任何客户端直接写数据文件，撤回/被取代的记录永远不会被当作当前事实返回。
+**给 AI 一个可查的记忆。** 程序自带一个 MCP Server（只读默认）。支持 MCP 的 AI 工具——编程助手、聊天机器人框架、你自己的 Agent——配一条启动命令就能查询你指定的记忆空间。下面有现成配置。
 
-## 如实声明：已知限制
+**接进自己的程序。** Atlas 服务在本机环回地址上开 HTTP API：每次写入有回执，重复提交能识别，撤回立即生效。仓库里带一个零依赖的 Node 客户端。
 
-- **本轮互操作未做真实模型端到端回路**（本机 DSH 账户无模型额度；MaiBot 验证到其自带 MCP 客户端层，未跑完整聊天）。工具协议层已验证，详见[验证报告](docs/VERIFICATION-v0.1.0-alpha.1.md)。
-- **20GB 规模未验证**——容量目标是配置值，不是实测结论。
-- 检索是词法级的（中文一元/二元词项）：**不做同义改写**。搜「约定」不会命中「答应」；服务如实返回 `NO_MATCH`，不猜。
-- MCP 接入 ≠ 自动记忆捕获：工具在那里，但记忆只经显式调用写入；每个 MCP server 实例只服务一个被授权的空间。
-- Windows 构建未签名；激活/强化实验面仍属实验性。
+## 两分钟上手
 
-## 开发
+1. 下载 ZIP，解压到任意目录（中文路径、带空格的路径都没问题）。
+2. 双击 `MemoryAtlas.exe`。首次启动它会自己准备检索索引，等顶栏出现「Atlas 已连接」。
+3. 先点右上角 **载入演示记忆**：它写入一个叫 `alpha-demo` 的演示空间（合成数据，和你的数据隔离），左上角「记忆空间」下拉会自动切过去。列表里会出现几条示例。
+4. **写第一条**：右上角 **＋ 记住这段内容**，写一句话——比如「周五下午四点半和牙医有预约」——点 **写入记忆**，然后点面板里的 **刷新列表查看**。列表里就能看到它。
+5. **查询**：左侧输入框输入关键词（比如「牙医」），点 **查找**。
+6. **改**：点开那条记录，右侧详情往下拉，点 **更正**，写上正确内容，点 **保存纠正**。旧版本不会消失：列表切到「全部历史」还能看到，标记着「已被更新」。
+7. 想删掉一条：详情里点 **撤回**。「当前有效」里它就不出现了，「已撤回」标签下还留着原始记录。
 
-```bash
-npm test                                     # 根包：核心服务测试
-cd packages/memory-atlas-mcp && npm test     # MCP 协议测试（真实 stdio）
-node evidence/release-interop/verify-core-flow.mjs
-node evidence/release-interop/cross-client.mjs  # 三客户端一致性实验（需发行包）
+就这些。有一条脾气要先说：搜索不做同义改写，搜「约定」不会命中「答应」——搜不到时它如实告诉你没有，不猜。
+
+## 连接你的 AI Agent
+
+前提只有一个：Memory Atlas 正在运行（它拥有数据和索引，MCP server 只是个桥）。
+
+随包有两个文件要指给 MCP 客户端：
+
+- MCP server：`<解压目录>\resources\app\mcp\atlas-mcp.mjs`
+- Node 运行时：`<解压目录>\resources\app\runtime\node.exe`
+
+通用 MCP 配置（Claude 桌面版、Codex 等用 `mcpServers` 格式的客户端）：
+
+```json
+{
+  "mcpServers": {
+    "memory-atlas": {
+      "command": "C:\\你的解压目录\\resources\\app\\runtime\\node.exe",
+      "args": ["C:\\你的解压目录\\resources\\app\\mcp\\atlas-mcp.mjs"],
+      "env": {
+        "MEMORY_ATLAS_SPACE": "my-space",
+        "MEMORY_ATLAS_DATA_DIR": "C:\\Users\\你\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data"
+      }
+    }
+  }
+}
 ```
 
-### 从源码构建 Windows Portable
+| 环境变量 | 必填 | 说明 |
+|---|---|---|
+| `MEMORY_ATLAS_SPACE` | 是 | 这个客户端被授权访问的记忆空间。一个实例只绑一个空间，模型换不了 |
+| `MEMORY_ATLAS_DATA_DIR` | 二选一 | Atlas 数据目录（默认 `%APPDATA%\Memory Atlas Alpha\atlas-data`），从这里发现正在运行的服务 |
+| `MEMORY_ATLAS_URL` + `MEMORY_ATLAS_READ_TOKEN` | 二选一 | 直连模式，不走自动发现 |
+| `MEMORY_ATLAS_ALLOW_WRITES` | 否 | 设为 `1` 才会出现写入工具，见下文 |
 
-各子包按序安装依赖：
+配好后，Agent 的工具列表里会出现 `atlas_search`（查当前有效的记忆）、`atlas_get`（按 ID 看详情和更正链）、`atlas_health`（检查连接）。连得上的标志：问它一句「查一下关于牙医的记忆」，它返回记录内容而不是报错。
 
-```bash
-npm install                                        # 根包（核心服务，零运行时依赖）
-cd packages/memory-atlas-mcp && npm install        # MCP SDK + esbuild + zod
+**DSH（DeepSeek Harness）** —— 不改现有 Profile，用 `--patch` 叠加：
+
+<details>
+<summary>DSH 配置示例</summary>
+
+把下面内容存成 `dsh-atlas-patch.yml`，然后
+`dsh --profile headless --patch 路径\dsh-atlas-patch.yml "你的任务"`：
+
+```yaml
+- insert:
+    - id: mcp-atlas
+      name: "@deepseek-ai/dsh-mcp-client"
+      config:
+        serverName: atlas
+        transport: stdio
+        command: "C:\\你的解压目录\\resources\\app\\runtime\\node.exe"
+        args:
+          - "C:\\你的解压目录\\resources\\app\\mcp\\atlas-mcp.mjs"
+        env:
+          MEMORY_ATLAS_SPACE: dsh-space
+          MEMORY_ATLAS_DATA_DIR: "C:\\Users\\你\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data"
+        failOnStartupError: false
 ```
 
-打包脚本（`node release/package-portable.mjs`）还需要一个**构建期输入**：
-官方 Node v24.22.2 win-x64 运行时压缩包，放到 `release/vendor/`：
+工具会以 `mcp__atlas__atlas_search` 这样的名字出现。已在 DSH 0.2.1-rc.3 上验证注册与发现。
+</details>
 
-- 下载：https://nodejs.org/dist/v24.22.2/node-v24.22.2-win-x64.zip
-- SHA-256（官方 SHASUMS256.txt 值）：`ca1bff5d8ead13c9f2ea404a176db46bd430704d5b5113734049fa365e7799e2`
-- 落点：`release/vendor/node-v24.22.2-win-x64.zip`（该目录被 .gitignore 排除，
-  不入库）
+**MaiBot** —— 在 `bot_config.toml` 的 `[mcp]` 段追加，不动它的核心和原有记忆系统：
 
-Electron 43.3.0 二进制由 `@electron/packager` 在打包时自动下载（可用
-`ELECTRON_MIRROR` 指定镜像）。随后：
+<details>
+<summary>MaiBot 配置示例</summary>
 
-```bash
-node release/package-portable.mjs    # 产物：release/dist/MemoryAtlas-v0.1.0-alpha.1-win-x64.zip
-node release/verify-portable.mjs     # 全新目录 31 项验证
+```toml
+[[mcp.servers]]
+name = "memory-atlas"
+transport = "stdio"
+command = "C:\\你的解压目录\\resources\\app\\runtime\\node.exe"
+args = [
+  "C:\\你的解压目录\\resources\\app\\mcp\\atlas-mcp.mjs"
+]
+env = { MEMORY_ATLAS_SPACE = "maibot-space", MEMORY_ATLAS_DATA_DIR = "C:\\Users\\你\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data" }
 ```
 
-## 许可证
+MaiBot 按原名使用这些工具。已在 1.3.6 版用其自带 MCP 客户端验证连接与查询。
+</details>
 
-本项目原创内容以 **MIT** 许可发布（见 [LICENSE](LICENSE)）。第三方组件（Electron、
-Node.js、MCP TypeScript SDK、3d-force-graph 及其内嵌依赖、Electron 内的 FFmpeg 等）
-各自保留原许可，清单与全文见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) 与
-[`licenses/`](licenses/README.md)；FFmpeg 对应源码声明见
-[FFMPEG-LGPL-SOURCE.md](FFMPEG-LGPL-SOURCE.md)。
-（`LICENSE-CANDIDATES.md` 保留为决策过程记录：最终决定为 MIT。）
+**关于写入**：默认只有上面三个查询工具。要开写入（`atlas_remember` / `atlas_correct` / `atlas_retract`），在 env 里加 `MEMORY_ATLAS_ALLOW_WRITES: "1"`。开了之后也请只在用户明确说「记住这个」「改一下」时调用——Memory Atlas 目前没有自动记忆：它不会偷读你的聊天记录自己存。
+
+## 记错了怎么办
+
+程序里改一条记录，原始版本不删、直接作废：
+
+![更正链：原记录保留，更正生效](docs/assets/screenshot-correction-chain.png)
+
+划线的是原始记录，右侧档案字段记着谁在什么时候改的。更重要的规则是：**这个更正对所有客户端生效**。下面是 MCP 客户端在更正前后的真实输出（同一份记忆，同一套查询）：
+
+```text
+=== atlas_search { query: '小林' } — 更正前 ===
+{ "outcome": "MATCHED",
+  "records": [ { "recordId": "mcp-mvzge5lv-hn1gw9", "status": "active",
+                 "matchReason": ["term:小林(cjk-2)", "recency:1.000"] } ] }
+
+=== atlas_correct { recordId: 'mcp-…', content: '上个月和小陈一起看过电影。' } ===
+已提交（Atlas 回执 outcome=RECORDED）
+
+=== atlas_search { query: '小林' } — 更正后 ===
+{ "outcome": "NO_MATCH", "records": [] }
+
+=== atlas_search { query: '小陈 电影' } — 更正后 ===
+{ "outcome": "MATCHED",
+  "records": [ { "recordId": "ctl-d96f5b0c-…", "status": "active" } ] }
+```
+
+搜「小林」不再是当前事实，搜「小陈」拿到新版本——旧的不会从历史里消失，「已撤回」「已被更新」标签下永远可查。桌面程序和 MCP 客户端看到的是同一份记忆、同一条更正链，这是这个项目最重要的一条设计。
+
+同一批记忆还有第二种读法——记忆宇宙：节点是记录，线是可解释的来源关系。
+
+![记忆宇宙视图](docs/assets/screenshot-universe.png)
+
+## 能力边界
+
+**验证过的**（证据在 [docs/VERIFICATION-v0.1.0-alpha.1.md](docs/VERIFICATION-v0.1.0-alpha.1.md)）：
+
+- Windows 便携包全新解压：36 项检查通过（写入、查询、更正、撤回、双开保护、关窗无残留进程、重启持久化）
+- DSH 0.2.1-rc.3：MCP 工具注册与发现
+- MaiBot 1.3.6：用其自带 MCP 客户端完成连接、发现、查询、详情
+- 三个客户端共享同一空间：更正与撤回对所有端生效，空间之间不串
+
+**没验证、别当真**：
+
+- 真实模型自主调用工具：DSH 账户当时没有模型额度，完整模型回路没有跑过。工具协议通了，不代表你的模型一定会好好用这些工具
+- 20GB 规模：没测过，容量参数只是配置值
+- 语义检索：没有。按词匹配，没有同义词，没有向量，没有"理解"
+- 自动记忆：没有。记忆只来自你（或你明确授权的调用），不会自动读取其他软件的聊天
+
+## 常见问题
+
+<details>
+<summary>双击后 Windows 拦截（SmartScreen）</summary>
+
+发行包未做代码签名。点「更多信息」→「仍要运行」。介意的话可以自行核对 Release 页的 SHA-256。
+</details>
+
+<details>
+<summary>Agent 报「Atlas 服务未运行 / 找不到 endpoint.json」</summary>
+
+Memory Atlas 桌面程序没开，或者 `MEMORY_ATLAS_DATA_DIR` 指错了目录。先开程序，确认 `%APPDATA%\Memory Atlas Alpha\atlas-data` 存在。Atlas 重启后 MCP 会自动跟上新端口，不用重配。
+</details>
+
+<details>
+<summary>搜不到某条记忆</summary>
+
+先确认空间选对了（MCP 客户端绑定的空间和桌面端看的可能不是同一个）；再换用记忆里出现过的原词。检索按词匹配，同义改写查不到。
+</details>
+
+<details>
+<summary>数据在哪、怎么备份</summary>
+
+全部在 `%APPDATA%\Memory Atlas Alpha\`（配置和记忆数据）。复制这个目录就是备份。
+</details>
+
+<details>
+<summary>多个 Agent 可以共用吗</summary>
+
+可以，都连同一个正在运行的 Atlas。建议每个客户端绑一个独立空间（`MEMORY_ATLAS_SPACE` 不同）；让两个客户端写同一个空间，等于人为制造重复事实。
+</details>
+
+## 给开发者
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) —— 数据模型、服务端架构、检索索引的信任模型、从源码构建
+- [release/docs/MCP-GUIDE.md](release/docs/MCP-GUIDE.md) —— MCP 接入细节与安全约定
+- Memory API：本机环回 HTTP，见 [src/client.js](src/client.js)（零依赖 Node 客户端，即 API 的完整用法）
+- [docs/VERIFICATION-v0.1.0-alpha.1.md](docs/VERIFICATION-v0.1.0-alpha.1.md) —— 全部验证项与证据
+- [CHANGELOG.md](CHANGELOG.md)
+
+## 许可证与致谢
+
+原创内容以 [MIT](LICENSE) 发布。第三方组件各自保留原许可：Electron、Node.js、MCP TypeScript SDK（Apache-2.0）、3d-force-graph 及其内嵌依赖、Electron 内的 FFmpeg——完整清单见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)，FFmpeg 对应源码声明见 [FFMPEG-LGPL-SOURCE.md](FFMPEG-LGPL-SOURCE.md)。
+
+检索索引部分与更早的工程线同源，出处登记在 [desktop/PROVENANCE.md](desktop/PROVENANCE.md)。

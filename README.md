@@ -1,138 +1,224 @@
 # Memory Atlas
 
-A standalone memory service. It remembers things, says where each memory came
-from, keeps the record of what used to be believed, and lets a client ask what
-currently stands.
+A memory library that runs on your own machine. You put things in, you can find them again, you can fix them, you can take them back — and every record keeps its history.
 
-It runs on its own: no desktop pet, no character runtime, no model, no build
-step. Node 20+ and nothing else.
+![release](https://img.shields.io/badge/release-v0.1.0--alpha.1-blue) ![license](https://img.shields.io/badge/license-MIT-green) ![platform](https://img.shields.io/badge/platform-Windows%20x64-lightgrey)
 
-> **Release: v0.1.0-alpha.1 (Windows portable, Alpha).**
-> A double-click Windows build ships from this branch: see
-> [RELEASE-NOTES-v0.1.0-alpha.1](docs/RELEASE-NOTES-v0.1.0-alpha.1.md),
-> the [installation & usage guide](release/docs/README-RELEASE.md) (zh-CN),
-> and the [MCP integration guide](release/docs/MCP-GUIDE.md) (zh-CN) for
-> connecting DSH / MaiBot / any MCP client. Verification status — including
-> what was and was not tested with real models — is in
-> [VERIFICATION-v0.1.0-alpha.1](docs/VERIFICATION-v0.1.0-alpha.1.md).
-> License: **MIT** for the original content of this project — see [LICENSE](LICENSE).
-> Third-party components keep their own licenses:
-> [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) (Electron, Node.js, the
-> Apache-2.0-licensed MCP TypeScript SDK, 3d-force-graph, FFmpeg inside
-> Electron, and others).
+![Record, correct, and query again — real screen recording](docs/assets/demo.gif)
 
-```
-npm test                      # node --test "test/*.test.js" - see Verification below
-node bin/atlas-demo.mjs       # full walkthrough against real HTTP on loopback
-node bin/atlas-server.mjs --data-dir D:\MemoryAtlasData --port 8791
-node bin/atlas-server.mjs --retrieval-module ./my-index.mjs   # attach a derived index
-node bin/atlas-server.mjs --retrieval-module ./adapters/glm-retrieval.mjs
-                                                              # attach the GLM (Backend B) index;
-                                                              # needs ATLAS_GLM_MODULE pointing at
-                                                              # glm-retrieval/src/adapter.mjs
-ATLAS_READ_TOKEN=... node bin/atlas-query.mjs --space mira --query 桂花
-```
+The problem it solves is specific: the more you work with AI tools, the more your plans, promises and preferences scatter across conversations you'll never find again. Memory Atlas puts them in one local program. You write them down yourself, you correct them yourself, and any AI you connect can only query the part you explicitly granted — always seeing the currently valid version, never a stale one.
 
-## What a record is
+This is an open-source Alpha. The core works; the limits are written down in [What's verified and what isn't](#whats-verified-and-what-isnt) rather than left for you to discover.
 
-| field | meaning |
+中文说明：[README.zh-CN.md](README.zh-CN.md)
+
+## Download
+
+| File | For |
 |---|---|
-| `recordId` | stable identity. Supplied by the caller when the source event has one, so a replay lands on the same record |
-| `spaceId` | the memory space it belongs to. Spaces are isolated: no query crosses them |
-| `kind` | `experience` \| `observation` \| `note` \| `correction` \| `retraction` |
-| `content` | what is remembered |
-| `source` | where it came from: `{ kind, id?, href? }`. Absence is reported as absence |
-| `visibility` | `private` \| `space` \| `shared` |
-| `occurredAt` / `recordedAt` | when it happened vs. when it was learned - two different clocks, never conflated |
-| `status` | `active` \| `superseded` \| `retracted` \| `recorded`, **derived** from the ordered history |
-| `revision` | the history revision a query was judged against |
+| [MemoryAtlas-v0.1.0-alpha.1-win-x64.zip](https://github.com/sslbs09/memory-atlas/releases/download/v0.1.0-alpha.1/MemoryAtlas-v0.1.0-alpha.1-win-x64.zip) | Windows 10/11 x64, portable |
 
-Nothing is overwritten. A correction appends; the earlier text stays readable
-and is marked `superseded`. A retraction removes a fact from recall without
-deleting its record or its source reference.
+- No Node, no Python, no terminal — the runtime ships inside the package.
+- Your data lives in `%APPDATA%\Memory Atlas Alpha\`; deleting the extracted folder deletes nothing of value.
+- The build is not code-signed, so Windows will warn on first launch: click "More info" → "Run anyway".
+- Release assets include a `SHA256SUMS` file if you want to verify the download.
 
-## Three rules the code enforces rather than recommends
+Older releases: [Releases](https://github.com/sslbs09/memory-atlas/releases).
 
-1. **Duplication is decided by identity, never by text similarity.** The same
-   sentence said twice is two events, and 「喜欢」/「不喜欢」 are never merged -
-   similarity de-duplication silently eats corrections.
-2. **A write answers with a receipt.** Supply an `operationId` and it resolves
-   deterministically onto one record: retry after a lost response returns
-   `IDEMPOTENT_REPLAY`, and `/atlas/operation` tells you what actually landed.
-3. **An unreadable source is `SOURCE_UNAVAILABLE`, never an empty result.**
-   Damage and forgetting are different facts and get different answers.
+## Three ways to use it
 
-## Recall vs. audit
+**As a desktop memory book.** Open the program and keep records by hand — search, correct, retract.
 
-Search defaults to `status: active` - what currently stands. The audit view is
-explicit (`status=all`). A retrieval index may rank candidates but may not admit
-them: candidates are identifiers only, and every one is re-read through the
-authority and filtered by space, validity, kind and time before it is shown.
+![Archive view: every record shows its status and source](docs/assets/screenshot-archive.png)
 
-`adapters/glm-retrieval.mjs` is the shipped factory for Backend B's index. It
-exists because the engine exports a class while `--retrieval-module` asks a
-module for a `createRetrievalAdapter` (or `default`) factory; the factory reads
-`ATLAS_GLM_MODULE` (the engine's `src/adapter.mjs`) and `ATLAS_GLM_INDEX`
-(optional SQLite path, default inside the data dir's `derived-cache/`). The
-index is derived data: the store always admits, and deleting the SQLite file
-loses nothing but speed. If a sync or rebuild fails, that ONE space's index is
-taken out of service - answers come from the authoritative scan and say so
-(`searchPath: atlas-authoritative-scan`, `index.state: INDEX_INVALID`,
-`recovery: reindex`) - and only a complete reindex restores index service. A
-later successful write does not restore trust, and neither does a restart: the
-startup rebuild must complete first.
+**As memory for your AI tools.** The app ships with an MCP server (read-only by default). Any MCP-capable tool — coding assistants, bot frameworks, your own agents — gets query access to one memory space you choose with a single launch command. Configs below.
 
-## Authorities
+**From your own code.** The Atlas service serves an HTTP API on loopback: every write returns a receipt, replays are recognized, retractions take effect immediately. A zero-dependency Node client ships in the repo.
 
-`src/service.js` talks to an authority, not to a file format:
+## Two minutes to first memory
 
-- `NativeAuthority` (default) - Atlas owns the records. This is the standalone
-  path.
-- `src/adapters/whitemoon-host.js` - delegates to a WhiteMoon Runtime Host over
-  its documented Memory API. WhiteMoon Core keeps adjudicating Identity,
-  accepted Experience, State and Relationship; Atlas reads and controls through
-  it and copies nothing into a second database.
+1. Download the ZIP and extract it anywhere (Chinese characters and spaces in the path are fine).
+2. Double-click `MemoryAtlas.exe`. On first launch it prepares its search index; wait for "Atlas connected" in the top bar.
+3. Click **载入演示记忆** (load demo memories) in the top-right. It fills a demo space called `alpha-demo` with synthetic records — separate from your data — and switches the space dropdown to it.
+4. **Write your first record**: click **＋ 记住这段内容** (remember this), type one sentence — for example "dentist appointment Friday 4:30 pm" — click **写入记忆** (write), then **刷新列表查看** (refresh the list) in the panel. The record is in the list.
+5. **Search**: type a keyword (say, 牙医) in the left search box and click **查找**.
+6. **Correct it**: click the record, scroll the detail pane, click **更正** (correct), write the right version, click **保存纠正** (save correction). The old wording isn't deleted — switch the list to 全部历史 (all history) and you'll see it marked 已被更新 (superseded).
+7. **Retract one**: click 撤回 (retract) in the detail pane. It disappears from "currently valid" and stays under the 已撤回 (retracted) tab.
 
-The adapter speaks HTTP only. Nothing in `src/` imports anything from a
-character runtime, and `test/adapter.test.js` fails if that ever stops being
-true.
+That's the whole loop. One thing to know up front: search doesn't do synonyms. Searching 约定 will not match 答应 — when there's no hit, it says so instead of guessing.
 
-## Layout
+## Connecting your AI agent
 
-```
-src/model.js      record shape, validation, derived validity, operation ids
-src/store.js      per-space JSON documents: atomic replace, compare-and-swap,
-                  one writer per data directory, bounded retry for transient
-                  Windows lock failures
-src/query.js      the read view: keyword / id / kind / status / visibility /
-                  time window / pagination, and the outcome vocabulary
-src/service.js    the Memory Service and the native authority
-src/retrieval.js  the SEARCH-DTO-v1 seam: an attached index ranks, the store admits
-src/http.js       the unified Memory API (loopback, two bearer capabilities)
-src/client.js     standalone Node client - no Electron, no harness
-src/adapters/     delegated authorities (WhiteMoon Host over HTTP)
-adapters/         retrieval factories for --retrieval-module (the GLM index)
-bin/              server, query CLI, demo
-test/             the suite: `node --test "test/*.test.js"`
-docs/             API contract, extraction map, limitations
+One prerequisite: Memory Atlas must be running (it owns the data and the index; the MCP server is only a bridge).
+
+Two files from the package matter to your config:
+
+- MCP server: `<install>\resources\app\mcp\atlas-mcp.mjs`
+- Bundled Node runtime: `<install>\resources\app\runtime\node.exe`
+
+Generic `mcpServers` config (Claude Desktop, Codex, and similar clients):
+
+```json
+{
+  "mcpServers": {
+    "memory-atlas": {
+      "command": "C:\\path\\to\\resources\\app\\runtime\\node.exe",
+      "args": ["C:\\path\\to\\resources\\app\\mcp\\atlas-mcp.mjs"],
+      "env": {
+        "MEMORY_ATLAS_SPACE": "my-space",
+        "MEMORY_ATLAS_DATA_DIR": "C:\\Users\\you\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data"
+      }
+    }
+  }
+}
 ```
 
-## Honest limits
+| Environment variable | Required | Meaning |
+|---|---|---|
+| `MEMORY_ATLAS_SPACE` | yes | The one memory space this client may access. The model cannot switch spaces |
+| `MEMORY_ATLAS_DATA_DIR` | pick one | Atlas data directory (default `%APPDATA%\Memory Atlas Alpha\atlas-data`); the server discovers the running service from here |
+| `MEMORY_ATLAS_URL` + `MEMORY_ATLAS_READ_TOKEN` | pick one | Direct-connect mode instead of discovery |
+| `MEMORY_ATLAS_ALLOW_WRITES` | no | Set to `1` to expose write tools — see below |
 
-Read `docs/LIMITATIONS.md` before planning on scale. In short: one JSON document
-per space is rewritten on every write, measured at 717 ms per write and 971 ms
-per scan at 100,000 records / 32 MiB, so the cumulative 20 GB target is
-**NOT VALIDATED** at that size. A data directory has **one writer process**; a
-second service pointed at the same directory is refused at startup rather than
-allowed to double-acknowledge writes. No model is involved anywhere here, so
-nothing in this repository demonstrates semantic understanding.
+When it works, the agent's tool list contains `atlas_search` (query currently-valid memories), `atlas_get` (details and the correction chain by record ID), and `atlas_health` (connectivity). A quick check: ask it to "look up memories about the dentist" and it should return record contents, not an error.
 
-## License
+**DeepSeek Harness (DSH)** — no changes to your existing profile; use a `--patch` overlay:
 
-The original content of this project is released under the **MIT License** —
-see [LICENSE](LICENSE). Third-party components (Electron, Node.js, the MCP
-TypeScript SDK, 3d-force-graph and its embedded dependencies, FFmpeg as
-shipped by Electron, and others) remain under their own licenses and are
-documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) with full texts
-in [`licenses/`](licenses/README.md). FFmpeg's corresponding-source statement:
-[FFMPEG-LGPL-SOURCE.md](FFMPEG-LGPL-SOURCE.md).
+<details>
+<summary>DSH config example</summary>
+
+Save as `dsh-atlas-patch.yml`, then run
+`dsh --profile headless --patch <path>\dsh-atlas-patch.yml "your task"`:
+
+```yaml
+- insert:
+    - id: mcp-atlas
+      name: "@deepseek-ai/dsh-mcp-client"
+      config:
+        serverName: atlas
+        transport: stdio
+        command: "C:\\path\\to\\resources\\app\\runtime\\node.exe"
+        args:
+          - "C:\\path\\to\\resources\\app\\mcp\\atlas-mcp.mjs"
+        env:
+          MEMORY_ATLAS_SPACE: dsh-space
+          MEMORY_ATLAS_DATA_DIR: "C:\\Users\\you\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data"
+        failOnStartupError: false
+```
+
+Tools appear as `mcp__atlas__atlas_search` and friends. Verified on DSH 0.2.1-rc.3 (registration and discovery).
+</details>
+
+**MaiBot** — append to the `[mcp]` section of `bot_config.toml`; no core changes, its own memory system stays untouched:
+
+<details>
+<summary>MaiBot config example</summary>
+
+```toml
+[[mcp.servers]]
+name = "memory-atlas"
+transport = "stdio"
+command = "C:\\path\\to\\resources\\app\\runtime\\node.exe"
+args = [
+  "C:\\path\\to\\resources\\app\\mcp\\atlas-mcp.mjs"
+]
+env = { MEMORY_ATLAS_SPACE = "maibot-space", MEMORY_ATLAS_DATA_DIR = "C:\\Users\\you\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data" }
+```
+
+MaiBot passes these tools to the model under their plain names. Verified on 1.3.6 with its built-in MCP client (connect, discovery, query, detail).
+</details>
+
+**About writing**: by default the agent only gets the three query tools. To enable `atlas_remember` / `atlas_correct` / `atlas_retract`, add `MEMORY_ATLAS_ALLOW_WRITES: "1"` to the env — and even then, treat them as tools the model may use only when the user clearly says so. Memory Atlas has no automatic memory capture: it does not read your chats and save things on its own.
+
+## When a memory is wrong
+
+Correcting a record retires the old wording without deleting it:
+
+![Correction chain: the original stays, the correction takes effect](docs/assets/screenshot-correction-chain.png)
+
+The struck-through line is the original; the archive fields on the right record who changed what, when. The part that matters more: **the correction applies to every client**. Real output from an MCP client, before and after (same memory, same query):
+
+```text
+=== atlas_search { query: '小林' } — before ===
+{ "outcome": "MATCHED",
+  "records": [ { "recordId": "mcp-mvzge5lv-hn1gw9", "status": "active",
+                 "matchReason": ["term:小林(cjk-2)", "recency:1.000"] } ] }
+
+=== atlas_correct { recordId: 'mcp-…', content: '上个月和小陈一起看过电影。' } ===
+accepted (Atlas receipt outcome=RECORDED)
+
+=== atlas_search { query: '小林' } — after ===
+{ "outcome": "NO_MATCH", "records": [] }
+
+=== atlas_search { query: '小陈 电影' } — after ===
+{ "outcome": "MATCHED",
+  "records": [ { "recordId": "ctl-d96f5b0c-…", "status": "active" } ] }
+```
+
+Searching the old name no longer returns it as a current fact; the corrected version is what every client sees. The old record remains inspectable under 已被更新 (superseded) / 已撤回 (retracted). The desktop app and MCP clients share one memory and one correction chain — that is the core design of this project.
+
+The same records also have a second reading — Memory Universe, where nodes are records and lines are their (explainable, source-derived) relations:
+
+![Memory Universe view](docs/assets/screenshot-universe.png)
+
+## What's verified and what isn't
+
+Verified (evidence in [docs/VERIFICATION-v0.1.0-alpha.1.md](docs/VERIFICATION-v0.1.0-alpha.1.md)):
+
+- Portable package, fresh extraction: 36 automated checks (write, query, correct, retract, single-instance, clean shutdown with no orphan processes, restart persistence)
+- DSH 0.2.1-rc.3: MCP tool registration and discovery
+- MaiBot 1.3.6: connect, discovery, query and detail through its own MCP client
+- Three clients sharing one space: corrections and retractions propagate to all of them; spaces don't leak into each other
+
+Not verified — treat accordingly:
+
+- Real models calling the tools end-to-end: the DSH account had no model quota at test time, so the full model loop never ran. The tool protocol works; that is not the same claim
+- 20 GB scale: never tested; the capacity figure is a configuration value
+- Semantic search: none. Word-based matching, no synonyms, no vectors, no "understanding"
+- Automatic memory capture: none. Memories come from you (or calls you explicitly authorized), never from reading other software's chats
+
+## FAQ
+
+<details>
+<summary>Windows blocks the first launch (SmartScreen)</summary>
+
+The build isn't signed. Click "More info" → "Run anyway", or verify the SHA-256 from the Release page first.
+</details>
+
+<details>
+<summary>The agent says "Atlas service not running / endpoint.json not found"</summary>
+
+The desktop app isn't running, or `MEMORY_ATLAS_DATA_DIR` points elsewhere. Start the app and check that `%APPDATA%\Memory Atlas Alpha\atlas-data` exists. If Atlas restarts, MCP clients follow the new port automatically.
+</details>
+
+<details>
+<summary>A memory doesn't show up in search</summary>
+
+Check the space (the client's bound space may differ from what you're viewing on the desktop), then search with words that actually appear in the record. No synonyms, no fuzz.
+</details>
+
+<details>
+<summary>Where is my data; how do I back it up</summary>
+
+Everything is in `%APPDATA%\Memory Atlas Alpha\` (config and memory data). Copy that folder — that's the backup.
+</details>
+
+<details>
+<summary>Can several agents share it</summary>
+
+Yes — they all connect to the same running Atlas. Give each client its own space (different `MEMORY_ATLAS_SPACE`); letting two clients write to one space is how you manufacture duplicate "facts".
+</details>
+
+## For developers
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — data model, service architecture, the index trust model, building from source
+- [release/docs/MCP-GUIDE.md](release/docs/MCP-GUIDE.md) — MCP integration details and ground rules
+- Memory API: loopback HTTP; [src/client.js](src/client.js) is a zero-dependency Node client and doubles as the API reference
+- [docs/VERIFICATION-v0.1.0-alpha.1.md](docs/VERIFICATION-v0.1.0-alpha.1.md) — every verification item and its evidence
+- [CHANGELOG.md](CHANGELOG.md)
+
+## License and credits
+
+Original content is released under the [MIT License](LICENSE). Third-party components keep their own licenses: Electron, Node.js, the MCP TypeScript SDK (Apache-2.0), 3d-force-graph and its embedded dependencies, FFmpeg inside Electron — full list in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), with FFmpeg's corresponding-source statement in [FFMPEG-LGPL-SOURCE.md](FFMPEG-LGPL-SOURCE.md).
+
+The retrieval index shares lineage with an earlier internal engineering line; provenance is recorded in [desktop/PROVENANCE.md](desktop/PROVENANCE.md).
