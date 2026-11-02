@@ -7,7 +7,7 @@ https://github.com/sslbs09/memory-atlas/blob/v0.1.0-alpha.1/docs/VERIFICATION-v0
 
 | 项 | 结论 |
 |---|---|
-| 全新目录解压启动（中文+空格路径，无全局 Node/npm） | PASS（31/31） |
+| 全新目录解压启动（中文+空格路径，无全局 Node/npm） | PASS（36/36，含 Activation 闭包与许可材料检查） |
 | 写入 / 中文检索 / 纠正 / 撤回 / 重启持久化 | PASS |
 | 双开保护 / 优雅关闭 / 无孤儿进程 / 安装目录零写入 | PASS |
 | MCP 工具协议（stdio：发现、调用、写入门禁、离线可见失败、空间绑定） | PASS（7/7） |

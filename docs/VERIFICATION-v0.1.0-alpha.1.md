@@ -9,7 +9,7 @@
 | 1 | 核心服务测试套件 | 51 通过 / 0 失败 / 6 跳过 | `npm test`（node:test，57 项） |
 | 2 | 核心流程（UTF-8 写入/中文检索/纠正/撤回/隔离/endpoint 生命周期） | 13/13 | `node evidence/release-interop/verify-core-flow.mjs` |
 | 3 | MCP 工具协议（真实 stdio：initialize/tools/call/写入门禁/离线可见失败/空间绑定） | 7/7 | `cd packages/memory-atlas-mcp && npm test` |
-| 4 | Portable 全新目录验证（中文+空格路径、无开发机路径、GUI 自检、HTTP 全流程、双开、优雅关闭无孤儿、安装目录零写入、重启持久化） | 31/31 | `node release/verify-portable.mjs`；GUI 截图 `evidence/release-interop/portable/` |
+| 4 | Portable 全新目录验证（中文+空格路径、无开发机路径、GUI 自检、HTTP 全流程、双开、优雅关闭无孤儿、安装目录零写入、重启持久化、Activation 闭包随包及导入冒烟、许可材料随包） | 36/36（门禁修复 R5 后新增 5 项，以最终执行日志为准） | `node release/verify-portable.mjs`；GUI 截图 `evidence/release-interop/portable/` |
 | 5 | DSH 0.2.1-rc.3：MCP server 被拉起 + 3 个读工具注册进模型工具列表 | PASS | 会话日志 `~/.dsh/sessions/--E-dsh--/session-cb45b619-…`（`request/header` 事件，31 个工具含 `mcp__atlas__*`） |
 | 6 | DSH：Atlas 离线时不被拖垮 | PASS（harness 正常启动到模型调用阶段） | `evidence/release-interop/dsh/run3-offline.log` |
 | 7 | DSH：实际模型调用 Atlas 工具 | **NOT TESTED** | `AUTH: 403 AccessDenied.Unpurchased`（账户无模型额度，无法购买/绕过） |

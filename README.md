@@ -6,7 +6,7 @@ A memory library that runs on your own machine. You put things in, you can find 
 
 ![Record, correct, and query again — real screen recording](docs/assets/demo.gif)
 
-The problem it solves is specific: the more you work with AI tools, the more your plans, promises and preferences scatter across conversations you'll never find again. Memory Atlas puts them in one local program. You write them down yourself, you correct them yourself, and any AI you connect can only query the part you explicitly granted — always seeing the currently valid version, never a stale one.
+The problem it solves is specific: the more you work with AI tools, the more your plans, promises and preferences scatter across conversations you'll never find again. Memory Atlas puts them in one local program. You write them down yourself, you correct them yourself, and any AI you connect can only query the part you explicitly granted — seeing the currently valid version by default.
 
 This is an open-source Alpha. The core works; the limits are written down in [What's verified and what isn't](#whats-verified-and-what-isnt) rather than left for you to discover.
 
@@ -56,7 +56,9 @@ Two files from the package matter to your config:
 - MCP server: `<install>\resources\app\mcp\atlas-mcp.mjs`
 - Bundled Node runtime: `<install>\resources\app\runtime\node.exe`
 
-Generic `mcpServers` config (Claude Desktop, Codex, and similar clients):
+**About spaces**: a fresh install has exactly one space, `alpha`, created on first launch — the examples below all use it. In the current version the "create space" form only appears in the UI when no space exists at all; that's a known limitation. To get another space today, click 载入演示记忆 (loads `alpha-demo` with synthetic records) or start over with a different `--data-dir`. Which space a client sees is entirely decided by its `MEMORY_ATLAS_SPACE` binding (see the sharing FAQ below).
+
+Generic `mcpServers` JSON (Claude Desktop and similar clients. Config example, unverified — the hosts we actually tested are DSH and MaiBot):
 
 ```json
 {
@@ -65,7 +67,7 @@ Generic `mcpServers` config (Claude Desktop, Codex, and similar clients):
       "command": "C:\\path\\to\\resources\\app\\runtime\\node.exe",
       "args": ["C:\\path\\to\\resources\\app\\mcp\\atlas-mcp.mjs"],
       "env": {
-        "MEMORY_ATLAS_SPACE": "my-space",
+        "MEMORY_ATLAS_SPACE": "alpha",
         "MEMORY_ATLAS_DATA_DIR": "C:\\Users\\you\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data"
       }
     }
@@ -80,9 +82,11 @@ Generic `mcpServers` config (Claude Desktop, Codex, and similar clients):
 | `MEMORY_ATLAS_URL` + `MEMORY_ATLAS_READ_TOKEN` | pick one | Direct-connect mode instead of discovery |
 | `MEMORY_ATLAS_ALLOW_WRITES` | no | Set to `1` to expose write tools — see below |
 
-When it works, the agent's tool list contains `atlas_search` (query currently-valid memories), `atlas_get` (details and the correction chain by record ID), and `atlas_health` (connectivity). A quick check: ask it to "look up memories about the dentist" and it should return record contents, not an error.
+When it works, the agent's tool list contains `atlas_search` (currently-valid memories by default; the `status` parameter can query history explicitly), `atlas_get` (details and the correction chain by record ID — superseded and retracted records are readable too), and `atlas_health` (connectivity). A quick check: ask it to "look up memories about the dentist" and it should return record contents, not an error.
 
-**DeepSeek Harness (DSH)** — no changes to your existing profile; use a `--patch` overlay:
+**Verifying your first connection** (a path we actually ran against the release package): write a memory in the desktop app — say, "dentist appointment Friday 4:30 pm" — with the space set to `alpha`; then start the MCP client bound to `alpha` and ask it to look up the dentist. It should return that exact record, with the same recordId the desktop detail pane shows. On a fresh install we ran this end to end: boot → write into alpha → two separate MCP clients both returned the same record (same recordId), while a client bound to a different space could not see it.
+
+**DeepSeek Harness (DSH)** — no changes to your existing profile; use a `--patch` overlay (verified: registration and discovery):
 
 <details>
 <summary>DSH config example</summary>
@@ -101,7 +105,7 @@ Save as `dsh-atlas-patch.yml`, then run
         args:
           - "C:\\path\\to\\resources\\app\\mcp\\atlas-mcp.mjs"
         env:
-          MEMORY_ATLAS_SPACE: dsh-space
+          MEMORY_ATLAS_SPACE: alpha
           MEMORY_ATLAS_DATA_DIR: "C:\\Users\\you\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data"
         failOnStartupError: false
 ```
@@ -109,7 +113,7 @@ Save as `dsh-atlas-patch.yml`, then run
 Tools appear as `mcp__atlas__atlas_search` and friends. Verified on DSH 0.2.1-rc.3 (registration and discovery).
 </details>
 
-**MaiBot** — append to the `[mcp]` section of `bot_config.toml`; no core changes, its own memory system stays untouched:
+**MaiBot** — append to the `[mcp]` section of `bot_config.toml`; no core changes, its own memory system stays untouched (verified: connect, discovery, query through its own client):
 
 <details>
 <summary>MaiBot config example</summary>
@@ -122,10 +126,29 @@ command = "C:\\path\\to\\resources\\app\\runtime\\node.exe"
 args = [
   "C:\\path\\to\\resources\\app\\mcp\\atlas-mcp.mjs"
 ]
-env = { MEMORY_ATLAS_SPACE = "maibot-space", MEMORY_ATLAS_DATA_DIR = "C:\\Users\\you\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data" }
+env = { MEMORY_ATLAS_SPACE = "alpha", MEMORY_ATLAS_DATA_DIR = "C:\\Users\\you\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data" }
 ```
 
 MaiBot passes these tools to the model under their plain names. Verified on 1.3.6 with its built-in MCP client (connect, discovery, query, detail).
+</details>
+
+**Codex (OpenAI)** — Codex reads TOML from `~/.codex/config.toml`, which is a different shape from the JSON above (config example, unverified):
+
+<details>
+<summary>Codex config example (TOML)</summary>
+
+```toml
+[mcp_servers.memory-atlas]
+command = "C:\\path\\to\\resources\\app\\runtime\\node.exe"
+args = ["C:\\path\\to\\resources\\app\\mcp\\atlas-mcp.mjs"]
+startup_timeout_sec = 20
+
+[mcp_servers.memory-atlas.env]
+MEMORY_ATLAS_SPACE = "alpha"
+MEMORY_ATLAS_DATA_DIR = "C:\\Users\\you\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data"
+```
+
+Field names follow Codex's official docs (`mcp_servers.<id>` tables; stdio uses `command`/`args`/`env`). We have not run Codex against Memory Atlas ourselves — the syntax is per their documentation, the integration is not.
 </details>
 
 **About writing**: by default the agent only gets the three query tools. To enable `atlas_remember` / `atlas_correct` / `atlas_retract`, add `MEMORY_ATLAS_ALLOW_WRITES: "1"` to the env — and even then, treat them as tools the model may use only when the user clearly says so. Memory Atlas has no automatic memory capture: it does not read your chats and save things on its own.
@@ -155,7 +178,7 @@ accepted (Atlas receipt outcome=RECORDED)
   "records": [ { "recordId": "ctl-d96f5b0c-…", "status": "active" } ] }
 ```
 
-Searching the old name no longer returns it as a current fact; the corrected version is what every client sees. The old record remains inspectable under 已被更新 (superseded) / 已撤回 (retracted). The desktop app and MCP clients share one memory and one correction chain — that is the core design of this project.
+Searching the old name no longer returns it as a current fact; the corrected version is what every client sees by default. The old record isn't gone — the desktop keeps it under 已被更新 (superseded) / 已撤回 (retracted), and MCP clients can read it too: `atlas_get` fetches old records by ID and `atlas_search`'s `status` parameter queries history explicitly. The only thing that changed is the standing of the record: **it is no longer a currently-valid fact**. The desktop app and MCP clients share one memory and one correction chain — that is the core design of this project.
 
 The same records also have a second reading — Memory Universe, where nodes are records and lines are their (explainable, source-derived) relations:
 
@@ -206,7 +229,11 @@ Everything is in `%APPDATA%\Memory Atlas Alpha\` (config and memory data). Copy 
 <details>
 <summary>Can several agents share it</summary>
 
-Yes — they all connect to the same running Atlas. Give each client its own space (different `MEMORY_ATLAS_SPACE`); letting two clients write to one space is how you manufacture duplicate "facts".
+Yes — they all connect to the same running Atlas, and `MEMORY_ATLAS_SPACE` decides what each one sees:
+
+- **To share one memory**: bind them to the same space. With the default read-only access this is the standard setup — every client sees the same records (same recordIds; verified).
+- **To keep agents separate**: give each its own space; they can't see each other (verified).
+- Several clients **writing** to one space also works. Deduplication is by record identity, not by content: if two clients each write down the same fact as their own records, you get two records. If you want one authoritative record per fact, have one side do the writing and the others stay read-only.
 </details>
 
 ## For developers

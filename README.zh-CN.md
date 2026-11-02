@@ -6,9 +6,9 @@
 
 ![写入、更正、再查——真实界面录制](docs/assets/demo.gif)
 
-它解决一个具体的问题：和 AI 工具打交道越多，"说过的话、定过的事"散得越广，回头想不起来在哪。Memory Atlas 把这些事放进一个本地程序：你亲手记、亲手改；连接的 AI 只能查询你明确授权的部分，而且查到的一定是当前有效的那一条。
+它解决一个具体的问题：和 AI 工具打交道越多，"说过的话、定过的事"散得越广，回头想不起来在哪。Memory Atlas 把这些事放进一个本地程序：你亲手记、亲手改；连接的 AI 只能查询你明确授权的部分，查到的默认是当前有效的版本。
 
-这是 Alpha 阶段的开源项目。核心功能完整可用，没验证过的部分在[能力边界](#能力边界)里写明白，不画饼。
+这是 Alpha 阶段的开源项目。核心功能完整可用，没验证过的部分在[能力边界](#能力边界)里写明白。
 
 English version: [README.md](README.md)
 
@@ -45,7 +45,7 @@ English version: [README.md](README.md)
 6. **改**：点开那条记录，右侧详情往下拉，点 **更正**，写上正确内容，点 **保存纠正**。旧版本不会消失：列表切到「全部历史」还能看到，标记着「已被更新」。
 7. 想删掉一条：详情里点 **撤回**。「当前有效」里它就不出现了，「已撤回」标签下还留着原始记录。
 
-就这些。有一条脾气要先说：搜索不做同义改写，搜「约定」不会命中「答应」——搜不到时它如实告诉你没有，不猜。
+就这些。最后说明一点：搜索不做同义改写，搜「约定」不会命中「答应」——搜不到时它如实告诉你没有，不猜。
 
 ## 连接你的 AI Agent
 
@@ -56,7 +56,13 @@ English version: [README.md](README.md)
 - MCP server：`<解压目录>\resources\app\mcp\atlas-mcp.mjs`
 - Node 运行时：`<解压目录>\resources\app\runtime\node.exe`
 
-通用 MCP 配置（Claude 桌面版、Codex 等用 `mcpServers` 格式的客户端）：
+**关于空间**：全新安装只有一个 `alpha` 空间（首次启动自动创建），下面的示例都用它。
+当前版本的界面只有在还没有任何空间时才会出现「创建空间」入口——这是已知的产品限制，
+正常情况下想多一个空间，可以点「载入演示记忆」得到 `alpha-demo`，或者换一个数据目录
+（`--data-dir`）重新开始。多 Agent 各用各的空间、或共用一个空间，都靠这个绑定决定（见下）。
+
+通用 MCP 配置（Claude 桌面版等用 `mcpServers` JSON 格式的客户端。配置示例，未验证——
+我们实测过的宿主只有 DSH 和 MaiBot）：
 
 ```json
 {
@@ -65,7 +71,7 @@ English version: [README.md](README.md)
       "command": "C:\\你的解压目录\\resources\\app\\runtime\\node.exe",
       "args": ["C:\\你的解压目录\\resources\\app\\mcp\\atlas-mcp.mjs"],
       "env": {
-        "MEMORY_ATLAS_SPACE": "my-space",
+        "MEMORY_ATLAS_SPACE": "alpha",
         "MEMORY_ATLAS_DATA_DIR": "C:\\Users\\你\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data"
       }
     }
@@ -80,9 +86,15 @@ English version: [README.md](README.md)
 | `MEMORY_ATLAS_URL` + `MEMORY_ATLAS_READ_TOKEN` | 二选一 | 直连模式，不走自动发现 |
 | `MEMORY_ATLAS_ALLOW_WRITES` | 否 | 设为 `1` 才会出现写入工具，见下文 |
 
-配好后，Agent 的工具列表里会出现 `atlas_search`（查当前有效的记忆）、`atlas_get`（按 ID 看详情和更正链）、`atlas_health`（检查连接）。连得上的标志：问它一句「查一下关于牙医的记忆」，它返回记录内容而不是报错。
+配好后，Agent 的工具列表里会出现 `atlas_search`（默认查当前有效的记忆；`status` 参数可以显式查历史）、`atlas_get`（按 ID 看详情和更正链，也能看已被更新/已撤回的旧记录）、`atlas_health`（检查连接）。连得上的标志：问它一句「查一下关于牙医的记忆」，它返回记录内容而不是报错。
 
-**DSH（DeepSeek Harness）** —— 不改现有 Profile，用 `--patch` 叠加：
+**首次连接怎么验证**（对应一条真实跑通的路径）：先在桌面程序里写一条记忆（比如
+「周五下午四点半和牙医有预约」，记得此时空间选的是 alpha）；再启动绑定了 alpha 的
+MCP 客户端，让它查「牙医」——它应该返回刚才那条记录，recordId 与桌面端详情里显示的
+一致。这条链路我们在发行包上实测通过：全新启动 → 写入 alpha → 两个 MCP 客户端都查到
+同一条记录（同 recordId），绑定到独立空间的客户端则查不到。
+
+**DSH（DeepSeek Harness）** —— 不改现有 Profile，用 `--patch` 叠加（已实测：工具注册与发现）：
 
 <details>
 <summary>DSH 配置示例</summary>
@@ -101,7 +113,7 @@ English version: [README.md](README.md)
         args:
           - "C:\\你的解压目录\\resources\\app\\mcp\\atlas-mcp.mjs"
         env:
-          MEMORY_ATLAS_SPACE: dsh-space
+          MEMORY_ATLAS_SPACE: alpha
           MEMORY_ATLAS_DATA_DIR: "C:\\Users\\你\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data"
         failOnStartupError: false
 ```
@@ -109,7 +121,7 @@ English version: [README.md](README.md)
 工具会以 `mcp__atlas__atlas_search` 这样的名字出现。已在 DSH 0.2.1-rc.3 上验证注册与发现。
 </details>
 
-**MaiBot** —— 在 `bot_config.toml` 的 `[mcp]` 段追加，不动它的核心和原有记忆系统：
+**MaiBot** —— 在 `bot_config.toml` 的 `[mcp]` 段追加，不动它的核心和原有记忆系统（已实测：自带客户端连接、发现、查询）：
 
 <details>
 <summary>MaiBot 配置示例</summary>
@@ -122,10 +134,31 @@ command = "C:\\你的解压目录\\resources\\app\\runtime\\node.exe"
 args = [
   "C:\\你的解压目录\\resources\\app\\mcp\\atlas-mcp.mjs"
 ]
-env = { MEMORY_ATLAS_SPACE = "maibot-space", MEMORY_ATLAS_DATA_DIR = "C:\\Users\\你\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data" }
+env = { MEMORY_ATLAS_SPACE = "alpha", MEMORY_ATLAS_DATA_DIR = "C:\\Users\\你\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data" }
 ```
 
 MaiBot 按原名使用这些工具。已在 1.3.6 版用其自带 MCP 客户端验证连接与查询。
+</details>
+
+**Codex（OpenAI）** —— Codex 用 `~/.codex/config.toml` 的 TOML 格式，和上面的 JSON
+不是一种写法（配置示例，未验证）：
+
+<details>
+<summary>Codex 配置示例（TOML）</summary>
+
+```toml
+[mcp_servers.memory-atlas]
+command = "C:\\你的解压目录\\resources\\app\\runtime\\node.exe"
+args = ["C:\\你的解压目录\\resources\\app\\mcp\\atlas-mcp.mjs"]
+startup_timeout_sec = 20
+
+[mcp_servers.memory-atlas.env]
+MEMORY_ATLAS_SPACE = "alpha"
+MEMORY_ATLAS_DATA_DIR = "C:\\Users\\你\\AppData\\Roaming\\Memory Atlas Alpha\\atlas-data"
+```
+
+字段以 Codex 官方文档为准（`mcp_servers.<id>` 段，stdio 用 `command`/`args`/`env`）。
+我们没有实际联调过 Codex，配置按其文档语法给出，未经运行验证。
 </details>
 
 **关于写入**：默认只有上面三个查询工具。要开写入（`atlas_remember` / `atlas_correct` / `atlas_retract`），在 env 里加 `MEMORY_ATLAS_ALLOW_WRITES: "1"`。开了之后也请只在用户明确说「记住这个」「改一下」时调用——Memory Atlas 目前没有自动记忆：它不会偷读你的聊天记录自己存。
@@ -155,7 +188,7 @@ MaiBot 按原名使用这些工具。已在 1.3.6 版用其自带 MCP 客户端�
   "records": [ { "recordId": "ctl-d96f5b0c-…", "status": "active" } ] }
 ```
 
-搜「小林」不再是当前事实，搜「小陈」拿到新版本——旧的不会从历史里消失，「已撤回」「已被更新」标签下永远可查。桌面程序和 MCP 客户端看到的是同一份记忆、同一条更正链，这是这个项目最重要的一条设计。
+搜「小林」不再是当前事实，搜「小陈」拿到新版本——旧的不会从历史里消失，「已撤回」「已被更新」标签下永远可查；MCP 端也一样，`atlas_get` 能读旧记录，`atlas_search` 的 `status` 参数可以显式查历史。变化只有一条：**它们不再作为"当前有效的事实"出现**。桌面程序和 MCP 客户端看到的是同一份记忆、同一条更正链，这是这个项目最重要的一条设计。
 
 同一批记忆还有第二种读法——记忆宇宙：节点是记录，线是可解释的来源关系。
 
@@ -206,7 +239,11 @@ Memory Atlas 桌面程序没开，或者 `MEMORY_ATLAS_DATA_DIR` 指错了目录
 <details>
 <summary>多个 Agent 可以共用吗</summary>
 
-可以，都连同一个正在运行的 Atlas。建议每个客户端绑一个独立空间（`MEMORY_ATLAS_SPACE` 不同）；让两个客户端写同一个空间，等于人为制造重复事实。
+可以，它们都连同一个正在运行的 Atlas，各自看到什么由 `MEMORY_ATLAS_SPACE` 决定：
+
+- **想共享同一份记忆**：绑同一个空间。只读接入下这是标准用法——几个客户端看到的就是同一条记录（同一 recordId，已实测）。
+- **想相互隔离**：各绑一个空间，互相看不见（已实测）。
+- 多个客户端往同一个空间**写入**也可以。但去重按记录身份、不按内容：两个客户端各自把同一件事写成两条记录，那就是两条。想让一件事只有一条权威记录，就约定由一个端负责写，其他端只读。
 </details>
 
 ## 给开发者
