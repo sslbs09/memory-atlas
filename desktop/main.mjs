@@ -751,6 +751,130 @@ async function ensureChatWindow() {
 
 /* ---------------- 自检模式（--selfcheck main|chat|flow） ---------------- */
 
+/**
+ * runDemoSelfcheck — README 素材截图驱动。全部操作发生在合成演示空间
+ * alpha-demo（"载入演示记忆"同一套种子），不含任何用户真实数据。
+ * 帧序列：capture（写入面板）→ search-new → detail → correct-editor →
+ * search-corrected → chain（纠正链）→ universe；外加静态 archive 一张。
+ */
+async function runDemoSelfcheck(target, shotDir) {
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const js = (code) => target.webContents.executeJavaScript(code, true);
+  // runSelfcheck 传入的 target 是 BrowserWindow（chat 模式亦然），直接用它调窗口尺寸。
+  const win = typeof target.setSize === "function" ? target : BrowserWindow.fromWebContents(target);
+  if (win) win.setSize(1500, 980);
+  await wait(600);
+  const frames = [];
+  const shot = async (name) => {
+    const image = await target.webContents.capturePage();
+    const file = path.join(shotDir, `demo-${name}.png`);
+    fs.writeFileSync(file, image.toPNG());
+    frames.push(file);
+    return file;
+  };
+  const until = async (code, { timeoutMs = 20000, everyMs = 300 } = {}) => {
+    const started = Date.now();
+    for (;;) {
+      const value = await js(code);
+      if (value) return value;
+      if (Date.now() - started > timeoutMs) throw new Error(`demo selfcheck timed out waiting for: ${code.slice(0, 120)}`);
+      await wait(everyMs);
+    }
+  };
+
+  // 0. 等顶栏就绪 → 载入演示记忆 → 等空间切换到 alpha-demo
+  await until(`!!Array.from(document.querySelectorAll('.alpha-chip')).find(b => b.textContent.includes('载入演示记忆'))`);
+  await js(`Array.from(document.querySelectorAll('.alpha-chip')).find(b => b.textContent.includes('载入演示记忆')).click()`);
+  await until(`document.getElementById('wb-space') && document.getElementById('wb-space').value === 'alpha-demo'`, { timeoutMs: 30000 });
+  await wait(2500);
+  await until(`document.querySelectorAll('[data-testid="result-list"] .wb-row, [data-testid="result-list"] > *').length > 0`, { timeoutMs: 30000 });
+  await wait(800);
+  await shot("archive");
+  // README 主视觉：列表 + 右侧选中记录的详情（同帧展示两栏都有内容）
+  await js(`(() => { const rows = Array.from(document.querySelectorAll('[data-testid="result-list"] > *'));
+    rows[rows.length - 1].click(); })()`);
+  await until(`!!document.querySelector('#wb-reading') && !document.getElementById('wb-reader-empty').hidden === false`, { timeoutMs: 20000 });
+  await wait(900);
+  await shot("archive-selected");
+
+  // 1. 写入面板：填入合成文本并截图，然后提交
+  await js(`Array.from(document.querySelectorAll('.alpha-chip')).find(b => b.textContent.includes('记住这段内容')).click()`);
+  await until(`!!document.querySelector('.alpha-panel textarea')`);
+  await js(`(() => { const t = document.querySelector('.alpha-panel textarea');
+    t.value = '周五下午四点半和牙医有预约，记得提前出门（演示数据）。';
+    t.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+  await wait(400);
+  await shot("capture");
+  await js(`Array.from(document.querySelectorAll('.alpha-panel button')).find(b => b.textContent.includes('写入记忆')).click()`);
+  await until(`document.querySelector('.alpha-panel .alpha-feedback') && document.querySelector('.alpha-panel .alpha-feedback').textContent.includes('已写入')`, { timeoutMs: 30000 });
+  await js(`(() => { const r = Array.from(document.querySelectorAll('.alpha-panel button')).find(b => b.textContent.includes('刷新列表查看')); if (r) r.click(); })()`);
+
+  // 2. 查询新记录
+  await until(`!!document.querySelector('[data-testid="search-input"]')`);
+  await js(`(() => { const i = document.querySelector('[data-testid="search-input"]');
+    i.value = '牙医'; i.dispatchEvent(new Event('input', { bubbles: true }));
+    document.querySelector('[data-testid="search-submit"]').click(); })()`);
+  await until(`(() => { const rows = Array.from(document.querySelectorAll('[data-testid="result-list"] > *'));
+    return rows.some(r => r.textContent.includes('牙医')); })()`, { timeoutMs: 30000 });
+  await wait(700);
+  await shot("search-new");
+
+  // 3. 打开详情
+  await js(`(() => { const rows = Array.from(document.querySelectorAll('[data-testid="result-list"] > *'));
+    rows.find(r => r.textContent.includes('牙医')).click(); })()`);
+  await until(`!!document.querySelector('.wb-action-row') || !!document.querySelector('#wb-reading')`, { timeoutMs: 20000 });
+  await wait(900);
+  await shot("detail");
+
+  // 4. 更正：填入新内容并截图编辑态，然后保存
+  await js(`(() => { const b = Array.from(document.querySelectorAll('button')).find(x => x.textContent.trim() === '更正');
+    b.click(); })()`);
+  await until(`!!document.querySelector('.wb-editor')`);
+  await js(`(() => { const e = document.querySelector('.wb-editor');
+    e.value = '周五下午五点和牙医有预约，比原定晚半小时（演示纠正）。';
+    e.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+  await wait(400);
+  await shot("correct-editor");
+  await js(`(() => { const b = Array.from(document.querySelectorAll('button')).find(x => x.textContent.trim() === '保存纠正');
+    b.click(); })()`);
+  await until(`!document.querySelector('.wb-editor')`, { timeoutMs: 30000 });
+  await wait(1200);
+
+  // 5. 再查：当前有效只显示更正后的版本
+  await js(`(() => { const i = document.querySelector('[data-testid="search-input"]');
+    i.value = '牙医'; i.dispatchEvent(new Event('input', { bubbles: true }));
+    document.querySelector('[data-testid="search-submit"]').click(); })()`);
+  await until(`(() => { const rows = Array.from(document.querySelectorAll('[data-testid="result-list"] > *'));
+    return rows.some(r => r.textContent.includes('晚半小时')); })()`, { timeoutMs: 30000 });
+  await wait(700);
+  await shot("search-corrected");
+
+  // 6. 打开"原记录"的详情看纠正链：切到全部历史，点四点半那条（被更正的原始记录）
+  await js(`(() => { const b = document.querySelector('button[data-status="all"]'); if (b) b.click(); })()`);
+  await wait(1500);
+  await js(`(() => { const i = document.querySelector('[data-testid="search-input"]');
+    i.value = '牙医'; i.dispatchEvent(new Event('input', { bubbles: true }));
+    document.querySelector('[data-testid="search-submit"]').click(); })()`);
+  await until(`(() => { const rows = Array.from(document.querySelectorAll('[data-testid="result-list"] > *'));
+    return rows.some(r => r.textContent.includes('四点半')); })()`, { timeoutMs: 30000 });
+  await js(`(() => { const rows = Array.from(document.querySelectorAll('[data-testid="result-list"] > *'));
+    rows.find(r => r.textContent.includes('四点半')).click(); })()`);
+  await until(`(() => { const list = document.getElementById('wb-chain-list');
+    return list && list.children.length >= 2; })()`, { timeoutMs: 30000 });
+  await wait(900);
+  await shot("chain");
+
+  // 7. 宇宙视图（回中后取景）
+  await js(`document.querySelector('[data-testid="nav-universe"]').click()`);
+  await wait(7000);
+  await js(`(() => { const b = document.getElementById('wb-uni-recenter'); if (b) b.click(); })()`);
+  await wait(3500);
+  await shot("universe");
+
+  return { frames, note: "synthetic demo data only (alpha-demo space)" };
+}
+
+
 /** 验收流程自检：种子 → 搜索 → 纠正 → 撤回 → 重提 → 影子解释 → 事件账本。 */
 async function runFlowSelfcheck(target) {
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -838,6 +962,90 @@ async function runFlowSelfcheck(target) {
     hasCorrectOpen: !!document.querySelector('[data-testid="correct-open"]'),
     note: (document.querySelector('.wb-action-note')||{}).textContent || null
   }))()`, true);
+
+  // —— UI 交互回归（2026-11 交互重做）——
+  // 覆盖：n 快捷键开面板 / Esc 关闭 / 写入后自动选中（不再手动刷新）/
+  // 撤回两步确认 / 常驻新建空间入口（Issue #1）/ 点面板外关闭。
+  report.uiInteraction = await target.webContents.executeJavaScript(`(async () => {
+    const out = {};
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const until = async (fn, timeoutMs = 15000) => {
+      const started = Date.now();
+      for (;;) {
+        const v = fn();
+        if (v) return v;
+        if (Date.now() - started > timeoutMs) return null;
+        await wait(250);
+      }
+    };
+    const key = (k) => document.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true }));
+    const panel = () => document.getElementById('alpha-panel');
+
+    // 1. n 打开写入面板，Esc 关闭
+    key('n');
+    out.nOpensPanel = !!(await until(() => panel() && panel().querySelector('textarea')));
+    key('Escape');
+    await wait(300);
+    out.escClosesPanel = !panel();
+
+    // 2. 写入一条 → 不点任何刷新，阅读区必须自动选中这条新记录
+    key('n');
+    await until(() => panel() && panel().querySelector('textarea'));
+    const ta = panel().querySelector('textarea');
+    ta.value = 'UI 回归：写入后应当自动选中（flow-ui-write）。';
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    Array.from(panel().querySelectorAll('button')).find((b) => b.textContent.includes('写入记忆')).click();
+    const feedback = await until(() => {
+      const f = panel() && panel().querySelector('.alpha-feedback');
+      return f && f.textContent.includes('已写入') ? f.textContent : null;
+    }, 20000);
+    out.writeFeedback = feedback;
+    const writtenId = feedback ? (feedback.match(/recordId=([^\\s·]+)/) || [])[1] : null;
+    out.autoSelected = !!(writtenId && await until(() => {
+      const node = document.getElementById('wb-recid');
+      return node && node.textContent.trim() === writtenId;
+    }, 20000));
+    key('Escape');
+    await wait(300);
+
+    // 3. 撤回两步确认：第一次只预备，第二次才执行
+    const retractBtn = () => document.querySelector('[data-testid="retract-submit"]');
+    if (retractBtn()) {
+      retractBtn().click();
+      await wait(400);
+      out.retractArmed = !!(retractBtn() && retractBtn().dataset.armed === 'true');
+      out.stampBeforeConfirm = (document.getElementById('wb-stamp') || {}).dataset
+        ? document.getElementById('wb-stamp').dataset.status : null;
+      if (retractBtn()) retractBtn().click();
+      out.retractConfirmed = !!(await until(() => {
+        const stamp = document.getElementById('wb-stamp');
+        return stamp && stamp.dataset.status === 'retracted';
+      }, 20000));
+    }
+
+    // 4. 常驻新建空间（Issue #1）：已有空间时顶栏 ＋ 仍然可用
+    const newBtn = document.getElementById('wb-space-new');
+    out.spaceNewVisible = !!(newBtn && !newBtn.closest('[hidden]'));
+    if (newBtn) {
+      newBtn.click();
+      const idInput = await until(() => panel() && panel().querySelector('input[aria-label="空间 ID"]'));
+      if (idInput) {
+        idInput.value = 'flow-ui-space';
+        Array.from(panel().querySelectorAll('button')).find((b) => b.textContent.includes('创建空间')).click();
+        out.spaceCreated = !!(await until(() => {
+          const select = document.getElementById('wb-space');
+          return select && select.value === 'flow-ui-space' &&
+            Array.from(select.options).some((o) => o.value === 'flow-ui-space');
+        }, 20000));
+      }
+      // 5. 点击面板外关闭（mousedown 驱动）
+      document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+      await wait(300);
+      out.outsideClickCloses = !panel();
+    }
+    return out;
+  })()`, true);
+
   report.events = ledger.events().slice(-12).map((e) => ({ eventType: e.eventType, recordId: e.recordId }));
   return report;
 }
@@ -883,6 +1091,14 @@ async function runSelfcheck(kind, startError) {
       fs.writeFileSync(file, image.toPNG());
       report.screenshot = file;
       process.stdout.write("[selfcheck] " + JSON.stringify(report, null, 2) + "\n");
+      app.exit(0);
+      return;
+    }
+    if (kind === "demo") {
+      // 发行文档素材驱动：在合成演示空间上走真实 UI（写入 → 查询 → 更正 → 再查
+      // → 纠正链 → 宇宙），逐帧截图。只服务 README 素材，不是产品功能。
+      report.demo = await runDemoSelfcheck(target, shotDir);
+      process.stdout.write("[selfcheck] " + JSON.stringify({ ...report, demo: { ...report.demo, frames: report.demo?.frames?.length } }, null, 2) + "\n");
       app.exit(0);
       return;
     }

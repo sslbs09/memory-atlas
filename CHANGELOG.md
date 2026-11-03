@@ -8,6 +8,20 @@ All notable changes to Memory Atlas are documented here. Dates are ISO 8601.
   agent connection configs, honest capability table, real screenshots and a
   screen-capture GIF from synthetic data). The previous developer-oriented
   README moved to `docs/ARCHITECTURE.md`.
+- Changed: desktop interaction rework. Writing a record now auto-refreshes the
+  list and selects it (the manual "refresh list" step is gone). Space creation
+  is a permanent ＋ entry next to the space dropdown, also reachable from the
+  capture panel (fixes #1). Retract asks for a second click within 4 s.
+  Capture/space/service panels close on Esc or an outside click, restore focus,
+  and no longer reset when their toolbar button is clicked again. `n` opens the
+  capture panel; ↑/↓ (and j/k) navigate the result list with the selected row
+  kept in view. Atlas mode shows one live connection indicator (30 s service
+  poll) instead of two. An empty space guides you to write the first record.
+  zh/en/ja strings updated.
+- Added: `--selfcheck demo` media driver over the real UI (9 frames, synthetic
+  alpha-demo data only). The flow selfcheck now asserts the new interaction
+  paths: 10 UI regression checks (shortcut, Esc, auto-select, two-step retract,
+  permanent space creation, outside-click close).
 
 ## [0.1.0-alpha.1] — 2026-11-01
 

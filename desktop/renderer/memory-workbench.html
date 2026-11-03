@@ -22,10 +22,14 @@
       </div>
     </div>
     <div class="wb-telemetry">
-      <label class="wb-tel wb-space" id="wb-space-wrap" hidden>
+      <div class="wb-tel wb-space" id="wb-space-wrap" hidden>
         <span data-i18n="set.wbSpaceLabel">记忆空间</span>
-        <select id="wb-space" data-testid="space-select" aria-label="记忆空间"></select>
-      </label>
+        <div class="wb-space-row">
+          <select id="wb-space" data-testid="space-select" aria-label="记忆空间" data-i18n-aria-label="set.wbSpaceLabel"></select>
+          <button type="button" id="wb-space-new" class="wb-space-new" data-testid="space-new"
+                  title="新建空间" aria-label="新建空间" data-i18n-title="set.wbSpaceNew" data-i18n-aria-label="set.wbSpaceNew">＋</button>
+        </div>
+      </div>
       <div class="wb-tel">
         <span data-i18n="set.memWbInstance">角色实例</span>
         <b id="wb-instance" data-testid="instance">—</b>

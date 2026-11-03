@@ -1,14 +1,17 @@
 /**
  * memory-capture.js — Alpha-01 注入记忆工作台的轻量工具条与面板。
  *
- * 只做四件事，不重排工作台版式、不替代任何既有控件：
- *   1. 顶栏加一组 Alpha 控件：服务状态、＋记住这段内容、确认重提（在详情页动作行里）、
- *      载入合成演示记忆、记忆对话实验入口；
- *   2. 「记住这段内容」面板：写当前空间的正式记录（来源 manual / alpha-capture）；
- *   3. 「确认重提」面板：经 Event Bridge 的 user_remention 准入（唯一强化类事件）；
- *   4. 服务启动失败时，把真实原因显示出来（不是"没有记忆"）。
+ * 职责（不重排工作台版式、不替代任何既有控件）：
+ *   1. 顶栏加一组 Alpha 控件：服务状态、＋记住这段内容、记忆对话实验、载入演示记忆；
+ *   2. 「记住这段内容」面板：写当前空间的正式记录（来源 manual / alpha-capture），
+ *      写入确认后自动刷新列表并选中新记录（经 alpha:memory-written 事件，不再手动刷新）；
+ *   3. 「新建空间」面板：常驻入口（顶栏 ＋ 与写入面板内链接），不再只在零空间时出现；
+ *   4. 「确认重提」面板：经 Event Bridge 的 user_remention 准入（唯一强化类事件）；
+ *   5. 服务启动失败时，把真实原因显示出来（不是"没有记忆"）。
  *
- * 文案不走 i18n 词典（新增键不在 zh.json 里），静态中文。所有数据都经 petAPI IPC。
+ * 面板行为：Esc 关闭、点击面板外关闭、工具条按钮开关切换（不再重置已填内容）、
+ * 关闭时归还焦点。文案不走 i18n 词典（新增键不在 zh.json 里），静态中文。
+ * 所有数据都经 petAPI IPC。
  */
 (function () {
   "use strict";
@@ -17,8 +20,10 @@
   if (!api) return;
 
   let panel = null;
-  let panelMode = null; // 'capture' | 'revisit' | 'service'
-  let currentRecordId = null;
+  let panelMode = null; // 'capture' | 'space' | 'revisit' | 'service'
+  let panelOpener = null;
+
+  const SPACE_ID_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
   function el(tag, className, text) {
     const node = document.createElement(tag);
@@ -48,7 +53,8 @@
 
     const captureBtn = el("button", "alpha-chip", "＋ 记住这段内容");
     captureBtn.type = "button";
-    captureBtn.addEventListener("click", () => openPanel("capture"));
+    captureBtn.title = "写入一条正式记忆（快捷键 n）";
+    captureBtn.addEventListener("click", () => togglePanel("capture"));
 
     const chatBtn = el("button", "alpha-chip", "记忆对话实验");
     chatBtn.type = "button";
@@ -116,6 +122,7 @@
       if (!listed || !listed.supported) return;
       const select = document.getElementById("wb-space");
       if (!select) return;
+      const previous = select.value;
       select.innerHTML = "";
       for (const spaceId of listed.spaceIds || []) {
         const option = document.createElement("option");
@@ -124,32 +131,58 @@
         select.append(option);
       }
       if (listed.current) select.value = listed.current;
-      select.dispatchEvent(new Event("change"));
+      // 只有当前空间真的变了才派发 change：否则会触发一次多余的全量重载
+      // （工作台自己的 spaces-changed 订阅已经把选项刷好了）。
+      if (select.value !== previous) select.dispatchEvent(new Event("change"));
     } catch { /* 空间刷新失败不打断主流程 */ }
   }
 
-  /* ---------------- 面板（写入 / 重提 / 服务状态） ---------------- */
+  /* ---------------- 面板（写入 / 新建空间 / 重提 / 服务状态） ---------------- */
 
-  function closePanel() {
-    if (panel) { panel.remove(); panel = null; panelMode = null; }
+  function closePanel({ restoreFocus = true } = {}) {
+    if (!panel) return;
+    panel.remove();
+    panel = null;
+    panelMode = null;
+    const opener = panelOpener;
+    panelOpener = null;
+    if (restoreFocus && opener && opener.isConnected && typeof opener.focus === "function") {
+      opener.focus({ preventScroll: true });
+    }
+  }
+
+  function togglePanel(mode) {
+    if (panel && panelMode === mode) closePanel();
+    else openPanel(mode);
   }
 
   function openPanel(mode, context) {
-    closePanel();
+    const wasOpen = Boolean(panel);
+    const previousOpener = panelOpener;
+    closePanel({ restoreFocus: false });
     panelMode = mode;
+    // 面板之间跳转（写入→新建空间）时，焦点仍归还给最初打开面板的控件。
+    panelOpener = wasOpen ? previousOpener : document.activeElement;
     panel = el("div", "alpha-panel");
     panel.id = "alpha-panel";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-label",
+      mode === "capture" ? "记住这段内容" : mode === "space" ? "新建记忆空间"
+        : mode === "revisit" ? "确认重新提到了它" : "Atlas 服务状态");
 
     const head = el("div", "alpha-panel-head");
     const title = el("h3", "alpha-panel-title",
-      mode === "capture" ? "记住这段内容" : mode === "revisit" ? "确认这次重新提到了它" : "Atlas 服务状态");
+      mode === "capture" ? "记住这段内容" : mode === "space" ? "新建记忆空间"
+        : mode === "revisit" ? "确认这次重新提到了它" : "Atlas 服务状态");
     const close = el("button", "alpha-panel-close", "×");
     close.type = "button";
-    close.addEventListener("click", closePanel);
+    close.setAttribute("aria-label", "关闭面板");
+    close.addEventListener("click", () => closePanel());
     head.append(title, close);
     panel.append(head);
 
     if (mode === "capture") buildCaptureForm(panel);
+    else if (mode === "space") buildSpaceForm(panel);
     else if (mode === "revisit") buildRevisitForm(panel, context);
     else buildServiceView(panel, context);
 
@@ -166,19 +199,30 @@
     const spaceLine = el("div", "alpha-row");
     spaceLine.append(el("span", "alpha-label", "空间"));
     const spaceName = el("b", "", currentSpaceId() || "（未选择）");
-    spaceLine.append(spaceName);
+    const newSpaceLink = el("button", "alpha-linkbtn", "新建空间…");
+    newSpaceLink.type = "button";
+    newSpaceLink.addEventListener("click", () => openPanel("space"));
+    spaceLine.append(spaceName, newSpaceLink);
     root.append(spaceLine);
 
     const textarea = el("textarea", "alpha-textarea");
     textarea.rows = 5;
     textarea.maxLength = 4000;
-    textarea.placeholder = "一段经历、一件小事、一个约定……（最多 4000 字）";
+    textarea.placeholder = "一段经历、一件小事、一个约定……（最多 4000 字，Ctrl+Enter 写入）";
+    textarea.setAttribute("aria-label", "记忆内容");
     root.append(textarea);
+
+    const counter = el("div", "alpha-counter", "0 / 4000");
+    root.append(counter);
+    textarea.addEventListener("input", () => {
+      counter.textContent = textarea.value.length + " / 4000";
+    });
 
     const kindLine = el("div", "alpha-row");
     kindLine.append(el("span", "alpha-label", "类型"));
     const kind = document.createElement("select");
     kind.className = "alpha-select";
+    kind.setAttribute("aria-label", "记录类型");
     for (const [value, label] of [["experience", "经历"], ["observation", "观察"], ["note", "备注"]]) {
       const option = document.createElement("option");
       option.value = value;
@@ -193,17 +237,20 @@
     const occurredAt = document.createElement("input");
     occurredAt.type = "datetime-local";
     occurredAt.className = "alpha-input";
+    occurredAt.setAttribute("aria-label", "发生时间");
     timeLine.append(occurredAt);
     root.append(timeLine);
 
     const submit = el("button", "alpha-btn alpha-btn-primary", "写入记忆");
     submit.type = "button";
     const feedback = el("div", "alpha-feedback");
-    submit.addEventListener("click", async () => {
+    feedback.setAttribute("role", "status");
+
+    async function doWrite() {
       const text = textarea.value.trim();
-      if (!text) { feedback.textContent = "内容为空。"; return; }
+      if (!text) { feedback.textContent = "内容为空。"; textarea.focus(); return; }
       if (!currentSpaceId()) {
-        feedback.textContent = "还没有记忆空间：先在下方创建一个。";
+        feedback.textContent = "还没有记忆空间：先创建一个。";
         return;
       }
       submit.disabled = true;
@@ -215,15 +262,24 @@
           occurredAt: occurredAt.value ? new Date(occurredAt.value).toISOString() : undefined
         });
         if (result.ok) {
-          feedback.textContent = `已写入（${result.outcome === "IDEMPOTENT_REPLAY" ? "幂等重放" : "RECORDED"}）recordId=${result.recordId}`;
-          const refresh = el("button", "alpha-btn", "刷新列表查看");
-          refresh.type = "button";
-          refresh.addEventListener("click", () => {
-            closePanel();
-            const go = document.getElementById("wb-go");
-            if (go) go.click();
+          feedback.textContent = `已写入（${result.outcome === "IDEMPOTENT_REPLAY" ? "幂等重放" : "RECORDED"}）recordId=${result.recordId} · 已在列表中选中`;
+          // 工作台收到事件后自动回档案、清筛选、刷新并选中这条记录。
+          document.dispatchEvent(new CustomEvent("alpha:memory-written", {
+            detail: { recordId: result.recordId }
+          }));
+          const again = el("button", "alpha-btn", "再写一条");
+          again.type = "button";
+          again.addEventListener("click", () => {
+            textarea.value = "";
+            counter.textContent = "0 / 4000";
+            feedback.textContent = "";
+            submit.disabled = false;
+            textarea.focus();
           });
-          feedback.append(document.createElement("br"), refresh);
+          const done = el("button", "alpha-btn", "完成");
+          done.type = "button";
+          done.addEventListener("click", () => closePanel());
+          feedback.append(document.createElement("br"), again, done);
         } else {
           feedback.textContent = "写入失败：" + (result.error || result.status || "未知原因");
           submit.disabled = false;
@@ -232,34 +288,79 @@
         feedback.textContent = "写入失败：" + error;
         submit.disabled = false;
       }
+    }
+
+    submit.addEventListener("click", () => { void doWrite(); });
+    textarea.addEventListener("keydown", (event) => {
+      // 中文输入法组字期间的回车只用于上屏；Ctrl+Enter 才是提交。
+      if (event.key === "Enter" && (event.ctrlKey || event.metaKey) && !event.isComposing) {
+        event.preventDefault();
+        if (!submit.disabled) void doWrite();
+      }
     });
     root.append(submit, feedback);
+  }
 
-    if (!currentSpaceId()) {
-      const createLine = el("div", "alpha-create");
-      createLine.append(el("p", "alpha-note", "还没有记忆空间时，可以先创建一个："));
-      const idInput = document.createElement("input");
-      idInput.className = "alpha-input";
-      idInput.placeholder = "空间 ID（字母数字开头，如 my-life）";
-      const labelInput = document.createElement("input");
-      labelInput.className = "alpha-input";
-      labelInput.placeholder = "显示名（可选）";
-      const createBtn = el("button", "alpha-btn", "创建空间");
-      createBtn.type = "button";
-      const createFeedback = el("div", "alpha-feedback");
-      createBtn.addEventListener("click", async () => {
-        const result = await api.createSpace({ spaceId: idInput.value.trim(), label: labelInput.value.trim() });
+  function buildSpaceForm(root) {
+    root.append(el("p", "alpha-note",
+      "空间是相互隔离的记忆环境：各有自己的记录与索引。创建后会立即切换到新空间。"));
+
+    const idInput = document.createElement("input");
+    idInput.className = "alpha-input";
+    idInput.placeholder = "空间 ID（字母数字开头，如 my-life）";
+    idInput.maxLength = 64;
+    idInput.setAttribute("aria-label", "空间 ID");
+    const labelInput = document.createElement("input");
+    labelInput.className = "alpha-input";
+    labelInput.placeholder = "显示名（可选）";
+    labelInput.maxLength = 80;
+    labelInput.setAttribute("aria-label", "显示名");
+    const createBtn = el("button", "alpha-btn alpha-btn-primary", "创建空间");
+    createBtn.type = "button";
+    const feedback = el("div", "alpha-feedback");
+    feedback.setAttribute("role", "status");
+
+    async function doCreate() {
+      const spaceId = idInput.value.trim();
+      if (!SPACE_ID_RE.test(spaceId)) {
+        feedback.textContent = "空间 ID 只能用字母、数字、点、下划线、连字符，且以字母或数字开头。";
+        idInput.focus();
+        return;
+      }
+      createBtn.disabled = true;
+      feedback.textContent = "创建中…";
+      try {
+        const result = await api.createSpace({ spaceId, label: labelInput.value.trim() });
         if (result.ok) {
-          createFeedback.textContent = `空间 ${result.spaceId} 已创建并选中。`;
+          feedback.textContent = `空间 ${result.spaceId} 已创建并选中。`;
           await refreshSpaces();
-          spaceName.textContent = result.spaceId;
+          const write = el("button", "alpha-btn", "写入第一条记忆");
+          write.type = "button";
+          write.addEventListener("click", () => openPanel("capture"));
+          const done = el("button", "alpha-btn", "完成");
+          done.type = "button";
+          done.addEventListener("click", () => closePanel());
+          feedback.append(document.createElement("br"), write, done);
         } else {
-          createFeedback.textContent = "创建失败：" + (result.error || result.status);
+          feedback.textContent = "创建失败：" + (result.error || result.status || "未知原因");
+          createBtn.disabled = false;
+        }
+      } catch (error) {
+        feedback.textContent = "创建失败：" + error;
+        createBtn.disabled = false;
+      }
+    }
+
+    createBtn.addEventListener("click", () => { void doCreate(); });
+    for (const input of [idInput, labelInput]) {
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.isComposing && !createBtn.disabled) {
+          event.preventDefault();
+          void doCreate();
         }
       });
-      createLine.append(idInput, labelInput, createBtn, createFeedback);
-      root.append(createLine);
     }
+    root.append(idInput, labelInput, createBtn, feedback);
   }
 
   function buildRevisitForm(root, context) {
@@ -281,6 +382,7 @@
     const submit = el("button", "alpha-btn alpha-btn-primary", "确认重提");
     submit.type = "button";
     const feedback = el("div", "alpha-feedback");
+    feedback.setAttribute("role", "status");
     submit.addEventListener("click", async () => {
       if (!context || !context.recordId) { feedback.textContent = "缺少记录 ID。"; return; }
       submit.disabled = true;
@@ -370,9 +472,34 @@
     observer.observe(app, { childList: true, subtree: true });
   }
 
+  /* ---------------- 面板全局行为 ---------------- */
+
+  function bindPanelBehavior() {
+    // Esc 优先关面板（捕获阶段），不让它同时触发工作台的编辑器关闭。
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && panel) {
+        event.preventDefault();
+        event.stopPropagation();
+        closePanel();
+      }
+    }, true);
+    // 点击面板与工具条之外：关闭。不归还焦点——焦点应留在用户点的地方。
+    document.addEventListener("mousedown", (event) => {
+      if (!panel) return;
+      const target = event.target;
+      if (panel.contains(target)) return;
+      if (target.closest && target.closest("#alpha-toolbar")) return;
+      closePanel({ restoreFocus: false });
+    });
+    // 工作台快捷键与常驻入口的意图事件。
+    document.addEventListener("alpha:open-capture-panel", () => togglePanel("capture"));
+    document.addEventListener("alpha:open-space-panel", () => openPanel("space"));
+  }
+
   function start() {
     buildToolbar();
     watch();
+    bindPanelBehavior();
     if (api.onSpacesChanged) api.onSpacesChanged(() => void refreshServiceStatus());
     if (api.onServiceFailed) {
       api.onServiceFailed((payload) => {
@@ -380,6 +507,11 @@
         void refreshServiceStatus();
       });
     }
+    // 服务芯片是 Atlas 模式下唯一的连接指示：定期复核，服务死了不能一直绿着。
+    setInterval(() => { void refreshServiceStatus(); }, 30000);
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) void refreshServiceStatus();
+    });
   }
 
   if (document.readyState === "loading") {

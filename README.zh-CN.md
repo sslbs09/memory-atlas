@@ -47,6 +47,12 @@ English version: [README.md](README.md)
 
 就这些。最后说明一点：搜索不做同义改写，搜「约定」不会命中「答应」——搜不到时它如实告诉你没有，不猜。
 
+> **上面的步骤按已发布的 alpha.1 描述。源码版交互已重做，随下一版本发布：**
+> 写入后列表自动刷新并选中新记录，不用再点「刷新列表查看」；顶栏「记忆空间」旁
+> 新增常驻 **＋** 新建入口（修复 [issue #1](https://github.com/sslbs09/memory-atlas/issues/1)）；
+> 撤回改为两步确认，防误点；面板支持 Esc 与点击外部关闭；`n` 打开写入面板，
+> ↑/↓ 在结果列表里导航。
+
 ## 连接你的 AI Agent
 
 前提只有一个：Memory Atlas 正在运行（它拥有数据和索引，MCP server 只是个桥）。
@@ -57,9 +63,10 @@ English version: [README.md](README.md)
 - Node 运行时：`<解压目录>\resources\app\runtime\node.exe`
 
 **关于空间**：全新安装只有一个 `alpha` 空间（首次启动自动创建），下面的示例都用它。
-当前版本的界面只有在还没有任何空间时才会出现「创建空间」入口——这是已知的产品限制
-（[issue #1](https://github.com/sslbs09/memory-atlas/issues/1)，计划下一版本解决）。
-想临时看一组合成数据，用「载入演示记忆」得到 `alpha-demo` 即可；它不是新建空间的途径。
+alpha.1 的界面只有在还没有任何空间时才会出现「创建空间」入口
+（[issue #1](https://github.com/sslbs09/memory-atlas/issues/1)）；源码已修复——顶栏
+「记忆空间」旁有常驻 **＋** 按钮，随时新建，随下一版本发布。
+想临时看一组合成数据，用「载入演示记忆」得到 `alpha-demo` 即可。
 另外注意：`--data-dir` 指向新目录启动的是**一个完全独立的数据环境**——有自己的 alpha、
 自己的索引，和你原来的数据互不相通——不是在当前 Atlas 里加一个空间。
 

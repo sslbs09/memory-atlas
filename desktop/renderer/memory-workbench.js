@@ -113,7 +113,8 @@
     uniRecenter: document.getElementById("wb-uni-recenter"),
     uniGraphSource: document.getElementById("wb-uni-graph-source"),
     spaceWrap: document.getElementById("wb-space-wrap"),
-    space: document.getElementById("wb-space")
+    space: document.getElementById("wb-space"),
+    spaceNew: document.getElementById("wb-space-new")
   };
 
   const state = {
@@ -152,6 +153,8 @@
     notice: null,
     editorOpen: false,
     editorText: "",
+    // 撤回两步确认：第一次点击只是"举枪"，4 秒内再点一次才真正撤回。
+    retractArmed: null,
     pending: null,
     capacity: null,
     capacityFault: null,
@@ -389,7 +392,11 @@
     if (!state.records.length) {
       const wrap = el("div", "wb-empty");
       wrap.append(el("p", "wb-empty-title", t("set.memWbNotFound")));
-      wrap.append(el("p", "wb-note", state.query ? t("set.wbEmptyQueryHint") : t("set.wbEmptyHint")));
+      // 默认筛选下一条都没有：这是"空间还空着"，不是"搜不到"——引导写第一条。
+      const pristine = !state.query && state.status === "active" && !state.type &&
+        state.time === "all" && state.totalMatch === 0;
+      wrap.append(el("p", "wb-note", state.query ? t("set.wbEmptyQueryHint")
+        : pristine ? t("set.wbEmptySpace") : t("set.wbEmptyHint")));
       box.append(wrap);
       return;
     }
@@ -420,6 +427,9 @@
       row.addEventListener("click", () => { void openRecord(record.recordId); });
       box.append(row);
     }
+    // 键盘导航（j/k/方向键）选中的行必须看得见；nearest 只在行已出屏时才滚动。
+    const selected = box.querySelector('.wb-row[aria-selected="true"]');
+    if (selected) selected.scrollIntoView({ block: "nearest" });
   }
 
   function renderPager() {
@@ -631,11 +641,13 @@
 
   function renderSpaceOptions() {
     if (!els.spaceWrap || !els.space) return;
-    if (!state.spaceSupported || state.spaces.length === 0) {
+    if (!state.spaceSupported) {
       els.spaceWrap.hidden = true;
       return;
     }
+    // 一个空间都没有时也要露出「＋新建」：创建入口不再依赖"先打开写入面板"。
     els.spaceWrap.hidden = false;
+    els.space.disabled = state.spaces.length === 0;
     const current = els.space.value;
     clear(els.space);
     for (const spaceId of state.spaces) {
@@ -644,7 +656,7 @@
       els.space.append(option);
     }
     const wanted = state.instanceId || current;
-    els.space.value = state.spaces.includes(wanted) ? wanted : state.spaces[0];
+    els.space.value = state.spaces.includes(wanted) ? wanted : (state.spaces[0] || "");
   }
 
   async function loadSpaces() {
@@ -653,13 +665,18 @@
     try { listed = await api.listSpaces(); } catch { listed = null; }
     if (!listed || listed.supported !== true) {
       state.spaceSupported = false;
+      delete app.dataset.atlas;
       renderSpaceOptions();
       return;
     }
     state.spaceSupported = true;
+    // Atlas 模式下顶栏只留 Alpha 服务芯片一个连接指示（CSS 隐藏 wb-conn），
+    // 避免两个"已连接"各说各话；读路径故障仍会在列表与阅读区成句。
+    app.dataset.atlas = "true";
     state.spaces = Array.isArray(listed.spaceIds) ? listed.spaceIds : [];
     // 主进程的 currentSpace 是空间权威：即使本地已有 instanceId 也要跟住，
     // 否则演示种子/新建空间后选择器会与实际空间脱节（QA-01）。
+    const previousSpace = state.instanceId;
     if (listed.current) state.instanceId = listed.current;
     if (!state.instanceId && state.spaces.length) {
       // 没有显式指定空间时选第一个：选择器同时显示出来，用户看得到自己在哪个空间
@@ -668,10 +685,26 @@
     }
     renderSpaceOptions();
     renderTelemetry();
+    // 空间在别处被切换（新建空间/演示种子）时，视图必须自己跟上：
+    // 不能指望注入层派发 change——它可能看到选择器已被更新而跳过派发。
+    if (listed.current && previousSpace && listed.current !== previousSpace) {
+      disarmRetract();
+      state.offset = 0;
+      state.selectedId = null;
+      state.detail = null;
+      state.chain = [];
+      els.sheet.hidden = true;
+      renderReaderEmptyFault();
+      renderChainPanel();
+      await search({ reset: true });
+      await loadCapacity({ silent: true });
+      if (universeMounted && window.MemoryUniverse) void window.MemoryUniverse.reload();
+    }
   }
 
   async function switchSpace(spaceId) {
     if (!api.selectSpace) return;
+    disarmRetract();
     state.notice = null;
     const result = await api.selectSpace(spaceId);
     if (!result || !result.ok) {
@@ -736,6 +769,7 @@
 
   async function openRecord(recordId, { keepMode = false } = {}) {
     if (!recordId) return;
+    if (state.retractArmed && state.retractArmed !== recordId) disarmRetract();
     state.selectedId = recordId;
     state.notice = null;
     state.editorOpen = false;
@@ -1038,6 +1072,13 @@
   // 写入：纠正 / 撤回 / 查询操作
   // ---------------------------------------------------------------------------
 
+  let retractTimer = null;
+
+  function disarmRetract() {
+    if (retractTimer) { clearTimeout(retractTimer); retractTimer = null; }
+    state.retractArmed = null;
+  }
+
   function renderActions(record) {
     const section = el("section", "wb-actions");
     section.dataset.testid = "actions";
@@ -1103,14 +1144,36 @@
       }
     });
 
-    const retract = el("button", "wb-btn wb-btn-danger", t("set.memWbRetract"));
+    // 撤回是不可忽视的状态变更：单击只是预备，4 秒内再点一次才执行。
+    // 历史永远可查，但误点不该让一条记录当场作废。
+    const armed = state.retractArmed === record.recordId;
+    const retract = el("button", "wb-btn wb-btn-danger" + (armed ? " wb-btn-armed" : ""),
+      armed ? t("set.wbRetractConfirm") : t("set.memWbRetract"));
     retract.type = "button";
     retract.dataset.testid = "retract-submit";
-    retract.addEventListener("click", () => { void submitControl({ action: "retract", record }); });
+    if (armed) retract.dataset.armed = "true";
+    retract.addEventListener("click", () => {
+      if (state.retractArmed === record.recordId) {
+        disarmRetract();
+        void submitControl({ action: "retract", record });
+        return;
+      }
+      disarmRetract();
+      state.retractArmed = record.recordId;
+      renderSheet(state.detail, { loading: false });
+      retractTimer = setTimeout(() => {
+        retractTimer = null;
+        if (state.retractArmed !== record.recordId) return;
+        state.retractArmed = null;
+        if (state.detail && state.detail.record && state.detail.record.recordId === record.recordId) {
+          renderSheet(state.detail, { loading: false });
+        }
+      }, 4000);
+    });
 
     row.append(correct, retract);
     section.append(row);
-    section.append(el("p", "wb-action-note", t("set.wbWriteNote")));
+    section.append(el("p", "wb-action-note", armed ? t("set.wbRetractConfirmHint") : t("set.wbWriteNote")));
     return section;
   }
 
@@ -1815,6 +1878,33 @@
       // 切换空间：适配器记住它，Archive 与 Universe 之后都读同一个 space
       els.space.addEventListener("change", () => { void switchSpace(els.space.value); });
     }
+    if (els.spaceNew) {
+      // 常驻创建入口（Issue #1）：具体表单由 Alpha 注入层提供，这里只发意图。
+      els.spaceNew.addEventListener("click", () => {
+        document.dispatchEvent(new CustomEvent("alpha:open-space-panel"));
+      });
+    }
+
+    // 写入面板确认写入后：回到档案、清空筛选、刷新并选中新记录。
+    // 写入是"现在就要看见它"的动作，不该再要求一次手动刷新。
+    document.addEventListener("alpha:memory-written", (event) => {
+      const recordId = event.detail && event.detail.recordId;
+      void (async () => {
+        setMode("search");
+        disarmRetract();
+        if (els.q) els.q.value = "";
+        state.query = "";
+        state.status = "active";
+        if (els.status) {
+          for (const node of els.status.querySelectorAll("button")) {
+            node.setAttribute("aria-pressed", String(node.dataset.status === "active"));
+          }
+        }
+        state.offset = 0;
+        await search({ reset: true });
+        if (recordId) await openRecord(recordId, { keepMode: true });
+      })();
+    });
 
     if (els.uniRefresh) {
       els.uniRefresh.addEventListener("click", () => {
@@ -1846,18 +1936,26 @@
 
     document.addEventListener("keydown", (event) => {
       const target = event.target;
-      const typing = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+      const typing = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" ||
+        target.tagName === "SELECT" || target.isContentEditable);
       if (event.key === "/" && !typing) {
         event.preventDefault();
         focusSearch();
         return;
       }
       if (typing) return;
-      if (event.key === "j" || event.key === "k") {
+      if (event.key === "n" && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        event.preventDefault();
+        document.dispatchEvent(new CustomEvent("alpha:open-capture-panel"));
+        return;
+      }
+      const down = event.key === "j" || event.key === "ArrowDown";
+      const up = event.key === "k" || event.key === "ArrowUp";
+      if (down || up) {
         if (state.mode !== "search" || !state.records.length) return;
         event.preventDefault();
         const index = state.records.findIndex((record) => record.recordId === state.selectedId);
-        const next = event.key === "j" ? index + 1 : index - 1;
+        const next = down ? index + 1 : index - 1;
         const record = state.records[Math.max(0, Math.min(state.records.length - 1, next))];
         if (record) void openRecord(record.recordId);
       }

@@ -47,6 +47,13 @@ Older releases: [Releases](https://github.com/sslbs09/memory-atlas/releases).
 
 That's the whole loop. One thing to know up front: search doesn't do synonyms. Searching 约定 will not match 答应 — when there's no hit, it says so instead of guessing.
 
+> **The steps above describe the released alpha.1. The interaction has been reworked on `main` and ships in the next release:**
+> writing auto-refreshes the list and selects the new record (no more 刷新列表查看 click);
+> a permanent **＋** next to the space dropdown creates spaces at any time
+> (fixes [issue #1](https://github.com/sslbs09/memory-atlas/issues/1)); retract asks for a
+> second click to prevent misclicks; panels close on Esc or an outside click; `n` opens
+> the capture panel and ↑/↓ navigate the result list.
+
 ## Connecting your AI agent
 
 One prerequisite: Memory Atlas must be running (it owns the data and the index; the MCP server is only a bridge).
@@ -56,7 +63,7 @@ Two files from the package matter to your config:
 - MCP server: `<install>\resources\app\mcp\atlas-mcp.mjs`
 - Bundled Node runtime: `<install>\resources\app\runtime\node.exe`
 
-**About spaces**: a fresh install has exactly one space, `alpha`, created on first launch — the examples below all use it. In the current version the "create space" form only appears in the UI when no space exists at all; that's a known limitation ([issue #1](https://github.com/sslbs09/memory-atlas/issues/1), planned for a future release). For a quick look at synthetic data, 载入演示记忆 gives you the `alpha-demo` space — it is not a way to create spaces. Also note that `--data-dir` pointing at a new directory starts a **completely separate data environment** — its own `alpha`, its own index, sharing nothing with your existing data — it does not add a space to your current Atlas.
+**About spaces**: a fresh install has exactly one space, `alpha`, created on first launch — the examples below all use it. In the released alpha.1 the "create space" form only appears when no space exists at all ([issue #1](https://github.com/sslbs09/memory-atlas/issues/1)); this is fixed on `main` — a permanent **＋** next to the space dropdown creates spaces at any time — and ships in the next release. For a quick look at synthetic data, 载入演示记忆 gives you the `alpha-demo` space. Also note that `--data-dir` pointing at a new directory starts a **completely separate data environment** — its own `alpha`, its own index, sharing nothing with your existing data — it does not add a space to your current Atlas.
 
 Generic `mcpServers` JSON (Claude Desktop and similar clients. Config example, unverified — the hosts we actually tested are DSH and MaiBot):
 

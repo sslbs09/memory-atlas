@@ -44,6 +44,7 @@
   right: 16px;
   z-index: 300;
   width: 380px;
+  max-width: calc(100vw - 32px);
   max-height: calc(100vh - 80px);
   overflow-y: auto;
   padding: 16px 18px 18px;
@@ -96,6 +97,24 @@
 
 .alpha-feedback { margin-top: 8px; font-size: 12px; line-height: 1.6; color: var(--ui-ink); word-break: break-all; }
 .alpha-feedback-bad { color: var(--ui-danger); }
+.alpha-feedback .alpha-btn { margin: 6px 6px 0 0; }
+
+/* 写入面板里的次级入口（新建空间…）：不跟主按钮抢视觉 */
+.alpha-linkbtn {
+  margin-left: auto;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ui-accent);
+  font-size: 11.5px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.alpha-linkbtn:hover { color: var(--ui-accent-strong); }
+
+.alpha-counter { margin: -4px 0 8px; font-size: 10.5px; color: var(--ui-subtle); text-align: right; }
 
 .alpha-create { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--ui-line); }
 .alpha-create .alpha-input { display: block; }

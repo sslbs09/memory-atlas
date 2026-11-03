@@ -185,6 +185,7 @@ body.theme-dark.memory-wb-page .wb-rail { border-right-color: rgba(234, 241, 242
   text-transform: uppercase;
 }
 /* 空间选择：Atlas 模式下才出现；外观跟等宽字段一致，不做成工具栏按钮 */
+.wb-space-row { display: flex; align-items: center; gap: 4px; }
 .wb-space select {
   font-family: var(--wb-mono);
   font-size: 11px;
@@ -196,6 +197,25 @@ body.theme-dark.memory-wb-page .wb-rail { border-right-color: rgba(234, 241, 242
   height: 22px;
 }
 .wb-space select:hover { border-color: var(--wb-hair-strong); }
+.wb-space select:disabled { opacity: .5; }
+/* 常驻新建入口（Issue #1）：跟选择器同高同风格，不抢视觉 */
+.wb-space-new {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--wb-hair);
+  background: transparent;
+  color: var(--wb-ink-3);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+.wb-space-new:hover { border-color: var(--wb-hair-strong); color: var(--wb-ink); }
+.wb-space-new:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; }
+
+/* Atlas 模式下顶栏只留 Alpha 服务芯片一个连接指示，避免两个"已连接"并存 */
+.wb-app[data-atlas="true"] #wb-conn { display: none; }
 
 .wb-tel > b {
   font-family: var(--wb-mono);
@@ -384,6 +404,13 @@ body.theme-dark.memory-wb-page .wb-rail { border-right-color: rgba(234, 241, 242
 }
 .wb-btn-primary:hover { background: var(--wb-accent-strong); border-color: var(--wb-accent-strong); }
 .wb-btn-danger { color: var(--wb-seal); border-color: color-mix(in srgb, var(--wb-seal) 45%, transparent); }
+/* 撤回预备态：实心印章色，明确告诉用户"再点一次就真的撤回了" */
+.wb-btn.wb-btn-armed {
+  background: var(--wb-seal);
+  border-color: var(--wb-seal);
+  color: #fff;
+}
+.wb-btn.wb-btn-armed:hover { border-color: var(--wb-seal); opacity: .88; }
 
 .wb-linkbtn {
   border: 0;
