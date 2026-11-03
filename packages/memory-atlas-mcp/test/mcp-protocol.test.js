@@ -217,3 +217,63 @@ test('space binding is enforced: another space is invisible even if the model as
     assert.equal(health.json.health, undefined, 'no global capacity/sources dump');
   } finally { await c.close(); }
 });
+
+test('atlas_context assembles a budget envelope, honestly estimated', async () => {
+  const c = new McpStdioClient({ space: 'interop-demo', dataDir: path.dirname(atlas.endpointFile) });
+  try {
+    await c.initialize();
+    const names = (await c.listTools()).map((t) => t.name);
+    assert.ok(names.includes('atlas_context'), 'atlas_context registered in read-only mode');
+    const r = await c.call('atlas_context', { query: '小林 电影', tokenBudget: 2000 });
+    assert.equal(r.isError, false);
+    assert.equal(r.json.space, 'interop-demo');
+    assert.equal(r.json.budget.accounting, 'estimated');
+    assert.equal(r.json.budget.measured, false, 'never claims a measured tokenizer');
+    assert.ok(r.json.records.some((x) => x.recordId === 'demo-a'), 'active record included');
+    assert.ok(!r.json.records.some((x) => x.status === 'retracted'), 'no retracted record in context');
+    assert.ok(r.json.budget.estimatedUsed > 0);
+  } finally { await c.close(); }
+});
+
+test('atlas_context reports omitted records when the budget is tight', async () => {
+  const c = new McpStdioClient({ space: 'interop-demo', dataDir: path.dirname(atlas.endpointFile) });
+  try {
+    await c.initialize();
+    // Seed a second active record so there is something to omit.
+    await conn.record({ spaceId: 'interop-demo', record: { recordId: 'demo-ctx', kind: 'note', content: '小林还答应一起去看下次的首映。', source: { kind: 'manual', id: 'seed' } } });
+    const r = await c.call('atlas_context', { query: '小林', tokenBudget: 64, limit: 16 });
+    assert.equal(r.isError, false);
+    assert.ok(r.json.records.length >= 1, 'at least one record rather than empty-handed');
+    assert.ok(r.json.omitted >= 1, 'tight budget honestly reports omitted records');
+  } finally { await c.close(); }
+});
+
+test('atlas_feedback is write-gated and never changes the record', async () => {
+  const ro = new McpStdioClient({ space: 'interop-demo', dataDir: path.dirname(atlas.endpointFile) });
+  try {
+    await ro.initialize();
+    const names = (await ro.listTools()).map((t) => t.name);
+    assert.ok(!names.includes('atlas_feedback'), 'feedback absent in read-only mode');
+  } finally { await ro.close(); }
+
+  const c = new McpStdioClient({ space: 'interop-demo', dataDir: path.dirname(atlas.endpointFile), allowWrites: true });
+  try {
+    await c.initialize();
+    const names = (await c.listTools()).map((t) => t.name);
+    assert.ok(names.includes('atlas_feedback'), 'feedback present when writes enabled');
+    const r = await c.call('atlas_feedback', { recordId: 'demo-a', signal: 'incorrect', note: '可能记错了月份' });
+    assert.equal(r.isError, false, `feedback failed: ${r.text}`);
+    assert.ok(r.json.feedbackId);
+    assert.equal(r.json.signal, 'incorrect');
+
+    // The record is untouched: still active, still searchable.
+    const detail = await c.call('atlas_get', { recordId: 'demo-a' });
+    assert.equal(detail.json.currentFact, true, 'feedback did not retract the record');
+    const list = await conn.feedbackList({ spaceId: 'interop-demo', status: 'pending' });
+    assert.ok(list.feedback.some((f) => f.recordId === 'demo-a' && f.signal === 'incorrect'), 'signal lands in the review queue');
+
+    // Flagging a ghost fails visibly.
+    const ghost = await c.call('atlas_feedback', { recordId: 'no-such-record', signal: 'useful' });
+    assert.equal(ghost.isError, true);
+  } finally { await c.close(); }
+});

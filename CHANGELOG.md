@@ -33,6 +33,24 @@ All notable changes to Memory Atlas are documented here. Dates are ISO 8601.
   trust philosophy, capability gaps, ranked absorption proposals (agent
   feedback channel, token-budget context tool), DSH 0.2.1 host contract notes,
   and read-only interop boundaries. Research only; no runtime integration.
+- Added: agent feedback review channel (absorbed from the Mnemosyne study).
+  `POST/GET /atlas/feedback` and `POST /atlas/feedback/resolve` plus the
+  write-gated MCP tool `atlas_feedback`: an agent flags a record useful or
+  incorrect; the signal lives in an append-only store beside the facts
+  (`src/feedback.js`), never changes status, never enters search. Pending
+  signals appear in the desktop manage view (open / dismiss); correcting or
+  retracting the target auto-closes its signals. "The agent may report; only
+  the person may convict." 8 core tests + MCP protocol coverage.
+- Added: read-only MCP tool `atlas_context` — assembles search results into a
+  token-budget context envelope; over-budget records are honestly counted as
+  omitted, and the budget is always labelled estimated (never measured).
+- Added: `--selfcheck views` — visual regression driver: 7 frames across
+  search/manage/maint/universe, narrow widths and the empty state, plus 5
+  assertions including the review queue end-to-end (seed → visible → dismiss).
+- Changed: neutralized character-language residue ("她"/"she"/"彼女") in the
+  workbench's own strings across zh/en/ja; the standalone product now speaks
+  of "Atlas" / "the service", not a character. (Pet-desktop settings strings
+  are a separate surface and were left untouched.)
 
 ## [0.1.0-alpha.1] — 2026-11-01
 

@@ -18,6 +18,9 @@ unauthenticated data path (`/health` returns a name and a version only).
 | GET | `/atlas/search` | read | query one space |
 | GET | `/atlas/detail` | read | one record plus its correction neighbourhood |
 | GET | `/atlas/operation` | read | what a caller-owned operation id actually did |
+| GET | `/atlas/feedback` | read | review signals for a space (`status=pending\|dismissed\|actioned\|all`) |
+| POST | `/atlas/feedback` | write | flag a record `useful`/`incorrect` (a report, not a verdict) |
+| POST | `/atlas/feedback/resolve` | write | dismiss a signal or mark it actioned |
 
 ## Search parameters
 
@@ -90,6 +93,32 @@ smuggle in an unreviewed assertion.
 `GET /atlas/operation?space=&operationId=` answers
 `{ recorded, recordId, status, revision }`, so a client whose response was lost
 can ask what happened instead of guessing.
+
+## Feedback (review signals)
+
+Feedback is a governance side-channel, kept apart from the facts: an agent (or a
+person) flags a record, and a human decides the outcome. Writing feedback never
+changes a record's status, never enters search, and never becomes a memory.
+*"The agent may report; only the person may convict."*
+
+```
+POST /atlas/feedback { "spaceId": "mira", "recordId": "dentist",
+                       "signal": "incorrect", "note": "month may be wrong",
+                       "source": { "kind": "mcp", "id": "agent" } }
+→ { ok, feedbackId, type: "feedback", signal, createdAt, ... }
+```
+
+- `signal` is `useful` or `incorrect`; `note` ≤ 1000 chars; the target record must
+  exist (`ATLAS_FEEDBACK_TARGET_MISSING`, 409) but may be in any validity state.
+- Storage is append-only JSONL under `<dataDir>/feedback/<spaceId>.jsonl`. A
+  resolution is a second appended entry; current state is replayed from the log.
+- `GET /atlas/feedback?space=&status=` lists signals (default `pending`; also
+  `dismissed`, `actioned`, `all`), newest first.
+- `POST /atlas/feedback/resolve { spaceId, feedbackId, resolution, by }` closes a
+  signal (`dismissed` or `actioned`). A successful `correct`/`retract` on the
+  target record auto-marks its pending signals `actioned`.
+- The desktop surfaces pending signals in the manage view (open / dismiss); the
+  MCP tool `atlas_feedback` (write-gated) is how agents submit them.
 
 ## Time windows
 

@@ -28,6 +28,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { SpaceStore } from './store.js';
+import { createFeedbackStore } from './feedback.js';
 import { assertId, createRecord, deriveValidity, isIdLike, operationRecordId, sameRecordSemantics, DEFAULT_RETRACTION_TEXT } from './model.js';
 import { detailSpace } from './query.js';
 import { authoritativeScan, createRetrievalCoordinator, spaceProjection } from './retrieval.js';
@@ -262,6 +263,9 @@ export function createMemoryService({ authority, capacityTargetBytes = 20_000_00
   }
   const index = retrieval && typeof retrieval.searchCandidates === 'function' ? retrieval : null;
   const cacheDir = derivedCacheDir ?? path.join(authority.dataDir ?? process.cwd(), 'derived-cache');
+  // Review signals live beside the facts, never inside them. An authority with
+  // no data directory (a pure delegate) simply has no feedback side-channel.
+  const feedbackStore = authority.dataDir ? createFeedbackStore(authority.dataDir) : null;
 
   // A space whose history is empty and a space that cannot be read are
   // different statements: only the first may be rendered as "nothing found".
@@ -404,8 +408,58 @@ export function createMemoryService({ authority, capacityTargetBytes = 20_000_00
     // A correction changes what is effective and a retraction ends a record's
     // standing; both have to reach the derived index or the next search answers
     // from a projection of a memory that no longer stands.
-    if (receipt.accepted) await syncAfterWrite(spaceId);
+    if (receipt.accepted) {
+      await syncAfterWrite(spaceId);
+      // A human acting on a flagged record closes its pending review signals.
+      // This bookkeeping must never break the control receipt itself.
+      try { markFeedbackActioned(spaceId, input.aboutRecordId); } catch { /* side-channel only */ }
+    }
     return receipt;
+  }
+
+  /**
+   * Feedback is a report, not a verdict: it never alters the target record.
+   * The target must exist (flagging a ghost is meaningless), but it may be in
+   * any validity state — an agent can flag a superseded record for audit too.
+   */
+  async function submitFeedback(spaceId, input = {}) {
+    assertId(spaceId, 'spaceId');
+    if (!feedbackStore) {
+      throw Object.assign(new Error('This authority exposes no data directory for feedback.'), { code: 'ATLAS_FEEDBACK_UNAVAILABLE' });
+    }
+    const inspected = read(spaceId);
+    if (!inspected.available) {
+      throw Object.assign(new Error(`Cannot feedback on space "${spaceId}": ${inspected.reason}`), { code: 'ATLAS_SPACE_UNAVAILABLE' });
+    }
+    const recordId = input.recordId;
+    if (!inspected.spaceDoc.records.some((r) => r.recordId === recordId)) {
+      throw Object.assign(new Error(`No such record in space "${spaceId}": ${recordId}`), { code: 'ATLAS_FEEDBACK_TARGET_MISSING' });
+    }
+    return feedbackStore.submit({ spaceId, recordId, signal: input.signal, note: input.note, source: input.source });
+  }
+
+  function listFeedback(spaceId, options = {}) {
+    assertId(spaceId, 'spaceId');
+    if (!feedbackStore) return { spaceId, status: options.status ?? 'pending', feedback: [], unavailable: true };
+    return feedbackStore.list(spaceId, options);
+  }
+
+  function resolveFeedback(spaceId, input = {}) {
+    assertId(spaceId, 'spaceId');
+    if (!feedbackStore) {
+      throw Object.assign(new Error('This authority exposes no data directory for feedback.'), { code: 'ATLAS_FEEDBACK_UNAVAILABLE' });
+    }
+    return feedbackStore.resolve({ spaceId, feedbackId: input.feedbackId, resolution: input.resolution, by: input.by });
+  }
+
+  function markFeedbackActioned(spaceId, recordId) {
+    if (!feedbackStore || !isIdLike(recordId)) return;
+    const { feedback } = feedbackStore.list(spaceId, { status: 'pending' });
+    for (const item of feedback) {
+      if (item.recordId === recordId) {
+        feedbackStore.resolve({ spaceId, feedbackId: item.feedbackId, resolution: 'actioned', by: 'user' });
+      }
+    }
   }
 
   return {
@@ -416,6 +470,9 @@ export function createMemoryService({ authority, capacityTargetBytes = 20_000_00
     record,
     correct: (spaceId, input) => control(spaceId, input, 'correct'),
     retract: (spaceId, input) => control(spaceId, input, 'retract'),
+    feedback: (spaceId, input) => submitFeedback(spaceId, input),
+    feedbackList: (spaceId, options) => listFeedback(spaceId, options),
+    resolveFeedback: (spaceId, input) => resolveFeedback(spaceId, input),
     reindex,
     retrieval,
     indexStatus: () => ({

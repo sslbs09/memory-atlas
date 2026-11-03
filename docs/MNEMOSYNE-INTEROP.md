@@ -1,8 +1,9 @@
 # Mnemosyne 互操作与吸收笔记
 
 研究对象：[canyueY/dsh-mnemosyne](https://github.com/canyueY/dsh-mnemosyne)（Mnemosyne 2.0.0，2026-11-03 读取）。
-本文是调研笔记，不是联调报告：**只读了它的 README、工具规格与 DSH 集成文档，没有运行它的代码，
-也没有做过双向联调。** 下面凡标「提案」的都没有实现。
+本文起初是调研笔记：**只读了它的 README、工具规格与 DSH 集成文档，没有运行它的代码，
+也没有做过双向联调。** 调研之后，清单里的第 2、3 项已在 Atlas 落地（见各自标注与
+[MEMORY-API.md](MEMORY-API.md) 的 Feedback 段）；其余仍为提案或 Roadmap。
 
 ## 它是什么
 
@@ -49,12 +50,15 @@ DSH 原生插件适配层，另有 REST `/api/v1` 与 MCP 入口。它的认知�
 ## 吸收清单（按价值/风险排序）
 
 1. **DSH 宿主契约笔记（已吸收，见下节）**——它踩过的坑直接写进我们的集成文档。
-2. **提案：`atlas_feedback`**——Agent 经 MCP（ALLOW_WRITES 门禁）标记一条记忆
-   useful/incorrect；incorrect 只写一条审查事件，人在桌面端看到后决定是否撤回。
-   与 Atlas 哲学完全一致：Agent 可以举报，人才能定罪。未实现。
-3. **提案：`atlas_context`**——只读工具，把搜索结果按 token 预算组装成上下文信封，
-   诚实标注预算是估算还是实测（我们没有精确 tokenizer 时不宣称 measured——这也是
-   Mnemosyne 自己踩过的坑，见其 tool-spec 注释）。未实现。
+2. **已实现：`atlas_feedback`**——Agent 经 MCP（ALLOW_WRITES 门禁）标记一条记忆
+   useful/incorrect；信号写进独立的追加式审查存储（`src/feedback.js`），不碰事实库、
+   不进检索、不改记录状态。incorrect 进入桌面端管理视图的「审查信号」队列，人打开
+   记录后决定纠正/撤回或忽略；人对目标记录纠正/撤回会自动把待审查信号标记 actioned。
+   与 Atlas 哲学完全一致：Agent 可以举报，人才能定罪。核心 8 测试 + MCP 协议测试覆盖。
+3. **已实现：`atlas_context`**——只读工具，把搜索结果按 token 预算组装成上下文信封，
+   超预算的记录如实计入 omitted、至少纳入一条。预算永远标 `accounting: estimated` /
+   `measured: false`（CJK≈1 token/字、其余≈1 token/3.3 字符的启发式）——没有精确
+   tokenizer 就不宣称 measured，这正是 Mnemosyne 自己踩过的坑（见其 tool-spec 注释）。
 4. **Roadmap：候选 inbox**——Agent propose、人批准。需要先决定产品边界，不在本轮。
 5. **明确不吸收**：自动晋升为事实、双语义权威、超出字面匹配的语义推断。
    Atlas 的卖点正是「搜不到就说没有，不猜」。

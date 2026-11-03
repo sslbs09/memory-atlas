@@ -34577,6 +34577,15 @@ var AtlasClient = class {
   retract({ spaceId, aboutRecordId, operationId }) {
     return this.#call("/atlas/retract", { method: "POST", body: { spaceId, aboutRecordId, operationId }, token: this.writeToken });
   }
+  feedback({ spaceId, recordId, signal, note, source }) {
+    return this.#call("/atlas/feedback", { method: "POST", body: { spaceId, recordId, signal, note, source }, token: this.writeToken });
+  }
+  feedbackList({ spaceId, status }) {
+    return this.#call("/atlas/feedback", { pairs: [["space", spaceId], ["status", status]], token: this.readToken });
+  }
+  resolveFeedback({ spaceId, feedbackId, resolution, by }) {
+    return this.#call("/atlas/feedback/resolve", { method: "POST", body: { spaceId, feedbackId, resolution, by }, token: this.writeToken });
+  }
 };
 
 // src/index.mjs
@@ -34701,7 +34710,7 @@ server.registerTool("atlas_health", {
     available: true,
     endpoint: resolved.provenance,
     writesEnabled: config2.allowWrites,
-    writeToolsNote: config2.allowWrites ? "\u5199\u5165\u5DE5\u5177\u5DF2\u5F00\u653E\uFF1Aatlas_remember / atlas_correct / atlas_retract \u53EA\u5E94\u7531\u7528\u6237\u660E\u786E\u8981\u6C42\u7684\u5BF9\u8BDD\u8C03\u7528\u3002" : "\u672C\u5B9E\u4F8B\u4E3A\u53EA\u8BFB\u63A5\u5165\uFF1B\u5199\u5165\u8BF7\u4F7F\u7528 Memory Atlas \u684C\u9762\u7A0B\u5E8F\u3002",
+    writeToolsNote: config2.allowWrites ? "\u5199\u5165\u5DE5\u5177\u5DF2\u5F00\u653E\uFF1Aatlas_remember / atlas_correct / atlas_retract \u53EA\u5E94\u7531\u7528\u6237\u660E\u786E\u8981\u6C42\u7684\u5BF9\u8BDD\u8C03\u7528\uFF1Batlas_feedback \u53EA\u63D0\u4EA4\u5BA1\u67E5\u4FE1\u53F7\uFF0C\u4E0D\u6539\u53D8\u8BB0\u5F55\u72B6\u6001\u3002" : "\u672C\u5B9E\u4F8B\u4E3A\u53EA\u8BFB\u63A5\u5165\uFF1B\u5199\u5165\u8BF7\u4F7F\u7528 Memory Atlas \u684C\u9762\u7A0B\u5E8F\u3002",
     note: "\u672C\u5DE5\u5177\u53EA\u62A5\u544A\u7ED1\u5B9A\u7A7A\u95F4\u7684\u72B6\u6001\uFF1B\u5176\u4ED6\u8BB0\u5FC6\u7A7A\u95F4\u7684\u5B58\u5728\u4E0E\u5426\u4E0D\u5728\u6B64\u5DE5\u5177\u7684\u8F93\u51FA\u91CC\u3002"
   });
 });
@@ -34760,6 +34769,69 @@ server.registerTool("atlas_get", {
     currentFact: status === "active",
     chain: detail.chain ?? detail.history ?? null,
     note: status === "active" ? null : status === "retracted" ? "\u8BE5\u8BB0\u5F55\u5DF2\u88AB\u64A4\u56DE\uFF0C\u4E0D\u80FD\u4F5C\u4E3A\u5F53\u524D\u4E8B\u5B9E\u5F15\u7528\u3002" : status === "superseded" ? "\u8BE5\u8BB0\u5F55\u5DF2\u88AB\u66F4\u65B0\u7684\u7248\u672C\u53D6\u4EE3\uFF0C\u8BF7\u4EE5\u7EA0\u6B63\u94FE\u4E2D active \u7684\u7248\u672C\u4E3A\u51C6\u3002" : `\u8BB0\u5F55\u72B6\u6001\u4E3A ${status}\u3002`
+  });
+});
+server.registerTool("atlas_context", {
+  title: "\u7EC4\u88C5 Atlas \u8BB0\u5FC6\u4E0A\u4E0B\u6587",
+  description: "\u6309 token \u9884\u7B97\u628A\u5F53\u524D\u6709\u6548\u7684\u8BB0\u5FC6\u7EC4\u88C5\u6210\u53EF\u6CE8\u5165\u5BF9\u8BDD\u7684\u4E0A\u4E0B\u6587\u4FE1\u5C01\uFF08\u53EA\u8BFB\uFF09\u3002\u9884\u7B97\u6309\u5B57\u7B26\u4F30\u7B97\u5E76\u660E\u786E\u6807\u6CE8 estimated\u2014\u2014\u6CA1\u6709\u7CBE\u786E tokenizer \u5C31\u4E0D\u5BA3\u79F0 measured\u3002\u8D85\u51FA\u9884\u7B97\u7684\u8BB0\u5F55\u5982\u5B9E\u8BA1\u5165 omitted\uFF0C\u4E0D\u6084\u6084\u622A\u65AD\u4E8B\u5B9E\uFF1B\u81F3\u5C11\u7EB3\u5165\u4E00\u6761\u4EE5\u514D\u7A7A\u624B\u800C\u5F52\u3002",
+  inputSchema: {
+    query: external_exports.string().min(1).describe("\u68C0\u7D22\u8BCD\uFF08\u8BCD\u6CD5\u68C0\u7D22\uFF0C\u4E0D\u505A\u540C\u4E49\u6539\u5199\uFF09"),
+    tokenBudget: external_exports.number().int().min(64).max(32e3).optional().describe("\u4E0A\u4E0B\u6587 token \u9884\u7B97\uFF0C\u9ED8\u8BA4 2000\uFF08\u4F30\u7B97\u503C\uFF09"),
+    limit: external_exports.number().int().min(1).max(32).optional().describe("\u5019\u9009\u8BB0\u5F55\u4E0A\u9650\uFF0C\u9ED8\u8BA4 16"),
+    status: external_exports.enum(STATUSES).optional().describe("\u8BB0\u5F55\u72B6\u6001\u8FC7\u6EE4\uFF0C\u9ED8\u8BA4 active")
+  },
+  annotations: { readOnlyHint: true, openWorldHint: false }
+}, async ({ query, tokenBudget, limit, status }) => {
+  const resolved = resolveConnection();
+  if (resolved.error) return toolError(resolved.error);
+  const budget = tokenBudget ?? 2e3;
+  const view = await resolved.client.search({
+    spaceId: config2.space,
+    query,
+    limit: limit ?? 16,
+    status: status ?? "active",
+    includeContent: true
+  });
+  if (!view.ok) return toolError(`Atlas \u67E5\u8BE2\u5931\u8D25\uFF1A${view.error ?? `HTTP ${view.httpStatus}`}`);
+  const records = (view.records ?? []).map(projectRecord);
+  const estimateTokens = (text) => {
+    let cjk = 0;
+    let other = 0;
+    for (const ch of String(text ?? "")) {
+      if (/[\u3400-\u9fff\uf900-\ufaff]/.test(ch)) cjk += 1;
+      else other += 1;
+    }
+    return Math.ceil(cjk + other / 3.3);
+  };
+  const header = { space: config2.space, query, generatedAt: (/* @__PURE__ */ new Date()).toISOString() };
+  let used = estimateTokens(JSON.stringify(header));
+  const included = [];
+  let omitted = 0;
+  for (let i = 0; i < records.length; i += 1) {
+    const cost = estimateTokens(JSON.stringify(records[i]));
+    if (included.length > 0 && used + cost > budget) {
+      omitted = records.length - i;
+      break;
+    }
+    included.push(records[i]);
+    used += cost;
+  }
+  return toolJson({
+    atlas: SERVER_NAME,
+    space: config2.space,
+    query,
+    header,
+    budget: {
+      requested: budget,
+      estimatedUsed: used,
+      budgetExceeded: used > budget,
+      accounting: "estimated",
+      measured: false,
+      assumption: "CJK \u2248 1 token/char; other \u2248 1 token/3.3 chars"
+    },
+    records: included,
+    omitted,
+    note: omitted > 0 ? `\u9884\u7B97\u5185\u7EB3\u5165 ${included.length} \u6761\uFF0C${omitted} \u6761\u672A\u7EB3\u5165\uFF1B\u53EF\u589E\u5927 tokenBudget \u6216\u7F29\u5C0F query\u3002token \u4E3A\u4F30\u7B97\u503C\uFF0C\u975E\u5B9E\u6D4B\u3002` : "token \u4E3A\u4F30\u7B97\u503C\uFF0C\u975E\u5B9E\u6D4B\u3002"
   });
 });
 if (config2.allowWrites) {
@@ -34841,6 +34913,35 @@ if (config2.allowWrites) {
       aboutRecordId: recordId,
       recordedAt: receipt.recordedAt ?? null,
       note: "\u64A4\u56DE\u5DF2\u751F\u6548\uFF1A\u8BE5\u5185\u5BB9\u4E0D\u518D\u4F5C\u4E3A\u5F53\u524D\u4E8B\u5B9E\u88AB\u68C0\u7D22\u8FD4\u56DE\u3002"
+    });
+  });
+  server.registerTool("atlas_feedback", {
+    title: "\u53CD\u9988 Atlas \u8BB0\u5FC6\u6709\u7528\u6216\u6709\u8BEF",
+    description: "\u5BF9\u4E00\u6761\u8BB0\u5FC6\u63D0\u4EA4\u4F7F\u7528\u53CD\u9988\uFF1Auseful \u6216 incorrect\u3002\u8FD9\u662F\u5BA1\u67E5\u4FE1\u53F7\uFF0C\u4E0D\u662F\u88C1\u51B3\u2014\u2014\u4E0D\u4F1A\u6539\u53D8\u8BB0\u5F55\u72B6\u6001\u3001\u4E0D\u4F1A\u81EA\u52A8\u64A4\u56DE\u3001\u4E5F\u4E0D\u4F1A\u8FDB\u5165\u68C0\u7D22\u3002incorrect \u4F1A\u8FDB\u5165\u684C\u9762\u7AEF\u7684\u5F85\u5BA1\u67E5\u5217\u8868\uFF0C\u7531\u4EBA\u51B3\u5B9A\u662F\u5426\u7EA0\u6B63\u6216\u64A4\u56DE\u3002\u53EA\u5728\u6709\u771F\u5B9E\u4F9D\u636E\u65F6\u8C03\u7528\uFF0C\u4E0D\u8981\u628A\u5B83\u5F53\u4F5C\u64A4\u56DE\u7684\u5FEB\u6377\u65B9\u5F0F\u3002",
+    inputSchema: {
+      recordId: external_exports.string().min(1).describe("\u8981\u53CD\u9988\u7684\u8BB0\u5F55 id"),
+      signal: external_exports.enum(["useful", "incorrect"]).describe("useful=\u5E2E\u5230\u4E86\u6211\uFF1Bincorrect=\u53EF\u80FD\u6709\u8BEF\uFF0C\u5F85\u4EBA\u5BA1\u67E5"),
+      note: external_exports.string().max(1e3).optional().describe("\u53CD\u9988\u4F9D\u636E\uFF08\u53EF\u9009\uFF0C\u4F1A\u5B58\u8FDB\u5BA1\u67E5\u4FE1\u53F7\uFF09")
+    },
+    annotations: { readOnlyHint: false, openWorldHint: false }
+  }, async ({ recordId, signal, note }) => {
+    const resolved = resolveConnection();
+    if (resolved.error) return toolError(resolved.error);
+    const entry = await resolved.client.feedback({
+      spaceId: config2.space,
+      recordId,
+      signal,
+      note,
+      source: { kind: "mcp", id: SERVER_NAME }
+    });
+    if (!entry.ok) return toolError(`Atlas \u53CD\u9988\u5931\u8D25\uFF1A${entry.error ?? `HTTP ${entry.httpStatus}`}`);
+    return toolJson({
+      atlas: SERVER_NAME,
+      space: config2.space,
+      feedbackId: entry.feedbackId,
+      recordId,
+      signal,
+      note: "\u5DF2\u8BB0\u5F55\u5BA1\u67E5\u4FE1\u53F7\uFF0C\u8BB0\u5F55\u72B6\u6001\u672A\u6539\u53D8\u3002incorrect \u7531\u4EBA\u5728\u684C\u9762\u7AEF\u5BA1\u67E5\u540E\u51B3\u5B9A\u662F\u5426\u7EA0\u6B63/\u64A4\u56DE\uFF1B\u4E0D\u8981\u81EA\u884C\u5047\u5B9A\u5B83\u5DF2\u5931\u6548\u3002"
     });
   });
 } else {

@@ -529,6 +529,8 @@ body.memory-wb-page textarea { font: inherit; }
   font-size: 12.5px;
   cursor: pointer;
 }
+.wb-back:hover { border-color: var(--wb-accent); color: var(--wb-accent); }
+.wb-back:focus-visible { outline: none; border-color: var(--wb-accent); box-shadow: var(--wb-focus); }
 .wb-reader-empty {
   flex: 1 1 auto;
   display: flex;
@@ -844,6 +846,41 @@ html.theme-dark body.memory-wb-page .wb-btn-primary { color: #0c1b1a; }
 .wb-ledger-state[data-state="failed"] { color: var(--wb-seal); }
 .wb-ledger-state[data-state="notlanded"] { color: var(--wb-ink-3); }
 .wb-ledger-verify { flex: 0 0 auto; }
+
+/* 审查信号：Agent 举报，人裁决 */
+.wb-feedback { display: flex; flex-direction: column; gap: 8px; }
+.wb-feedback-item {
+  padding: 10px 12px;
+  border: 1px solid var(--wb-hair);
+  border-left: 3px solid var(--wb-ink-3);
+  border-radius: 8px;
+  background: var(--wb-surface);
+}
+.wb-feedback-item[data-signal="incorrect"] { border-left-color: var(--wb-seal); }
+.wb-feedback-item[data-signal="useful"] { border-left-color: var(--wb-accent); }
+.wb-feedback-head { display: flex; align-items: center; gap: 8px; font-size: 10.5px; color: var(--wb-ink-3); }
+.wb-feedback-badge { padding: 1px 8px; border-radius: 4px; font-size: 10.5px; font-weight: 700; }
+.wb-feedback-badge[data-signal="incorrect"] { background: var(--wb-seal-soft); color: var(--wb-seal); }
+.wb-feedback-badge[data-signal="useful"] { background: var(--wb-accent-soft); color: var(--wb-accent-strong); }
+.wb-feedback-source { font-family: var(--wb-mono); }
+.wb-feedback-time { margin-left: auto; }
+.wb-feedback-target {
+  display: block;
+  margin: 6px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--wb-accent);
+  font-family: var(--wb-mono);
+  font-size: 11.5px;
+  cursor: pointer;
+  text-align: left;
+  word-break: break-all;
+}
+.wb-feedback-target:hover { text-decoration: underline; }
+.wb-feedback-note { margin: 5px 0 0; font-size: 12px; line-height: 1.6; color: var(--wb-ink-2); }
+.wb-feedback-actions { display: flex; gap: 6px; margin-top: 8px; }
+.wb-feedback-actions .wb-btn { height: 27px; padding: 0 12px; font-size: 12px; }
 
 .wb-chain-list { display: flex; flex-direction: column; gap: 8px; }
 .wb-chain-node {

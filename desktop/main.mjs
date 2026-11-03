@@ -661,6 +661,10 @@ function registerIpc() {
     return confirmRevisit(recordId, utterance);
   });
 
+  // 审查信号：Agent 经 MCP 举报，人在这里看到并决定。只读队列 + 人工裁决。
+  ipcMain.handle("alpha:feedback-list", async (_event, status) => adapter.feedbackList(String(status || "pending")));
+  ipcMain.handle("alpha:feedback-resolve", async (_event, payload) => adapter.resolveFeedback(payload && typeof payload === "object" ? payload : {}));
+
   // —— 对话实验 ——
   ipcMain.handle("chat:config-get", () => ({
     ...configStore.publicModelConfig(),
@@ -1053,6 +1057,105 @@ async function runFlowSelfcheck(target) {
   return report;
 }
 
+/**
+ * runViewsSelfcheck — 重设计的视觉回归驱动：在合成演示空间上逐视图、逐宽度截图，
+ * 并端到端验证审查面板（播种信号 → 管理视图出现 → 忽略 → 消失）。
+ * 只服务布局验收，不是产品功能；全部合成数据。
+ */
+async function runViewsSelfcheck(target, shotDir) {
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const js = (code) => target.webContents.executeJavaScript(code, true);
+  const win = typeof target.setSize === "function" ? target : BrowserWindow.fromWebContents(target);
+  const frames = [];
+  const shot = async (name) => {
+    const image = await target.webContents.capturePage();
+    const file = path.join(shotDir, `views-${name}.png`);
+    fs.writeFileSync(file, image.toPNG());
+    frames.push(file);
+    return file;
+  };
+  const until = async (code, { timeoutMs = 20000, everyMs = 300 } = {}) => {
+    const started = Date.now();
+    for (;;) {
+      const value = await js(code);
+      if (value) return value;
+      if (Date.now() - started > timeoutMs) throw new Error(`views selfcheck timed out: ${code.slice(0, 120)}`);
+      await wait(everyMs);
+    }
+  };
+  const report = { assertions: {} };
+
+  // 0. 演示空间 + 播种一条审查信号
+  await until(`!!Array.from(document.querySelectorAll('.alpha-chip')).find(b => b.textContent.includes('载入演示记忆'))`);
+  await js(`Array.from(document.querySelectorAll('.alpha-chip')).find(b => b.textContent.includes('载入演示记忆')).click()`);
+  await until(`document.getElementById('wb-space') && document.getElementById('wb-space').value === 'alpha-demo'`, { timeoutMs: 30000 });
+  await wait(2000);
+  const seeded = await atlasRawRequest("POST", "/atlas/feedback", {
+    body: { spaceId: "alpha-demo", recordId: "demo-movie", signal: "incorrect", note: "自检：月份可能记错（合成数据）", source: { kind: "mcp", id: "views-selfcheck" } },
+    write: true
+  });
+  report.assertions.feedbackSeeded = seeded.status >= 200 && seeded.status < 300;
+
+  // 1. 宽窗逐视图
+  if (win) win.setSize(1500, 980);
+  await wait(600);
+  await js(`document.querySelector('[data-testid="nav-search"]').click()`);
+  await wait(1200);
+  await shot("search");
+
+  await js(`document.querySelector('[data-testid="nav-manage"]').click()`);
+  await until(`!!document.querySelector('[data-testid="feedback-list"] .wb-feedback-item')`, { timeoutMs: 15000 });
+  await wait(500);
+  await shot("manage");
+  report.assertions.feedbackVisible = await js(`!!document.querySelector('[data-testid="feedback-list"] .wb-feedback-item')`);
+
+  // 忽略按钮端到端：点击后该信号从待审查队列消失
+  await js(`(() => { const b = Array.from(document.querySelectorAll('[data-testid="feedback-list"] .wb-feedback-actions button')).find(x => x.textContent.trim() === '忽略'); if (b) b.click(); })()`);
+  await wait(1200);
+  report.assertions.feedbackDismissed = await js(`!document.querySelector('[data-testid="feedback-list"] .wb-feedback-item')`);
+
+  await js(`document.querySelector('[data-testid="nav-maint"]').click()`);
+  await wait(1500);
+  await shot("maint");
+
+  await js(`document.querySelector('[data-testid="nav-universe"]').click()`);
+  await wait(6500);
+  await js(`(() => { const b = document.getElementById('wb-uni-recenter'); if (b) b.click(); })()`);
+  await wait(2500);
+  await shot("universe");
+
+  // 2. 窄窗单栏：列表 pane 与阅读 pane
+  if (win) win.setSize(820, 900);
+  await js(`document.querySelector('[data-testid="nav-search"]').click()`);
+  await wait(1200);
+  await js(`(() => { const app = document.getElementById('wb-app'); app.dataset.pane = 'list'; })()`);
+  await wait(500);
+  await shot("narrow-list");
+  await js(`(() => { const rows = Array.from(document.querySelectorAll('[data-testid="result-list"] > *')); if (rows[0]) rows[0].click(); })()`);
+  await wait(1200);
+  await shot("narrow-reader");
+
+  // 3. 空态：新建一个空空间并切过去。createSpaceRaw 只建不切也不广播，
+  // 所以显式 setSpace + 广播 spaces-changed，等下拉出现该选项再断言。
+  await createSpaceRaw("views-empty", "视觉自检空空间");
+  await adapter.setSpace("views-empty");
+  target.webContents.send("alpha:spaces-changed");
+  await until(`Array.from(document.querySelectorAll('#wb-space option')).some(o => o.value === 'views-empty')`, { timeoutMs: 15000 });
+  if (win) win.setSize(1500, 980);
+  await wait(1800);
+  await js(`(() => { const app = document.getElementById('wb-app'); app.dataset.pane = 'list'; })()`);
+  await wait(500);
+  await shot("empty");
+  // 真正的空态引导（含"写入第一条"），而不是切换失败的故障态。
+  report.assertions.emptyHint = await js(`(() => { const e = document.querySelector('[data-testid="result-list"] .wb-empty');
+    return !!e && !e.querySelector('.wb-empty-fault') && e.textContent.includes('写入第一条'); })()`);
+  report.assertions.emptySpaceSelected = await js(`document.getElementById('wb-space').value === 'views-empty'`);
+
+  report.frames = frames;
+  report.note = "synthetic demo data only";
+  return report;
+}
+
 async function runSelfcheck(kind, startError) {
   const target = kind === "chat" ? await ensureChatWindow() : mainWin;
   // 截图是自检产物，不是用户数据：源码树里进 docs/screenshots，打包态进系统临时
@@ -1102,6 +1205,13 @@ async function runSelfcheck(kind, startError) {
       // → 纠正链 → 宇宙），逐帧截图。只服务 README 素材，不是产品功能。
       report.demo = await runDemoSelfcheck(target, shotDir);
       process.stdout.write("[selfcheck] " + JSON.stringify({ ...report, demo: { ...report.demo, frames: report.demo?.frames?.length } }, null, 2) + "\n");
+      app.exit(0);
+      return;
+    }
+    if (kind === "views") {
+      // 重设计视觉回归：逐视图、逐宽度、空态截图 + 审查面板端到端断言。
+      report.views = await runViewsSelfcheck(target, shotDir);
+      process.stdout.write("[selfcheck] " + JSON.stringify({ ...report, views: { ...report.views, frames: report.views?.frames?.length } }, null, 2) + "\n");
       app.exit(0);
       return;
     }

@@ -290,6 +290,25 @@ export function createAtlasApi({
     return { ok: false, supported: false, reason: "ATLAS_GRAPH_UNAVAILABLE" };
   }
 
+  async function feedbackList(status = "pending") {
+    const space = requireSpace();
+    if (!space) return { ok: false, status: "ATLAS_SPACE_REQUIRED", feedback: [] };
+    const result = await request("GET", "/atlas/feedback", { params: [["space", space], ["status", status]], token: readBearer });
+    const settled = settle(result);
+    if (!settled.ok) return { ok: false, status: translateReadFault(settled.code || "ATLAS_UNAVAILABLE"), feedback: [] };
+    return { ok: true, feedback: Array.isArray(settled.feedback) ? settled.feedback : [], unreadable: settled.unreadable === true };
+  }
+
+  async function resolveFeedback({ feedbackId, resolution = "dismissed", by = "user" } = {}) {
+    const space = requireSpace();
+    if (!space) return { ok: false, status: "ATLAS_SPACE_REQUIRED" };
+    if (!feedbackId) return { ok: false, status: "ATLAS_FEEDBACK_INVALID" };
+    const result = await request("POST", "/atlas/feedback/resolve", {
+      body: { spaceId: space, feedbackId, resolution, by }, token: writeBearer, write: true
+    });
+    return settle(result, { write: true });
+  }
+
   return {
     memorySearch,
     memoryDetail,
@@ -298,6 +317,8 @@ export function createAtlasApi({
     memoryCapacity,
     memoryContextSearch,
     controlFormalMemory,
+    feedbackList,
+    resolveFeedback,
     listSpaces,
     setSpace,
     probeGraph,

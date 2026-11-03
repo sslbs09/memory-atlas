@@ -174,7 +174,7 @@ server.registerTool('atlas_health', {
     endpoint: resolved.provenance,
     writesEnabled: config.allowWrites,
     writeToolsNote: config.allowWrites
-      ? '写入工具已开放：atlas_remember / atlas_correct / atlas_retract 只应由用户明确要求的对话调用。'
+      ? '写入工具已开放：atlas_remember / atlas_correct / atlas_retract 只应由用户明确要求的对话调用；atlas_feedback 只提交审查信号，不改变记录状态。'
       : '本实例为只读接入；写入请使用 Memory Atlas 桌面程序。',
     note: '本工具只报告绑定空间的状态；其他记忆空间的存在与否不在此工具的输出里。'
   });
@@ -245,6 +245,71 @@ server.registerTool('atlas_get', {
     : status === 'retracted' ? '该记录已被撤回，不能作为当前事实引用。'
       : status === 'superseded' ? '该记录已被更新的版本取代，请以纠正链中 active 的版本为准。'
         : `记录状态为 ${status}。`
+  });
+});
+
+server.registerTool('atlas_context', {
+  title: '组装 Atlas 记忆上下文',
+  description: '按 token 预算把当前有效的记忆组装成可注入对话的上下文信封（只读）。'
+    + '预算按字符估算并明确标注 estimated——没有精确 tokenizer 就不宣称 measured。'
+    + '超出预算的记录如实计入 omitted，不悄悄截断事实；至少纳入一条以免空手而归。',
+  inputSchema: {
+    query: z.string().min(1).describe('检索词（词法检索，不做同义改写）'),
+    tokenBudget: z.number().int().min(64).max(32000).optional().describe('上下文 token 预算，默认 2000（估算值）'),
+    limit: z.number().int().min(1).max(32).optional().describe('候选记录上限，默认 16'),
+    status: z.enum(STATUSES).optional().describe('记录状态过滤，默认 active')
+  },
+  annotations: { readOnlyHint: true, openWorldHint: false }
+}, async ({ query, tokenBudget, limit, status }) => {
+  const resolved = resolveConnection();
+  if (resolved.error) return toolError(resolved.error);
+  const budget = tokenBudget ?? 2000;
+  const view = await resolved.client.search({
+    spaceId: config.space, query, limit: limit ?? 16, status: status ?? 'active', includeContent: true
+  });
+  if (!view.ok) return toolError(`Atlas 查询失败：${view.error ?? `HTTP ${view.httpStatus}`}`);
+  const records = (view.records ?? []).map(projectRecord);
+
+  // 诚实的估算启发式：CJK 字符约 1 token/字，其余约 1 token/3.3 字符。
+  // 这不是实测 tokenizer，输出里永远标 accounting=estimated / measured=false。
+  const estimateTokens = (text) => {
+    let cjk = 0;
+    let other = 0;
+    for (const ch of String(text ?? '')) {
+      if (/[\u3400-\u9fff\uf900-\ufaff]/.test(ch)) cjk += 1;
+      else other += 1;
+    }
+    return Math.ceil(cjk + other / 3.3);
+  };
+
+  const header = { space: config.space, query, generatedAt: new Date().toISOString() };
+  let used = estimateTokens(JSON.stringify(header));
+  const included = [];
+  let omitted = 0;
+  for (let i = 0; i < records.length; i += 1) {
+    const cost = estimateTokens(JSON.stringify(records[i]));
+    if (included.length > 0 && used + cost > budget) { omitted = records.length - i; break; }
+    included.push(records[i]);
+    used += cost;
+  }
+  return toolJson({
+    atlas: SERVER_NAME,
+    space: config.space,
+    query,
+    header,
+    budget: {
+      requested: budget,
+      estimatedUsed: used,
+      budgetExceeded: used > budget,
+      accounting: 'estimated',
+      measured: false,
+      assumption: 'CJK ≈ 1 token/char; other ≈ 1 token/3.3 chars'
+    },
+    records: included,
+    omitted,
+    note: omitted > 0
+      ? `预算内纳入 ${included.length} 条，${omitted} 条未纳入；可增大 tokenBudget 或缩小 query。token 为估算值，非实测。`
+      : 'token 为估算值，非实测。'
   });
 });
 
@@ -325,6 +390,30 @@ if (config.allowWrites) {
       retractionRecordId: receipt.recordId, aboutRecordId: recordId,
       recordedAt: receipt.recordedAt ?? null,
       note: '撤回已生效：该内容不再作为当前事实被检索返回。'
+    });
+  });
+
+  server.registerTool('atlas_feedback', {
+    title: '反馈 Atlas 记忆有用或有误',
+    description: '对一条记忆提交使用反馈：useful 或 incorrect。这是审查信号，不是裁决——'
+      + '不会改变记录状态、不会自动撤回、也不会进入检索。incorrect 会进入桌面端的待审查列表，'
+      + '由人决定是否纠正或撤回。只在有真实依据时调用，不要把它当作撤回的快捷方式。',
+    inputSchema: {
+      recordId: z.string().min(1).describe('要反馈的记录 id'),
+      signal: z.enum(['useful', 'incorrect']).describe('useful=帮到了我；incorrect=可能有误，待人审查'),
+      note: z.string().max(1000).optional().describe('反馈依据（可选，会存进审查信号）')
+    },
+    annotations: { readOnlyHint: false, openWorldHint: false }
+  }, async ({ recordId, signal, note }) => {
+    const resolved = resolveConnection();
+    if (resolved.error) return toolError(resolved.error);
+    const entry = await resolved.client.feedback({
+      spaceId: config.space, recordId, signal, note, source: { kind: 'mcp', id: SERVER_NAME }
+    });
+    if (!entry.ok) return toolError(`Atlas 反馈失败：${entry.error ?? `HTTP ${entry.httpStatus}`}`);
+    return toolJson({
+      atlas: SERVER_NAME, space: config.space, feedbackId: entry.feedbackId, recordId, signal,
+      note: '已记录审查信号，记录状态未改变。incorrect 由人在桌面端审查后决定是否纠正/撤回；不要自行假定它已失效。'
     });
   });
 } else {

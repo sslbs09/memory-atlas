@@ -31,9 +31,11 @@ Memory Atlas。一个统一的 MCP server（`resources\app\mcp\atlas-mcp.mjs`）
 | `atlas_health` | 可用 | Atlas 是否可达、绑定空间是否存在、写入是否开放 |
 | `atlas_search` | 可用 | 检索当前有效记忆（默认只返回 status=active）；带 recordId/status/source/matchReason |
 | `atlas_get` | 可用 | 按 recordId 读详情与纠正链；明确标注 `currentFact` |
+| `atlas_context` | 可用 | 按 token 预算把检索结果组装成上下文信封；预算标注 `estimated`（非实测），超预算记录计入 `omitted` |
 | `atlas_remember` | 关闭 | 显式写入一条记忆（仅在用户明确要求记住时调用） |
 | `atlas_correct` | 关闭 | 正式纠正（旧版本自动失效） |
 | `atlas_retract` | 关闭 | 正式撤回（不再作为当前事实） |
+| `atlas_feedback` | 关闭 | 标记一条记忆 useful/incorrect。这是审查信号，不是裁决：不改状态、不自动撤回；incorrect 进桌面端待审查队列，由人决定 |
 
 ## DSH（DeepSeek Harness）
 

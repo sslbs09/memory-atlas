@@ -19,7 +19,7 @@
       <span class="wb-mark" aria-hidden="true">記</span>
       <div class="wb-brand-text">
         <h1 data-i18n="set.memWbTitle">记忆管理</h1>
-        <p data-i18n="set.memWbIntro">查找她真正记得的事，看清原始记录与当前理解，并纠正或撤回。</p>
+        <p data-i18n="set.memWbIntro">查找 Atlas 真正记得的事，看清原始记录与当前理解，并纠正或撤回。</p>
       </div>
     </div>
 
@@ -141,6 +141,14 @@
 
   <!-- ============ 左列：管理（操作台账 + 纠正链） ============ -->
   <section class="wb-column wb-column-manage" aria-label="记忆管理">
+    <div class="wb-block wb-block-feedback">
+      <div class="wb-block-head">
+        <h2 data-i18n="set.wbFeedbackTitle">审查信号</h2>
+        <button type="button" class="wb-linkbtn" id="wb-feedback-refresh" data-i18n="set.wbFeedbackRefresh">刷新</button>
+      </div>
+      <p class="wb-note" data-i18n="set.wbFeedbackNote">Agent 经 MCP 提交的有用/有误反馈。这只是举报，不是裁决——记录状态不会因此改变，由你决定是否纠正或撤回。</p>
+      <div id="wb-feedback" class="wb-feedback" data-testid="feedback-list"></div>
+    </div>
     <div class="wb-block">
       <div class="wb-block-head">
         <h2 data-i18n="set.wbLedgerTitle">操作台账</h2>

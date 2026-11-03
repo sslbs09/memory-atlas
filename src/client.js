@@ -112,4 +112,16 @@ export class AtlasClient {
   retract({ spaceId, aboutRecordId, operationId }) {
     return this.#call('/atlas/retract', { method: 'POST', body: { spaceId, aboutRecordId, operationId }, token: this.writeToken });
   }
+
+  feedback({ spaceId, recordId, signal, note, source }) {
+    return this.#call('/atlas/feedback', { method: 'POST', body: { spaceId, recordId, signal, note, source }, token: this.writeToken });
+  }
+
+  feedbackList({ spaceId, status }) {
+    return this.#call('/atlas/feedback', { pairs: [['space', spaceId], ['status', status]], token: this.readToken });
+  }
+
+  resolveFeedback({ spaceId, feedbackId, resolution, by }) {
+    return this.#call('/atlas/feedback/resolve', { method: 'POST', body: { spaceId, feedbackId, resolution, by }, token: this.writeToken });
+  }
 }

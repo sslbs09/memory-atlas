@@ -69,6 +69,8 @@ contextBridge.exposeInMainWorld("petAPI", {
   activationExplain: (payload) => ipcRenderer.invoke("alpha:activation-explain", payload && typeof payload === "object" ? payload : {}),
   activationEvents: () => ipcRenderer.invoke("alpha:activation-events"),
   revisitConfirm: (payload) => ipcRenderer.invoke("alpha:revisit-confirm", payload && typeof payload === "object" ? payload : {}),
+  feedbackList: (status) => ipcRenderer.invoke("alpha:feedback-list", String(status || "pending")),
+  feedbackResolve: (payload) => ipcRenderer.invoke("alpha:feedback-resolve", payload && typeof payload === "object" ? payload : {}),
   onSpacesChanged: subscribe("alpha:spaces-changed"),
   onServiceFailed: subscribe("alpha:service-failed")
 });

@@ -85,6 +85,8 @@
     back: document.getElementById("wb-back"),
     ledger: document.getElementById("wb-ledger"),
     ledgerClear: document.getElementById("wb-ledger-clear"),
+    feedback: document.getElementById("wb-feedback"),
+    feedbackRefresh: document.getElementById("wb-feedback-refresh"),
     chainList: document.getElementById("wb-chain-list"),
     chainTarget: document.getElementById("wb-chain-target"),
     figures: document.getElementById("wb-figures"),
@@ -160,6 +162,8 @@
     capacityFault: null,
     capacityBusy: false,
     ledger: [],
+    feedback: [],
+    feedbackFault: null,
     types: [],
     readSize: "m"
   };
@@ -1399,6 +1403,84 @@
   }
 
   // ---------------------------------------------------------------------------
+  // 管理视图：审查信号（Agent 举报，人裁决）
+  // ---------------------------------------------------------------------------
+
+  async function loadFeedback() {
+    if (!api.feedbackList) return;
+    let result = null;
+    try { result = await api.feedbackList("pending"); } catch { result = null; }
+    if (!result || !result.ok) {
+      state.feedback = [];
+      state.feedbackFault = result ? faultText(result) : { text: t("set.wbFeedbackFault"), detail: "MEMORY_RESULT_UNKNOWN" };
+      renderFeedback();
+      return;
+    }
+    state.feedbackFault = null;
+    state.feedback = Array.isArray(result.feedback) ? result.feedback : [];
+    renderFeedback();
+  }
+
+  function renderFeedback() {
+    const box = els.feedback;
+    if (!box) return;
+    clear(box);
+    if (state.feedbackFault) {
+      box.append(el("p", "wb-empty-fault", state.feedbackFault.text));
+      return;
+    }
+    if (!state.feedback.length) {
+      box.append(el("p", "wb-note", t("set.wbFeedbackEmpty")));
+      return;
+    }
+    for (const item of state.feedback) {
+      const row = el("div", "wb-feedback-item");
+      row.dataset.signal = item.signal;
+
+      const head = el("div", "wb-feedback-head");
+      const badge = el("span", "wb-feedback-badge",
+        item.signal === "incorrect" ? t("set.wbFeedbackIncorrect") : t("set.wbFeedbackUseful"));
+      badge.dataset.signal = item.signal;
+      const source = el("span", "wb-feedback-source", (item.source && item.source.kind) || "unknown");
+      head.append(badge, source, el("span", "wb-feedback-time", timeText(item.createdAt)));
+      row.append(head);
+
+      const target = el("button", "wb-feedback-target", item.recordId);
+      target.type = "button";
+      target.title = t("set.wbFeedbackOpen");
+      target.addEventListener("click", () => { setMode("search"); void openRecord(item.recordId, { keepMode: true }); });
+      row.append(target);
+
+      if (item.note) row.append(el("p", "wb-feedback-note", item.note));
+
+      const actions = el("div", "wb-feedback-actions");
+      const open = el("button", "wb-btn", t("set.wbFeedbackOpen"));
+      open.type = "button";
+      open.addEventListener("click", () => { setMode("search"); void openRecord(item.recordId, { keepMode: true }); });
+      const dismiss = el("button", "wb-btn", t("set.wbFeedbackDismiss"));
+      dismiss.type = "button";
+      dismiss.addEventListener("click", () => { void dismissFeedback(item.feedbackId, dismiss); });
+      actions.append(open, dismiss);
+      row.append(actions);
+      box.append(row);
+    }
+  }
+
+  async function dismissFeedback(feedbackId, button) {
+    if (!api.feedbackResolve || !feedbackId) return;
+    if (button) button.disabled = true;
+    let result = null;
+    try { result = await api.feedbackResolve({ feedbackId, resolution: "dismissed", by: "user" }); } catch { result = null; }
+    if (!result || !result.ok) {
+      if (button) button.disabled = false;
+      state.feedbackFault = { text: t("set.wbFeedbackFault"), detail: (result && result.status) || "" };
+      renderFeedback();
+      return;
+    }
+    await loadFeedback();
+  }
+
+  // ---------------------------------------------------------------------------
   // 管理视图：纠正链面板
   // ---------------------------------------------------------------------------
 
@@ -1780,6 +1862,7 @@
     } else if (mode === "manage") {
       renderChainPanel();
       renderLedger();
+      void loadFeedback();
     }
   }
 
@@ -1948,6 +2031,8 @@
       renderLedger();
     });
 
+    if (els.feedbackRefresh) els.feedbackRefresh.addEventListener("click", () => { void loadFeedback(); });
+
     document.addEventListener("keydown", (event) => {
       const target = event.target;
       const typing = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" ||
@@ -2011,6 +2096,7 @@
         renderListMeta();
         renderPager();
         renderLedger();
+        renderFeedback();
         if (state.detail) renderSheet(state.detail, { loading: false });
         else renderReaderEmptyFault();
         renderChainPanel();

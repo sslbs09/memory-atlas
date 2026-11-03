@@ -17,6 +17,12 @@
  *   GET  /atlas/detail           one record plus its chain           (read)
  *   GET  /atlas/operation        what a caller-owned operation did   (read)
  *   GET  /atlas/health           capacity, sources and index state   (read)
+ *   GET  /atlas/feedback         review signals for a space          (read)
+ *   POST /atlas/feedback         flag a record useful/incorrect      (write)
+ *   POST /atlas/feedback/resolve dismiss or mark a signal actioned   (write)
+ *
+ * Feedback is a governance side-channel: it never changes a record's status,
+ * never enters search, and never becomes a fact. A human decides the outcome.
  */
 
 import http from 'node:http';
@@ -66,11 +72,14 @@ function statusFor(error) {
   const code = error && error.code ? String(error.code) : '';
   const message = error && error.message ? error.message : '';
   if (code === 'ATLAS_QUERY_INVALID' || code === 'ATLAS_RECORD_INVALID' || code === 'ATLAS_ID_INVALID' ||
-      code === 'ATLAS_CONTROL_INVALID' || code === 'ATLAS_OPERATION_INVALID' || code === 'ATLAS_OPERATION_MISMATCH') return 400;
+      code === 'ATLAS_CONTROL_INVALID' || code === 'ATLAS_OPERATION_INVALID' || code === 'ATLAS_OPERATION_MISMATCH' ||
+      code === 'ATLAS_FEEDBACK_INVALID') return 400;
   if (code === 'ATLAS_SPACE_EXISTS' || code === 'ATLAS_IDENTITY_CONFLICT' || code === 'ATLAS_OPERATION_CONFLICT') return 409;
   if (code === 'ATLAS_SPACE_UNAVAILABLE') return /unknown record|no longer active/.test(message) ? 409 : 404;
-  if (code === 'ATLAS_CONTROL_TARGET_MISSING' || code === 'ATLAS_CONTROL_TARGET_INACTIVE') return 409;
-  if (code === 'ATLAS_PERSIST_FAILED' || code === 'ATLAS_PERSIST_UNVERIFIED' || code === 'ATLAS_SAVE_CONFLICT') return 503;
+  if (code === 'ATLAS_CONTROL_TARGET_MISSING' || code === 'ATLAS_CONTROL_TARGET_INACTIVE' || code === 'ATLAS_FEEDBACK_TARGET_MISSING') return 409;
+  if (code === 'ATLAS_FEEDBACK_NOT_FOUND') return 404;
+  if (code === 'ATLAS_PERSIST_FAILED' || code === 'ATLAS_PERSIST_UNVERIFIED' || code === 'ATLAS_SAVE_CONFLICT' ||
+      code === 'ATLAS_FEEDBACK_UNAVAILABLE') return 503;
   return 500;
 }
 
@@ -145,6 +154,14 @@ export function createAtlasServer({ service, readToken, writeToken }) {
         send(res, 200, { ok: true, spaceId, operationId, ...(await service.operation(spaceId, operationId)) });
         return;
       }
+      if (url.pathname === '/atlas/feedback' && req.method === 'GET') {
+        if (!authorized(req, readToken)) return send(res, 401, { ok: false, error: 'read token required' });
+        const spaceId = url.searchParams.get('space');
+        if (!spaceId) return send(res, 400, { ok: false, error: '"space" is required.' });
+        const status = url.searchParams.get('status') || 'pending';
+        send(res, 200, { ok: true, ...service.feedbackList(spaceId, { status }) });
+        return;
+      }
       if (req.method !== 'POST') {
         send(res, 405, { ok: false, error: `${url.pathname} accepts ${url.pathname.startsWith('/atlas/') ? 'POST' : 'GET'} only.` });
         return;
@@ -176,6 +193,20 @@ export function createAtlasServer({ service, readToken, writeToken }) {
           operationId: body.operationId
         });
         send(res, 200, { ok: true, ...receipt });
+        return;
+      }
+      if (url.pathname === '/atlas/feedback') {
+        const entry = await service.feedback(spaceId, {
+          recordId: body.recordId, signal: body.signal, note: body.note, source: body.source
+        });
+        send(res, 200, { ok: true, ...entry });
+        return;
+      }
+      if (url.pathname === '/atlas/feedback/resolve') {
+        const entry = await service.resolveFeedback(spaceId, {
+          feedbackId: body.feedbackId, resolution: body.resolution, by: body.by
+        });
+        send(res, 200, { ok: true, ...entry });
         return;
       }
       send(res, 404, { ok: false, error: `No such endpoint: ${route}.` });
