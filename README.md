@@ -250,6 +250,7 @@ Yes — they all connect to the same running Atlas, and `MEMORY_ATLAS_SPACE` dec
 ## For developers
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — data model, service architecture, the index trust model, building from source
+- [docs/MNEMOSYNE-INTEROP.md](docs/MNEMOSYNE-INTEROP.md) — Mnemosyne study: shared philosophy, capability gaps, absorption proposals, DSH host contract
 - [release/docs/MCP-GUIDE.md](release/docs/MCP-GUIDE.md) — MCP integration details and ground rules
 - Memory API: loopback HTTP; [src/client.js](src/client.js) is a zero-dependency Node client and doubles as the API reference
 - [docs/VERIFICATION-v0.1.0-alpha.1.md](docs/VERIFICATION-v0.1.0-alpha.1.md) — every verification item and its evidence

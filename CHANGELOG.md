@@ -22,6 +22,17 @@ All notable changes to Memory Atlas are documented here. Dates are ISO 8601.
   alpha-demo data only). The flow selfcheck now asserts the new interaction
   paths: 10 UI regression checks (shortcut, Esc, auto-select, two-step retract,
   permanent space creation, outside-click close).
+- Changed: full visual redesign of the workbench ("reading room"): a 216px
+  sidebar with brand, space switcher and labelled navigation replaces the
+  single-character rail; the top bar carries a view title plus telemetry;
+  larger type scale (14px base, 11px labels, 12px mono IDs); status-colored
+  record rows and correction-chain timeline; cinnabar/amber stamps for changed
+  records; light and dark themes reworked. All element IDs, test hooks and the
+  universe view are unchanged; demo and flow selfchecks pass on both themes.
+- Added: `docs/MNEMOSYNE-INTEROP.md` — study of canyueY/dsh-mnemosyne: shared
+  trust philosophy, capability gaps, ranked absorption proposals (agent
+  feedback channel, token-budget context tool), DSH 0.2.1 host contract notes,
+  and read-only interop boundaries. Research only; no runtime integration.
 
 ## [0.1.0-alpha.1] — 2026-11-01
 

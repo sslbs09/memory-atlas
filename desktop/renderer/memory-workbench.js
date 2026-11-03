@@ -1740,10 +1740,24 @@
     universeMounted = false;
   }
 
+  const VIEW_TITLE_KEY = {
+    search: "set.wbNavSearch",
+    manage: "set.wbNavManage",
+    maint: "set.wbNavMaint",
+    universe: "set.wbNavUniverse"
+  };
+
+  function renderViewTitle() {
+    const node = document.getElementById("wb-view-title");
+    const key = VIEW_TITLE_KEY[state.mode];
+    if (node && key) node.textContent = t(key);
+  }
+
   function setMode(mode) {
     const leavingUniverse = state.mode === "universe" && mode !== "universe";
     state.mode = mode;
     app.dataset.mode = mode;
+    renderViewTitle();
     for (const button of document.querySelectorAll(".wb-rail-item")) {
       button.setAttribute("aria-selected", String(button.dataset.mode === mode));
     }
@@ -1991,6 +2005,7 @@
     if (window.I18N && typeof window.I18N.onChange === "function") {
       window.I18N.onChange(() => {
         renderTypeOptions();
+        renderViewTitle();
         renderTelemetry();
         renderList();
         renderListMeta();

@@ -807,7 +807,10 @@ async function runDemoSelfcheck(target, shotDir) {
   await shot("capture");
   await js(`Array.from(document.querySelectorAll('.alpha-panel button')).find(b => b.textContent.includes('写入记忆')).click()`);
   await until(`document.querySelector('.alpha-panel .alpha-feedback') && document.querySelector('.alpha-panel .alpha-feedback').textContent.includes('已写入')`, { timeoutMs: 30000 });
-  await js(`(() => { const r = Array.from(document.querySelectorAll('.alpha-panel button')).find(b => b.textContent.includes('刷新列表查看')); if (r) r.click(); })()`);
+  // 写入确认后收起面板，让后续帧完整展示阅读区（旧版靠"刷新列表查看"顺带关面板）。
+  await js(`(() => { const d = Array.from(document.querySelectorAll('.alpha-panel button')).find(b => b.textContent.trim() === '完成');
+    if (d) d.click(); else document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); })()`);
+  await wait(400);
 
   // 2. 查询新记录
   await until(`!!document.querySelector('[data-testid="search-input"]')`);

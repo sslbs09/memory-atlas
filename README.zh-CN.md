@@ -263,6 +263,7 @@ Memory Atlas 桌面程序没开，或者 `MEMORY_ATLAS_DATA_DIR` 指错了目录
 ## 给开发者
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) —— 数据模型、服务端架构、检索索引的信任模型、从源码构建
+- [docs/MNEMOSYNE-INTEROP.md](docs/MNEMOSYNE-INTEROP.md) —— Mnemosyne 调研：哲学对齐、能力差集、吸收提案与 DSH 宿主契约
 - [release/docs/MCP-GUIDE.md](release/docs/MCP-GUIDE.md) —— MCP 接入细节与安全约定
 - Memory API：本机环回 HTTP，见 [src/client.js](src/client.js)（零依赖 Node 客户端，即 API 的完整用法）
 - [docs/VERIFICATION-v0.1.0-alpha.1.md](docs/VERIFICATION-v0.1.0-alpha.1.md) —— 全部验证项与证据
